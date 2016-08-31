@@ -28,7 +28,7 @@ CcspMoCA_CPPFLAGS = -I$(top_srcdir)/source/TR-181/board_sbapi -I$(top_srcdir)/so
 
 if CCSP_ARCH_ARM
 AM_CFLAGS += -D_ANSC_LITTLE_ENDIAN_
-CcspMoCA_CPPFLAGS += -I$(top_srcdir)/source-arm/TR-181/board_include -I$(top_srcdir)/source-arm/TR-181/board_sbapi
+CcspMoCA_CPPFLAGS += -I$(top_srcdir)/source-mips/TR-181/board_include -I$(top_srcdir)/source-mips/TR-181/board_sbapi
 EXTRA_DEPENDENCIES= \
 	${top_builddir}/source-arm/TR-181/board_sbapi/libCcspMoCA_board_sbapi.la
 endif
