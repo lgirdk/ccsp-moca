@@ -24,19 +24,19 @@ AM_CPPFLAGS = -Wall -Werror
 ACLOCAL_AMFLAGS = -I m4
 hardware_platform = i686-linux-gnu
 bin_PROGRAMS = CcspMoCA
-CcspMoCA_CPPFLAGS = -I$(top_srcdir)/source/TR-181/board_sbapi -I$(top_srcdir)/source/TR-181/middle_layer_src -I$(top_srcdir)/custom/comcast/source/TR-181/custom_include -I$(top_srcdir)/custom/comcast/source/TR-181/custom_ml -I$(top_srcdir)/custom/comcast -I$(top_srcdir)/source/TR-181/include -I$(top_srcdir)/source/Custom $(CPPFLAGS)
+CcspMoCA_CPPFLAGS = -I$(top_srcdir)/source/TR-181/include -I$(top_srcdir)/source/TR-181/middle_layer_src $(CPPFLAGS)
 
 if CCSP_ARCH_ARM
 AM_CFLAGS += -D_ANSC_LITTLE_ENDIAN_
-CcspMoCA_CPPFLAGS += -I$(top_srcdir)/source-mips/TR-181/board_include -I$(top_srcdir)/source-mips/TR-181/board_sbapi
+CcspMoCA_CPPFLAGS += -I$(top_srcdir)/source-arm/TR-181/board_include -I$(top_srcdir)/source-arm/TR-181/board_sbapi
 EXTRA_DEPENDENCIES= \
 	${top_builddir}/source-arm/TR-181/board_sbapi/libCcspMoCA_board_sbapi.la
 endif
 
 if CCSP_ARCH_MIPS
-CcspMoCA_CPPFLAGS += -I$(top_srcdir)/source-arm/TR-181/board_include -I$(top_srcdir)/source-arm/TR-181/board_sbapi
+CcspMoCA_CPPFLAGS += -I$(top_srcdir)/source-mips/TR-181/board_include -I$(top_srcdir)/source-mips/TR-181/board_sbapi
 EXTRA_DEPENDENCIES= \
-    ${top_builddir}/source-arm/TR-181/board_sbapi/libCcspMoCA_board_sbapi.la
+    ${top_builddir}/source-mips/TR-181/board_sbapi/libCcspMoCA_board_sbapi.la
 endif
 
 if CCSP_ARCH_PC

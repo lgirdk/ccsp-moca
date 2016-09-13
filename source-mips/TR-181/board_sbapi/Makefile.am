@@ -25,7 +25,7 @@ ACLOCAL_AMFLAGS = -I m4
 hardware_platform = i686-linux-gnu
 
 noinst_LTLIBRARIES = libCcspMoCA_board_sbapi.la
-libCcspMoCA_board_sbapi_la_CPPFLAGS = -I$(top_srcdir)/source/TR-181/include -I$(top_srcdir)/source/TR-181/board_sbapi -I$(top_srcdir)/source/TR-181/middle_layer_src -I$(top_srcdir)/source-mips/TR-181/board_include 
+libCcspMoCA_board_sbapi_la_CPPFLAGS = -I$(top_srcdir)/source/TR-181/include -I$(top_srcdir)/source/TR-181/middle_layer_src -I$(top_srcdir)/source-mips/TR-181/board_include 
 
 libCcspMoCA_board_sbapi_la_SOURCES = cosa_moca_apis.c 
 libCcspMoCA_board_sbapi_la_LDFLAGS = -lccsp_common

@@ -25,7 +25,7 @@ ACLOCAL_AMFLAGS = -I m4
 hardware_platform = i686-linux-gnu
 
 noinst_LTLIBRARIES = libCcspMoCA_middle_layer_src.la
-libCcspMoCA_middle_layer_src_la_CPPFLAGS = -I$(top_srcdir)/source/TR-181/include -I$(top_srcdir)/source/TR-181/board_sbapi -I$(top_srcdir)/source/TR-181/middle_layer_src
+libCcspMoCA_middle_layer_src_la_CPPFLAGS = -I$(top_srcdir)/source/TR-181/include -I$(top_srcdir)/source/TR-181/middle_layer_src
 
 if CCSP_ARCH_ARM
 AM_CFLAGS += -D_ANSC_LITTLE_ENDIAN_
@@ -33,10 +33,12 @@ libCcspMoCA_middle_layer_src_la_CPPFLAGS += -I$(top_srcdir)/source-arm/TR-181/bo
 endif
 
 if CCSP_ARCH_MIPS
+libCcspMoCA_middle_layer_src_la_CPPFLAGS += -I$(top_srcdir)/source-mips/TR-181/board_include -I$(top_srcdir)/source-mips/TR-181/board_sbapi
 endif
 
 if CCSP_ARCH_PC
 AM_CFLAGS += -D_ANSC_LITTLE_ENDIAN_
+libCcspMoCA_middle_layer_src_la_CPPFLAGS += -I$(top_srcdir)/source-pc/TR-181/board_include -I$(top_srcdir)/source-pc/TR-181/board_sbapi
 endif
 
 libCcspMoCA_middle_layer_src_la_SOURCES = cosa_moca_dml.c cosa_moca_internal.c plugin_main.c 
