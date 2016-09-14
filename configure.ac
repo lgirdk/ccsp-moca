@@ -125,18 +125,10 @@ AC_SUBST(SYSTEMD_CFLAGS)
 AC_SUBST(SYSTEMD_LDFLAGS)
 
 AC_CONFIG_FILES(
-	source-arm/TR-181/board_sbapi/Makefile
-	source-arm/TR-181/Makefile
-	source-arm/Makefile
-	source-pc/TR-181/board_sbapi/Makefile
-	source-pc/TR-181/Makefile
-	source-pc/Makefile
+	source/TR-181/board_sbapi/Makefile
 	source/TR-181/middle_layer_src/Makefile
 	source/TR-181/Makefile
 	source/Makefile
-	source-mips/TR-181/board_sbapi/Makefile
-	source-mips/TR-181/Makefile
-	source-mips/Makefile
 	Makefile
 	source/MoCASsp/Makefile
 )

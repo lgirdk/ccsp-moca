@@ -50,7 +50,7 @@ include $(SDK_PATH)/.config
 LDFLAGS += -lhal_ethsw
 LDFLAGS += -lhal_platform
 LDFLAGS += -lhal_mta
-LDFLAGS += -lcurl -lm
+LDFLAGS += -lcurl -lm -llmapi
 
 ifeq ($(CONFIG_CISCO_HOTSPOT), y)
     CFLAGS += -DCONFIG_CISCO_HOTSPOT
