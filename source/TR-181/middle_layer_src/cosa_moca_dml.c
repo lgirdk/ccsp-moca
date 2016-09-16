@@ -1282,6 +1282,11 @@ Interface1_GetParamStringValue
 
     if( AnscEqualString(ParamName, "MACAddress", TRUE))
     {
+#if defined(_COSA_BCM_MIPS_)
+        // I'm not sure what they are trying to acheive with the conversion in the non-BCM case. The MACAddress
+        // in the data structure is already a char 18, so the conversion is only taking the 1st 6 bytes.
+        AnscCopyString(pValue, pMoCAIfFull->StaticInfo.MacAddress);
+#else
         /* collect value */
         _ansc_sprintf
             (
@@ -1294,6 +1299,7 @@ Interface1_GetParamStringValue
                 pMoCAIfFull->StaticInfo.MacAddress[4],
                 pMoCAIfFull->StaticInfo.MacAddress[5]
             );
+#endif
         *pUlSize = AnscSizeOfString(pValue);
         return 0;
     }
@@ -5651,6 +5657,11 @@ AssociatedDevice_GetParamStringValue
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "MACAddress", TRUE))
     {
+#if defined(_COSA_BCM_MIPS_)
+        // I'm not sure what they are trying to acheive with the conversion in the non-BCM case. The MACAddress
+        // in the data structure is already a char 18, so the conversion is only taking the 1st 6 bytes.
+        AnscCopyString(pValue,pMoCAAssocDevice->MACAddress);
+#else
         /* collect value */
         _ansc_sprintf
             (
@@ -5663,6 +5674,7 @@ AssociatedDevice_GetParamStringValue
                 pMoCAAssocDevice->MACAddress[4],
                 pMoCAAssocDevice->MACAddress[5]
             );
+#endif
         *pUlSize = AnscSizeOfString(pValue);
         return 0;
     }

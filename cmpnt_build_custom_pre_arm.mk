@@ -50,7 +50,9 @@ include $(SDK_PATH)/.config
 LDFLAGS += -lhal_ethsw
 LDFLAGS += -lhal_platform
 LDFLAGS += -lhal_mta
-LDFLAGS += -lcurl -lm -llmapi
+LDFLAGS += -lcurl
+
+LDFLAGS += -lticc -lti_sme -lsme
 
 ifeq ($(CONFIG_CISCO_HOTSPOT), y)
     CFLAGS += -DCONFIG_CISCO_HOTSPOT
@@ -73,7 +75,7 @@ endif
 # UTOPIA
 # UTOPIA_INC_DIR = -I$(CCSP_ROOT_DIR)/Utopia/source/utapi/lib -I$(CCSP_ROOT_DIR)/Utopia/source/utctx/lib
 # CFLAGS += $(UTOPIA_INC_DIR)
-UTOPIA_LDFLAGS = -lutapi -lutctx -lsyscfg -lsysevent -lulog
+UTOPIA_LDFLAGS = -L$(SDK_PATH)/ti/lib -lutapi -lutctx -lsyscfg -lsysevent -lulog
 LDFLAGS += $(UTOPIA_LDFLAGS)
 
 ifeq ($(CONFIG_VENDOR_CUSTOMER_COMCAST), y)
@@ -101,7 +103,6 @@ ifneq (,$(findstring v4.2,$(sdk_version)))
     INCPATH += $(shell  find $(DOCSIS_API_PREFIX)/src  -name 'include' )
 
 	CM_LDFLAGS += -L$(TI_API_PREFIX)/lib
-	#CM_LDFLAGS += -lti_sme
 	CM_LDFLAGS += -lcm_mgnt
 	CM_LDFLAGS += -ldschannellistfreqdb
 	CM_LDFLAGS += -lgetnextfreq
@@ -109,9 +110,11 @@ ifneq (,$(findstring v4.2,$(sdk_version)))
 	CM_LDFLAGS += -lus_db
 	CM_LDFLAGS += -ldocsis_shared_dbs 
 	CM_LDFLAGS += -lutils_docsis 
-	CM_LDFLAGS += -lqos_internal_db
+	CM_LDFLAGS += -lticc -lqos_internal_db
 	CM_LDFLAGS += -lnvramstorage
 	CM_LDFLAGS += -lfccfg
+	CM_LDFLAGS += -lti_sme
+	CM_LDFLAGS += -lsme
 	CM_LDFLAGS += -lchdb_rx 
 	CM_LDFLAGS += -lhal_mxl_hrcls_srv
 	CM_LDFLAGS += -lhal_tuner_api
@@ -146,12 +149,14 @@ ifneq (,$(findstring v4.2,$(sdk_version)))
 	CM_LDFLAGS += -lmask_lib
 	CM_LDFLAGS += -lpompt
 	CM_LDFLAGS += -lcmstatus
-	CM_LDFLAGS += -lm
 	CM_LDFLAGS += -lnvramstorage
 	CM_LDFLAGS += -lutils_docsis
 	CM_LDFLAGS += -ldocsis_shared_dbs
 	CM_LDFLAGS += -lqos_internal_db
 	CM_LDFLAGS += -lfccfg
+	CM_LDFLAGS += -lticc
+	CM_LDFLAGS += -lti_sme
+	CM_LDFLAGS += -lsme
 
     LDFLAGS += $(CM_LDFLAGS)
 
@@ -170,7 +175,11 @@ else
 
     CM_LDFLAGS += -L$(TI_API_PREFIX)/lib
 # MOD for SDK 4.3. Intel libraries changed
+    CM_LDFLAGS += -lall_docsis
     CM_LDFLAGS += -lgetnextfreq
+    CM_LDFLAGS += -lticc # -lqos_internal_db
+    CM_LDFLAGS += -lti_sme
+    CM_LDFLAGS += -lsme
 # MOD END
 
     LDFLAGS += $(CM_LDFLAGS)
