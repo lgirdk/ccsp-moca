@@ -1261,9 +1261,9 @@ CosaDmlMocaIfMeshTableGetTable
         return ANSC_STATUS_FAILURE;
     }
 
-    *pCount = kMoca_MaxMocaNodes;
+    *pCount = ( kMoca_MaxMocaNodes * ( kMoca_MaxMocaNodes - 1 ) );
 
-    *ppConf = (PCOSA_DML_MOCA_MESH)AnscAllocateMemory(sizeof(COSA_DML_MOCA_MESH) * kMoca_MaxMocaNodes);
+    *ppConf = (PCOSA_DML_MOCA_MESH)AnscAllocateMemory(sizeof(COSA_DML_MOCA_MESH) * ( kMoca_MaxMocaNodes * ( kMoca_MaxMocaNodes - 1 ) ) );
     if ( !*ppConf )
     {
         *pCount = 0;
