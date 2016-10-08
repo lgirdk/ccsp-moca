@@ -160,6 +160,7 @@ static void *Moca_sysevent_handler (void *data)
         if (err)
         {
            printf("%s-**********ERR: %d\n", __func__, err);
+		   sleep(10);
         }
 		else 
 		{
