@@ -77,7 +77,7 @@
 
 #include "cosa_moca_internal.h"
 #include <sysevent/sysevent.h>
-
+#include <time.h>
 
 extern void * g_pDslhDmlAgent;
 extern ANSC_HANDLE g_MoCAObject ;
@@ -143,6 +143,7 @@ static void *Moca_sysevent_handler (void *data)
 	async_id_t moca_update;
 	sysevent_setnotification(sysevent_fd, sysevent_token, "moca_updated", &moca_update);
 	PCOSA_DATAMODEL_MOCA            pMyObject     = (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
+	time_t time_now = { 0 }, time_before = { 0 };
 
 	pthread_detach(pthread_self());
 
@@ -159,7 +160,23 @@ static void *Moca_sysevent_handler (void *data)
 
         if (err)
         {
-           printf("%s-**********ERR: %d\n", __func__, err);
+			/* 
+			   * Log should come for every 1hour 
+			   * - time_now = getting current time 
+			   * - difference between time now and previous time is greater than 
+			   *	3600 seconds
+			   * - time_before = getting current time as for next iteration 
+			   *	checking		   
+			   */ 
+			time(&time_now);
+			
+			if(LOGGING_INTERVAL_SECS <= ((unsigned int)difftime(time_now, time_before)))
+			{
+				printf("%s-**********ERR: %d\n", __func__, err);
+				AnscTraceWarning(("%s-**********ERR: %d\n", __func__, err));
+				time(&time_before);
+			}
+
 		   sleep(10);
         }
 		else 

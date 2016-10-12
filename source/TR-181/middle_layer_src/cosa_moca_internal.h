@@ -77,6 +77,9 @@
 #define MOCA_REFRESH_INTERVAL   5
 #define TIME_NO_NEGATIVE(x) ((long)(x) < 0 ? 0 : (x))
 
+/* Restrict the log interval based on custom time */
+#define LOGGING_INTERVAL_SECS    ( 60 * 60 )
+
 struct
 _COSA_DML_MOCA_IF_FULL_TABLE
 {
