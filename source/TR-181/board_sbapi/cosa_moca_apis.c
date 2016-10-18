@@ -463,9 +463,10 @@ CosaDmlMocaIfSetCfg
     )
 {
     char str_value[kMax_StringValue];
-    int status;
+    int status,mode=0;
     int mask;
     int freq;
+	char bridgeMode[64];
 	moca_cfg_t mocaCfg;
 
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
@@ -478,6 +479,9 @@ CosaDmlMocaIfSetCfg
     {
         return ANSC_STATUS_FAILURE;
     }
+	memset(bridgeMode,sizeof(bridgeMode),0);
+	syscfg_get(NULL,"bridge_mode",bridgeMode,sizeof(bridgeMode));
+	mode=atoi(bridgeMode);
     
     if ( ulInterfaceIndex == 0 )
     {
@@ -511,7 +515,17 @@ CosaDmlMocaIfSetCfg
 			/* Translate the data structures */
 			mocaCfg.InstanceNumber 					= pCfg->InstanceNumber;
 			strcpy(mocaCfg.Alias, 					  pCfg->Alias);
-			mocaCfg.bEnabled 						= pCfg->bEnabled;
+			/*RDKB-8493 Disable moca in bridge mode, not allow to enable back*/
+			if(mode==0)
+			{
+				mocaCfg.bEnabled 						= pCfg->bEnabled;
+			}
+			else
+			{
+				pCfg->bEnabled=FALSE;
+				mocaCfg.bEnabled 						= pCfg->bEnabled;
+				AnscTraceWarning(("CosaDmlMocaIfSetCfg -- in Bridege mode cannot enable or disable MoCA\n"));
+			}
 			mocaCfg.bPreferredNC 					= pCfg->bPreferredNC;
 			mocaCfg.PrivacyEnabledSetting 			= pCfg->PrivacyEnabledSetting;
 			memcpy(mocaCfg.FreqCurrentMaskSetting, 	  pCfg->FreqCurrentMaskSetting, 128);
