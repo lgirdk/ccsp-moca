@@ -936,6 +936,9 @@ CosaDmlMocaIfGetDinfo
 		pInfo->MaxIngressBWThresholdReached 					= mocaDInfo.MaxIngressBWThresholdReached;
 		pInfo->MaxEgressBWThresholdReached 						= mocaDInfo.MaxEgressBWThresholdReached;
 		pInfo->X_CISCO_COM_NumberOfConnectedClients 			= mocaDInfo.NumberOfConnectedClients;
+#ifdef MOCA_DIAGONISTIC
+		pInfo->LinkUpTime 										= 0; // hardcode till arris change ready
+#endif
 		memcpy(pInfo->X_CISCO_NetworkCoordinatorMACAddress, 	  mocaDInfo.NetworkCoordinatorMACAddress, 18);
 		pInfo->X_CISCO_COM_BestNetworkCoordinatorID 			= mocaDInfo.NetworkCoordinator;
     }

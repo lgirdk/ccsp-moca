@@ -665,6 +665,16 @@
             <syntax>uint32</syntax>
 
           </parameter>
+
+		  <parameter>
+		  
+            <name>LinkUpTime</name>
+
+            <type>unsignedInt</type>
+
+            <syntax>uint32</syntax>
+
+          </parameter>
 	            
           <parameter>
 

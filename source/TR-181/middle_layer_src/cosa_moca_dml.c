@@ -1190,6 +1190,14 @@ Interface1_GetParamUlongValue
         *puLong = pMoCAIfFull->DynamicInfo.X_CISCO_COM_NumberOfConnectedClients;
         return TRUE;
     }
+#ifdef MOCA_DIAGONISTIC
+	if( AnscEqualString(ParamName, "LinkUpTime", TRUE))
+    {
+        /* collect value */
+        *puLong = pMoCAIfFull->DynamicInfo.LinkUpTime;
+        return TRUE;
+    }
+#endif
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "TxPowerLimit", TRUE))

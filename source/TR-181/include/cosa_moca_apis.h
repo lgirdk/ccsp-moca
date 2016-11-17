@@ -213,6 +213,10 @@ struct _COSA_DML_MOCA_IF_DINFO
     ULONG                           CurrentOperFreq;
     ULONG                           LastOperFreq;
     ULONG                           TxBcastRate;
+#ifdef MOCA_DIAGONISTIC
+    ULONG                           LinkUpTime;
+#endif
+
     /*
      * Extensions
      */
