@@ -75,6 +75,7 @@
 
 #include "cosa_moca_dml.h"
 #include "dml_tr181_custom_cfg.h"
+#include "cosa_moca_network_info.h"
 
 #ifdef CONFIG_SYSTEM_MOCA
 
@@ -217,6 +218,14 @@ MoCA_GetParamBoolValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+
+    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_MoCAHost_Sync", TRUE))
+    {
+    
+        *pBool = FALSE;
+        return TRUE;
+    }
+
     return FALSE;
 }
 
@@ -438,7 +447,12 @@ MoCA_SetParamBoolValue
     PCOSA_DML_MOCA_IF_FULL          pMoCAIfFull = &((PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext)->MoCAIfFull;
 
     /* check the parameter name and set the corresponding value */
-
+    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_MoCAHost_Sync", TRUE))
+    {
+        
+        Send_Update_to_LMLite(TRUE);
+        return TRUE;
+    }
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }

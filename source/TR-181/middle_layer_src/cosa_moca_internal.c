@@ -78,9 +78,12 @@
 #include "cosa_moca_internal.h"
 #include <sysevent/sysevent.h>
 #include <time.h>
-
+#include "cosa_moca_network_info.h"
 extern void * g_pDslhDmlAgent;
 extern ANSC_HANDLE g_MoCAObject ;
+
+
+void* SynchronizeMoCADevices(void *arg);
 
 /**********************************************************************
 
@@ -322,6 +325,8 @@ CosaMoCAInitialize
     ULONG                     ulIndex        = 0;
     ULONG                     ulRole         = 0;
     ULONG                     ulNextInsNum   = 0;
+    pthread_t tid;
+
 /*
     pProc = (COSAGetHandleProc)pPlugInfo->AcquireFunction("COSAGetLPCRole");
 
@@ -365,6 +370,13 @@ CosaMoCAInitialize
 #ifdef MOCA_LINK_HEALTH_LOG
     CosaMoCALogger();
 #endif
+
+    if (pthread_create(&tid, NULL, SynchronizeMoCADevices, NULL))
+    {
+        CcspTraceError(("RDK_LOG_ERROR, CcspMoCA %s : Failed to Start Thread to start SynchronizeMoCADevices  \n", __FUNCTION__ ));
+        return ANSC_STATUS_FAILURE;
+    }
+
     return returnStatus;
 }
 

@@ -27,5 +27,5 @@ hardware_platform = i686-linux-gnu
 noinst_LTLIBRARIES = libCcspMoCA_middle_layer_src.la
 libCcspMoCA_middle_layer_src_la_CPPFLAGS = -I$(top_srcdir)/source/TR-181/include -I$(top_srcdir)/source/TR-181/middle_layer_src
 
-libCcspMoCA_middle_layer_src_la_SOURCES = cosa_moca_dml.c cosa_moca_internal.c plugin_main.c 
+libCcspMoCA_middle_layer_src_la_SOURCES = cosa_moca_dml.c cosa_moca_internal.c cosa_moca_network_info.c plugin_main.c 
 libCcspMoCA_middle_layer_src_la_LDFLAGS = -lccsp_common
