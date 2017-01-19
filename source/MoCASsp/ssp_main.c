@@ -278,7 +278,7 @@ int main(int argc, char* argv[])
     }
     //rdk_logger_init("/fss/gw/lib/debug.ini");
     rdk_logger_init(DEBUG_INI_NAME);
-    system("touch /tmp/moca_initialized");
+    system("touch /tmp/moca_initialized ; sysevent set moca_init completed");
 
     //LM_main();
     if ( bRunAsDaemon )
