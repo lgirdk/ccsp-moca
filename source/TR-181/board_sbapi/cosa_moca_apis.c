@@ -351,7 +351,7 @@ CosaDmlMocaInit
     PCOSA_DATAMODEL_MOCA  pMyObject    = (PCOSA_DATAMODEL_MOCA)phContext;
 
     if (CosaDmlGetMocaHardwareStatus(NULL) != 1 ) { 
-        CcspTraceWarning(("%s -- Moca hardware is not available.\n")); 
+        CcspTraceWarning(("-- Moca hardware is not available.\n")); 
         return ANSC_STATUS_FAILURE; 
     } else {
         is_moca_available = 1;
