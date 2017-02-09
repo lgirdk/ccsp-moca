@@ -204,7 +204,90 @@ void CosaMoCAUpdate()
 	}
 	return;
 }
+#ifdef MOCA_LINK_HEALTH_LOG
+void MoCA_Log()
+{
 
+	PCOSA_DATAMODEL_MOCA            pMyObject           = (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
+	ULONG Interface_count, ulIndex,  ulIndex1, AssocDeviceCount;
+	PCOSA_DML_MOCA_ASSOC_DEVICE             pMoCAAssocDevice = NULL;
+	COSA_DML_MOCA_IF_DINFO DynamicInfo={0};
+
+	Interface_count = CosaDmlMocaGetNumberOfIfs((ANSC_HANDLE)NULL);
+
+	for ( ulIndex = 0; ulIndex < Interface_count; ulIndex++ )
+	{
+		AssocDeviceCount = 0;
+		CosaDmlMocaIfGetAssocDevices
+		(
+		    (ANSC_HANDLE)NULL, 
+		    pMyObject->MoCAIfFullTable[ulIndex].MoCAIfFull.Cfg.InstanceNumber-1, 
+		    &AssocDeviceCount,
+		    &pMoCAAssocDevice,
+		    NULL
+		);
+		CosaDmlMocaIfGetDinfo(NULL, pMyObject->MoCAIfFullTable[ulIndex].MoCAIfFull.Cfg.InstanceNumber-1, &DynamicInfo);          
+		AnscTraceWarning(("----------------------\n"));
+#if defined(_COSA_BCM_MIPS_)            
+                AnscTraceWarning(("MOCA_HEALTH : NCMacAddress %s \n",DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress));
+#else
+                AnscTraceWarning(("MOCA_HEALTH : NCMacAddress %02X:%02X:%02X:%02X:%02X:%02X \n",
+                        DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress[0], DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress[1],
+                        DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress[2], DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress[3],
+                        DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress[4],DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress[5]));
+#endif          
+		AnscTraceWarning(("MOCA_HEALTH : Interface %d , Number of Associated Devices %d \n", ulIndex+1 , AssocDeviceCount));
+		for ( ulIndex1 = 0; ulIndex1 < AssocDeviceCount; ulIndex1++ )
+		{
+			AnscTraceWarning(("MOCA_HEALTH : Device %d \n", ulIndex1 + 1));
+			AnscTraceWarning(("MOCA_HEALTH : PHYTxRate %lu \n", pMoCAAssocDevice[ulIndex1].PHYTxRate));
+			AnscTraceWarning(("MOCA_HEALTH : PHYRxRate %lu \n", pMoCAAssocDevice[ulIndex1].PHYRxRate));
+			AnscTraceWarning(("MOCA_HEALTH : TxPowerControlReduction %lu \n", pMoCAAssocDevice[ulIndex1].TxPowerControlReduction));
+			AnscTraceWarning(("MOCA_HEALTH : RxPowerLevel %d \n", pMoCAAssocDevice[ulIndex1].RxPowerLevel));			
+		}
+		AnscTraceWarning(("----------------------\n"));
+
+		if (pMoCAAssocDevice)
+		{
+			AnscFreeMemory(pMoCAAssocDevice);
+			pMoCAAssocDevice= NULL;
+		}   
+		
+	}
+}
+void * Logger_Thread(void *data)
+{
+
+	COSA_DML_MOCA_LOG_STATUS Log_Status={3600,FALSE};
+	pthread_detach(pthread_self());
+	sleep(60);
+	while(1)
+	{
+		CosaDmlMocaGetLogStatus(&Log_Status);
+
+		if(Log_Status.Log_Enable)
+			MoCA_Log();
+
+		sleep(Log_Status.Log_Period);
+	}
+}
+void CosaMoCALogger()
+{
+	pthread_t logger_tid;
+	int res;
+	res = pthread_create(&logger_tid, NULL, Logger_Thread, NULL);
+
+	if(res != 0) 
+	{
+		AnscTraceWarning(("Create Logger_Thread error %d\n", res));
+	}
+	else
+	{
+		AnscTraceWarning(("Logger Thread Created\n"));
+	}
+
+}
+#endif
 /**********************************************************************
 
     caller:     self
@@ -286,6 +369,9 @@ CosaMoCAInitialize
         pMyObject->MoCAIfFullTable[ulIndex].MoCAIfFull.Cfg.InstanceNumber = ulNextInsNum++;    
     }
     CosaMoCAUpdate();
+#ifdef MOCA_LINK_HEALTH_LOG
+    CosaMoCALogger();
+#endif
     return returnStatus;
 }
 

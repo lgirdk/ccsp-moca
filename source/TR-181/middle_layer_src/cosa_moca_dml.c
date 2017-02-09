@@ -5699,5 +5699,390 @@ AssociatedDevice_GetParamStringValue
 
     return -1;
 }
+/***********************************************************************
 
+ APIs for Object:
+
+    DeviceInfo.X_RDKCENTRAL_COM_xOpsDeviceMgmt.Logging.
+
+    *  Logging_GetParamBoolValue
+    *  Logging_GetParamUlongValue
+    *  Logging_SetParamBoolValue
+    *  Logging_SetParamUlongValue
+    *  Logging_Validate
+    *  Logging_Commit
+    *  Logging_Rollback
+
+***********************************************************************/
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Logging_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+Logging_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    /* check the parameter name and return the corresponding value */
+    char buf[8]={0};
+    
+	
+    if( AnscEqualString(ParamName, "xOpsDMMoCALogEnabled", TRUE))
+    {
+#ifdef MOCA_LINK_HEALTH_LOG      
+	if(syscfg_get( NULL, "moca_log_enabled", buf, sizeof(buf)) == 0)
+	{
+		if( buf != NULL )
+		{
+			*pBool =  (strcmp(buf,"true") ? FALSE : TRUE);
+		}
+	}
+#else
+		*pBool = FALSE;
+#endif	      
+       	return TRUE;
+    }
+
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
+  
+ /**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+       	Logging_GetParamUlongValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                ULONG*                      puLong
+            );
+
+    description:
+
+        This function is called to retrieve ULONG parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                ULONG*                      puLong
+                The buffer of returned ULONG value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Logging_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    )
+{    
+    /* check the parameter name and return the corresponding value */
+    char buf[16]={0};
+
+	
+    if( AnscEqualString(ParamName, "xOpsDMMoCALogPeriod", TRUE))
+    {
+#ifdef MOCA_LINK_HEALTH_LOG         
+	if(syscfg_get( NULL, "moca_log_period", buf, sizeof(buf)) == 0)
+	{
+		if( buf != NULL )
+		{
+			*puLong =  atoi(buf);
+		}
+	}
+#else
+		*puLong = 0;
+#endif	      
+	return TRUE;
+    }
+
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
+
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Logging_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+
+BOOL
+Logging_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    /* check the parameter name and return the corresponding value */
+    char buf[8]={0};
+
+	
+    if( AnscEqualString(ParamName, "xOpsDMMoCALogEnabled", TRUE))
+    {
+#ifdef MOCA_LINK_HEALTH_LOG       
+	if(bValue)
+		strcpy(buf,"true");
+	else
+		strcpy(buf,"false");
+		
+	if (syscfg_set(NULL, "moca_log_enabled", buf) != 0) 
+	{
+		AnscTraceWarning(("syscfg_set failed\n"));
+	} 
+	else 
+	{
+		if (syscfg_commit() != 0) 
+		{
+			AnscTraceWarning(("syscfg_commit failed\n"));
+		}
+	}
+#endif
+        return TRUE;
+    }
+
+
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
+
+
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Logging_SetParamUlongValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                ULONG                       uValue
+            );
+
+    description:
+
+        This function is called to set ULONG parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                ULONG                       uValue
+                The updated ULONG value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Logging_SetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG                       uValue
+    )
+{    
+    /* check the parameter name and return the corresponding value */    
+    char buf[16]={0};
+
+	
+    if( AnscEqualString(ParamName, "xOpsDMMoCALogPeriod", TRUE))
+    {
+#ifdef MOCA_LINK_HEALTH_LOG         
+        /* collect value */
+
+	sprintf(buf,"%d",uValue);
+		
+	if (syscfg_set(NULL, "moca_log_period", buf) != 0) 
+	{
+		AnscTraceWarning(("syscfg_set failed\n"));
+	} 
+	else 
+	{
+		if (syscfg_commit() != 0) 
+		{
+			AnscTraceWarning(("syscfg_commit failed\n"));
+		}
+	}
+#endif
+        return TRUE;
+    }
+
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Logging_Validate
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       pReturnParamName,
+                ULONG*                      puLength
+            );
+
+    description:
+
+        This function is called to finally commit all the update.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       pReturnParamName,
+                The buffer (128 bytes) of parameter name if there's a validation. 
+
+                ULONG*                      puLength
+                The output length of the param name. 
+
+    return:     TRUE if there's no validation.
+
+**********************************************************************/
+BOOL
+Logging_Validate
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       pReturnParamName,
+        ULONG*                      puLength
+    )
+{
+   return TRUE;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        ULONG
+        Logging_Commit
+            (
+                ANSC_HANDLE                 hInsContext
+            );
+
+    description:
+
+        This function is called to finally commit all the update.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+    return:     The status of the operation.
+
+**********************************************************************/
+ULONG
+Logging_Commit
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    return 0;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        ULONG
+        Logging_Rollback
+            (
+                ANSC_HANDLE                 hInsContext
+            );
+
+    description:
+
+        This function is called to roll back the update whenever there's a 
+        validation found.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+    return:     The status of the operation.
+
+**********************************************************************/
+ULONG
+Logging_Rollback
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+	return 0;
+}
 #endif

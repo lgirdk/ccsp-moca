@@ -25,6 +25,71 @@
   <library />
   <objects>
       <object>
+      <name>DeviceInfo</name>
+      <objectType>object</objectType>
+
+      <objects>
+
+        <object>
+
+          <name>X_RDKCENTRAL-COM_xOpsDeviceMgmt</name>
+
+          <objectType>object</objectType>
+
+      <objects>
+
+        <object>
+
+          <name>Logging</name>
+
+          <objectType>object</objectType>
+
+          <functions>
+
+           
+
+            <func_GetParamBoolValue>Logging_GetParamBoolValue</func_GetParamBoolValue>
+
+            <func_GetParamUlongValue>Logging_GetParamUlongValue</func_GetParamUlongValue> 
+
+            <func_SetParamBoolValue>Logging_SetParamBoolValue</func_SetParamBoolValue>
+
+            <func_SetParamUlongValue>Logging_SetParamUlongValue</func_SetParamUlongValue>
+        
+            <func_Validate>Logging_Validate</func_Validate>
+
+            <func_Commit>Logging_Commit</func_Commit>
+
+            <func_Rollback>Logging_Rollback</func_Rollback>
+
+          </functions>
+
+          <parameters>
+
+          <parameter>
+
+            <name>xOpsDMMoCALogEnabled</name>
+
+            <type>boolean</type>
+
+            <syntax>bool</syntax>
+
+            <writable>true</writable>
+
+          </parameter>
+	  <parameter>
+		<name>xOpsDMMoCALogPeriod</name>
+		<type>unsignedInt</type>
+		<syntax>uint32</syntax>
+                <writable>true</writable>
+          </parameter>
+          </parameters>
+	  </object>
+	  </objects>
+	</object>
+	</objects>
+    </object>
+      <object>
 
       <name>MoCA</name>
 

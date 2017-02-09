@@ -897,4 +897,81 @@ AssociatedDevice_GetParamStringValue
         ULONG*                      pUlSize
     );
 
+/***********************************************************************
+
+ APIs for Object:
+
+    DeviceInfo.X_RDKCENTRAL-COM_xOpsDeviceMgmt.Logging.
+
+
+    *  Logging_GetParamBoolValue
+    *  Logging_GetParamUlongValue
+    *  Logging_SetParamBoolValue
+    *  Logging_SetParamUlongValue
+    *  Logging_Validate
+    *  Logging_Commit
+    *  Logging_Rollback
+
+***********************************************************************/
+BOOL
+Logging_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+
+BOOL
+Logging_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      pUlong
+    );
+
+ULONG
+Logging_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    );
+
+BOOL
+Logging_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+
+BOOL
+Logging_SetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG                       uValuepUlong
+    );
+
+BOOL
+Logging_Validate
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       pReturnParamName,
+        ULONG*                      puLength
+    );
+
+ULONG
+Logging_Commit
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+ULONG
+Logging_Rollback
+    (
+        ANSC_HANDLE                 hInsContext
+    );
 #endif

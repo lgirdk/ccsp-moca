@@ -1504,7 +1504,37 @@ CosaDmlMocaGetResetCount
 	moca_GetResetCount(pValue);	
     return ANSC_STATUS_SUCCESS;
 }
+#ifdef MOCA_LINK_HEALTH_LOG
+ANSC_STATUS
+CosaDmlMocaGetLogStatus
+	(
+		PCOSA_DML_MOCA_LOG_STATUS  pMyObject
+	)
+{
+	char buf[16]={0};
+	
+	pMyObject->Log_Enable = FALSE;
+	pMyObject->Log_Period = 3600;
+	
+	if(syscfg_get( NULL, "moca_log_enabled", buf, sizeof(buf)) == 0)
+	{
+		if( buf != NULL )
+		{
+		    pMyObject->Log_Enable =  (strcmp(buf,"true") ? FALSE : TRUE);
+		}
+	}
+	memset(buf,0,sizeof(buf));
+	
+	if(syscfg_get( NULL, "moca_log_period", buf, sizeof(buf)) == 0)
+	{
+		if( buf != NULL )
+		{
+		    pMyObject->Log_Period =  atoi(buf);
+		}
+	}
 
+}
+#endif
 #elif (_COSA_DRG_TPG_)
 
 #include <utctx.h>

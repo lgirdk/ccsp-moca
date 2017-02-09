@@ -182,6 +182,14 @@ COSA_Init
     pPlugInfo->RegisterFunction(pPlugInfo->hContext, "AssociatedDevice_GetParamUlongValue",  AssociatedDevice_GetParamUlongValue);
     pPlugInfo->RegisterFunction(pPlugInfo->hContext, "AssociatedDevice_GetParamStringValue",  AssociatedDevice_GetParamStringValue);
 
+     pPlugInfo->RegisterFunction(pPlugInfo->hContext, "Logging_GetParamBoolValue",  Logging_GetParamBoolValue);
+     pPlugInfo->RegisterFunction(pPlugInfo->hContext, "Logging_GetParamUlongValue",  Logging_GetParamUlongValue);
+     pPlugInfo->RegisterFunction(pPlugInfo->hContext, "Logging_SetParamBoolValue",  Logging_SetParamBoolValue);
+     pPlugInfo->RegisterFunction(pPlugInfo->hContext, "Logging_SetParamUlongValue",  Logging_SetParamUlongValue);
+     pPlugInfo->RegisterFunction(pPlugInfo->hContext, "Logging_Validate",  Logging_Validate);
+     pPlugInfo->RegisterFunction(pPlugInfo->hContext, "Logging_Commit",  Logging_Commit);
+     pPlugInfo->RegisterFunction(pPlugInfo->hContext, "Logging_Rollback",  Logging_Rollback);
+
 	g_MoCAObject          = (ANSC_HANDLE)CosaMoCACreate();
 
     return  0;
