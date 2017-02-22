@@ -355,7 +355,7 @@ struct _COSA_DML_MOCA_ASSOC_DEVICE
     ULONG                           PHYTxRate;
     ULONG                           PHYRxRate;
     ULONG                           TxPowerControlReduction;
-    ULONG                           RxPowerLevel;
+    INT                             RxPowerLevel;
     ULONG                           TxBcastRate;
     ULONG                           RxBcastPowerLevel;
     ULONG                           TxPackets;

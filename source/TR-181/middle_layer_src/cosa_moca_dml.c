@@ -5467,6 +5467,15 @@ AssociatedDevice_GetParamIntValue
 {
     /* check the parameter name and return the corresponding value */
 
+    PCOSA_DML_MOCA_ASSOC_DEVICE     pMoCAAssocDevice    = (PCOSA_DML_MOCA_ASSOC_DEVICE)hInsContext;
+
+    if( AnscEqualString(ParamName, "RxPowerLevel", TRUE))
+    {
+        /* collect value */
+        *pInt = pMoCAAssocDevice->RxPowerLevel;
+        return TRUE;
+    }
+
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -5537,13 +5546,6 @@ AssociatedDevice_GetParamUlongValue
     {
         /* collect value */
         *puLong = pMoCAAssocDevice->TxPowerControlReduction;
-        return TRUE;
-    }
-
-    if( AnscEqualString(ParamName, "RxPowerLevel", TRUE))
-    {
-        /* collect value */
-        *puLong = pMoCAAssocDevice->RxPowerLevel;
         return TRUE;
     }
 
