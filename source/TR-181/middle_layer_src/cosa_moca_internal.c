@@ -228,14 +228,7 @@ void MoCA_Log()
 		);
 		CosaDmlMocaIfGetDinfo(NULL, pMyObject->MoCAIfFullTable[ulIndex].MoCAIfFull.Cfg.InstanceNumber-1, &DynamicInfo);          
 		AnscTraceWarning(("----------------------\n"));
-#if defined(_COSA_BCM_MIPS_)            
                 AnscTraceWarning(("MOCA_HEALTH : NCMacAddress %s \n",DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress));
-#else
-                AnscTraceWarning(("MOCA_HEALTH : NCMacAddress %02X:%02X:%02X:%02X:%02X:%02X \n",
-                        DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress[0], DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress[1],
-                        DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress[2], DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress[3],
-                        DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress[4],DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress[5]));
-#endif          
 		AnscTraceWarning(("MOCA_HEALTH : Interface %d , Number of Associated Devices %d \n", ulIndex+1 , AssocDeviceCount));
 		for ( ulIndex1 = 0; ulIndex1 < AssocDeviceCount; ulIndex1++ )
 		{
