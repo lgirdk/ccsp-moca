@@ -1419,22 +1419,7 @@ Interface1_GetParamStringValue
     if( AnscEqualString(ParamName, "X_CISCO_NetworkCoordinatorMACAddress", TRUE))
     {
         /* collect value */
-#if defined(_COSA_BCM_MIPS_)
         AnscCopyString(pValue, (PCHAR)pMoCAIfFull->DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress);
-#else
-        /* collect value */
-        _ansc_sprintf
-            (
-                pValue,
-                "%02X:%02X:%02X:%02X:%02X:%02X",
-                pMoCAIfFull->DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress[0],
-                pMoCAIfFull->DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress[1],
-                pMoCAIfFull->DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress[2],
-                pMoCAIfFull->DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress[3],
-                pMoCAIfFull->DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress[4],
-                pMoCAIfFull->DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress[5]
-            );
-#endif
         *pUlSize = AnscSizeOfString(pValue);
         return 0;
     }
