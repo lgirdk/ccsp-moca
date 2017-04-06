@@ -860,6 +860,11 @@ Interface1_GetParamBoolValue
     PCOSA_DATAMODEL_MOCA            pMyObject   = (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
 
     AnscTraceWarning(("ParamName: %s\n", ParamName));
+#if defined (_XB6_PRODUCT_REQ_)
+    //ARRISXB6-3829: RDKB DB Not Syncing if set through SNMP
+    CosaDmlMocaIfGetCfg(NULL, pMoCAIfFull->Cfg.InstanceNumber-1, &pMoCAIfFull->Cfg);
+#endif
+
     CosaDmlMocaIfGetDinfo(NULL, pMoCAIfFull->Cfg.InstanceNumber-1, &pMoCAIfFull->DynamicInfo);
 
     /* check the parameter name and return the corresponding value */
@@ -1058,6 +1063,11 @@ Interface1_GetParamUlongValue
     PCOSA_DATAMODEL_MOCA            pMyObject   = (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
 
     AnscTraceWarning(("ParamName: %s\n", ParamName));
+#if defined (_XB6_PRODUCT_REQ_)
+    //ARRISXB6-3829: RDKB DB Not Syncing if set through SNMP
+    CosaDmlMocaIfGetCfg(NULL, pMoCAIfFull->Cfg.InstanceNumber-1, &pMoCAIfFull->Cfg);
+#endif
+
     CosaDmlMocaIfGetDinfo(NULL, pMoCAIfFull->Cfg.InstanceNumber-1, &pMoCAIfFull->DynamicInfo);
 
     /* check the parameter name and return the corresponding value */
@@ -1262,6 +1272,11 @@ Interface1_GetParamStringValue
     PCOSA_DATAMODEL_MOCA            pMyObject   = (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
     
     AnscTraceWarning(("ParamName: %s\n", ParamName));
+#if defined (_XB6_PRODUCT_REQ_)
+    //ARRISXB6-3829: RDKB DB Not Syncing if set through SNMP
+    CosaDmlMocaIfGetCfg(NULL, pMoCAIfFull->Cfg.InstanceNumber-1, &pMoCAIfFull->Cfg);
+#endif
+
     CosaDmlMocaIfGetDinfo(NULL, pMoCAIfFull->Cfg.InstanceNumber-1, &pMoCAIfFull->DynamicInfo);
 
     /* check the parameter name and return the corresponding value */
