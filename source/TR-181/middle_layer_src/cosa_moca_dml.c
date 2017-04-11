@@ -1473,33 +1473,6 @@ Interface1_SetParamBoolValue
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
-		/*
-		  * As per xi5 requirement, When xi5 device connected case we don't 
-		  * allow to disable MoCA interface
-		  */
-		if ( ( bValue != pMoCAIfFull->Cfg.bEnabled ) && \
-			 ( FALSE == bValue ) 
-		   )
-		{
-			char buf[ 8 ]		   = { 0 };
-			BOOL bEnableMoCAforXi5 = FALSE;
-			
-			/*	Get X_RDKCENTRAL-COM_EnableMoCAforXi5 value from syscfg database */
-			if( 0 == syscfg_get( NULL, "X_RDKCENTRAL-COM_EnableMoCAforXi5", buf, sizeof( buf ) ) )
-			{
-				if( 0 == strcmp( buf, "true" ) )
-				{
-					FILE *fp = NULL;
-
-					if( ( fp = fopen( "/tmp/MoCAforXi5DeviceConnected", "r" ) ) != NULL )
-					{
-						fclose(fp);
-						return TRUE;
-					}
-				}
-			}
-		}
-
         /* save update to backup */
         pMoCAIfFull->Cfg.bEnabled = bValue;
         return TRUE;
