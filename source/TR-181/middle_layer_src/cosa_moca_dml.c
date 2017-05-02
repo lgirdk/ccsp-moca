@@ -1305,7 +1305,7 @@ Interface1_GetParamStringValue
 
     if( AnscEqualString(ParamName, "MACAddress", TRUE))
     {
-#if defined(_COSA_BCM_MIPS_)
+#if defined(_COSA_BCM_MIPS_) || defined(_COSA_BCM_ARM_)
         // I'm not sure what they are trying to acheive with the conversion in the non-BCM case. The MACAddress
         // in the data structure is already a char 18, so the conversion is only taking the 1st 6 bytes.
         AnscCopyString(pValue, pMoCAIfFull->StaticInfo.MacAddress);
