@@ -160,17 +160,22 @@ COSA_Init
     pPlugInfo->RegisterFunction(pPlugInfo->hContext, "X_CISCO_COM_PeerTable_GetParamUlongValue",  X_CISCO_COM_PeerTable_GetParamUlongValue);
     pPlugInfo->RegisterFunction(pPlugInfo->hContext, "X_CISCO_COM_PeerTable_GetParamStringValue",  X_CISCO_COM_PeerTable_GetParamStringValue);
 
+    pPlugInfo->RegisterFunction(pPlugInfo->hContext, "MeshTable_GetEntryCount",  MeshTable_GetEntryCount);
+    pPlugInfo->RegisterFunction(pPlugInfo->hContext, "MeshTable_GetEntry",  MeshTable_GetEntry);
+    pPlugInfo->RegisterFunction(pPlugInfo->hContext, "MeshTable_IsUpdated",  MeshTable_IsUpdated);
+    pPlugInfo->RegisterFunction(pPlugInfo->hContext, "MeshTable_Synchronize",  MeshTable_Synchronize);
+    pPlugInfo->RegisterFunction(pPlugInfo->hContext, "MeshTable_GetParamUlongValue",  MeshTable_GetParamUlongValue);
 
-    pPlugInfo->RegisterFunction(pPlugInfo->hContext, "MeshTxNodeTable_GetEntryCount",  MeshTxNodeTable_GetEntryCount);
-    pPlugInfo->RegisterFunction(pPlugInfo->hContext, "MeshTxNodeTable_GetEntry",  MeshTxNodeTable_GetEntry);
-    pPlugInfo->RegisterFunction(pPlugInfo->hContext, "MeshTxNodeTable_IsUpdated",  MeshTxNodeTable_IsUpdated);
-    pPlugInfo->RegisterFunction(pPlugInfo->hContext, "MeshTxNodeTable_Synchronize",  MeshTxNodeTable_Synchronize);
-    pPlugInfo->RegisterFunction(pPlugInfo->hContext, "MeshTxNodeTable_GetParamUlongValue",  MeshTxNodeTable_GetParamUlongValue);
+    //pPlugInfo->RegisterFunction(pPlugInfo->hContext, "MeshTxNodeTable_GetEntryCount",  MeshTxNodeTable_GetEntryCount);
+    //pPlugInfo->RegisterFunction(pPlugInfo->hContext, "MeshTxNodeTable_GetEntry",  MeshTxNodeTable_GetEntry);
+    //pPlugInfo->RegisterFunction(pPlugInfo->hContext, "MeshTxNodeTable_IsUpdated",  MeshTxNodeTable_IsUpdated);
+    //pPlugInfo->RegisterFunction(pPlugInfo->hContext, "MeshTxNodeTable_Synchronize",  MeshTxNodeTable_Synchronize);
+    //pPlugInfo->RegisterFunction(pPlugInfo->hContext, "MeshTxNodeTable_GetParamUlongValue",  MeshTxNodeTable_GetParamUlongValue);
 
 
-    pPlugInfo->RegisterFunction(pPlugInfo->hContext, "MeshRxNodeTable_GetEntryCount",  MeshRxNodeTable_GetEntryCount);
-    pPlugInfo->RegisterFunction(pPlugInfo->hContext, "MeshRxNodeTable_GetEntry",  MeshRxNodeTable_GetEntry);
-    pPlugInfo->RegisterFunction(pPlugInfo->hContext, "MeshRxNodeTable_GetParamUlongValue",  MeshRxNodeTable_GetParamUlongValue);
+    //pPlugInfo->RegisterFunction(pPlugInfo->hContext, "MeshRxNodeTable_GetEntryCount",  MeshRxNodeTable_GetEntryCount);
+    //pPlugInfo->RegisterFunction(pPlugInfo->hContext, "MeshRxNodeTable_GetEntry",  MeshRxNodeTable_GetEntry);
+    //pPlugInfo->RegisterFunction(pPlugInfo->hContext, "MeshRxNodeTable_GetParamUlongValue",  MeshRxNodeTable_GetParamUlongValue);
 
 
     pPlugInfo->RegisterFunction(pPlugInfo->hContext, "AssociatedDevice_GetEntryCount",  AssociatedDevice_GetEntryCount);

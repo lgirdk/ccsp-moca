@@ -2320,6 +2320,7 @@ X_CISCO_COM_PeerTable_GetParamStringValue
     return -1;
 }
 
+#if 0
 static ANSC_STATUS
 _MeshTxNodeTable_Release
     (
@@ -2933,6 +2934,272 @@ MeshRxNodeTable_GetParamUlongValue
     }
     
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
+#endif
+
+/***********************************************************************
+
+ APIs for Object:
+
+    MoCA.Interface.{i}.X_RDKCENTRAL-COM_MeshTable.{i}.
+
+    *  MeshTable_GetEntryCount
+    *  MeshTable_GetEntry
+    *  MeshTable_IsUpdated
+    *  MeshTable_Synchronize
+    *  MeshTable_GetParamUlongValue
+
+***********************************************************************/
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        ULONG
+        MeshTable_GetEntryCount
+            (
+                ANSC_HANDLE                 hInsContext
+            );
+
+    description:
+
+        This function is called to retrieve the count of the table.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+    return:     The count of the table
+
+**********************************************************************/
+ULONG
+MeshTable_GetEntryCount
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    PCOSA_DML_MOCA_IF_FULL_TABLE    pMoCAIfFullTable    = (PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext;
+    return pMoCAIfFullTable->ulMoCAMeshTableCount;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        ANSC_HANDLE
+        MeshTable_GetEntry
+            (
+                ANSC_HANDLE                 hInsContext,
+                ULONG                       nIndex,
+                ULONG*                      pInsNumber
+            );
+
+    description:
+
+        This function is called to retrieve the entry specified by the index.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                ULONG                       nIndex,
+                The index of this entry;
+
+                ULONG*                      pInsNumber
+                The output instance number;
+
+    return:     The handle to identify the entry
+
+**********************************************************************/
+ANSC_HANDLE
+MeshTable_GetEntry
+    (
+        ANSC_HANDLE                 hInsContext,
+        ULONG                       nIndex,
+        ULONG*                      pInsNumber
+    )
+{
+    PCOSA_DML_MOCA_IF_FULL_TABLE    pMoCAIfFullTable    = (PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext;
+
+    if (nIndex < pMoCAIfFullTable->ulMoCAMeshTableCount)
+    {
+        *pInsNumber  = nIndex + 1;
+
+        return &pMoCAIfFullTable->pMoCAMeshTable[nIndex];
+    }
+
+    return NULL;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        MeshTable_IsUpdated
+            (
+                ANSC_HANDLE                 hInsContext
+            );
+
+    description:
+
+        This function is checking whether the table is updated or not.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+    return:     TRUE or FALSE.
+
+**********************************************************************/
+BOOL
+MeshTable_IsUpdated
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    static ULONG last_tick = 0;
+
+    if ( !last_tick )
+    {
+        last_tick = AnscGetTickInSeconds();
+
+        return TRUE;
+    }
+
+    if ( last_tick >= TIME_NO_NEGATIVE(AnscGetTickInSeconds() - MOCA_REFRESH_INTERVAL) )
+    {
+        return FALSE;
+    }
+    else
+    {
+        last_tick = AnscGetTickInSeconds();
+
+        return TRUE;
+    }
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        ULONG
+        MeshTable_Synchronize
+            (
+                ANSC_HANDLE                 hInsContext
+            );
+
+    description:
+
+        This function is called to synchronize the table.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+    return:     The status of the operation.
+
+**********************************************************************/
+ULONG
+MeshTable_Synchronize
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    PCOSA_DML_MOCA_IF_FULL_TABLE    pMoCAIfFullTable     = (PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext;
+    PCOSA_DML_MOCA_IF_FULL          pIf                  = (PCOSA_DML_MOCA_IF_FULL)hInsContext;
+    ULONG                           InterfaceIndex       = pIf->Cfg.InstanceNumber - 1;
+    ANSC_STATUS                     ret                  = ANSC_STATUS_SUCCESS;
+
+    if ( pMoCAIfFullTable->pMoCAMeshTable)
+    {
+        AnscFreeMemory(pMoCAIfFullTable->pMoCAMeshTable);
+
+        pMoCAIfFullTable->pMoCAMeshTable= NULL;
+    }
+
+    //fetch data
+    ret = CosaDmlMocaIfMeshTableGetTable
+	  (
+		(ANSC_HANDLE)NULL,
+		InterfaceIndex,
+		&pMoCAIfFullTable->pMoCAMeshTable,
+		&pMoCAIfFullTable->ulMoCAMeshTableCount
+	  );
+
+    return ret;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        MeshTable_GetParamUlongValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                ULONG*                      puLong
+            );
+
+    description:
+
+        This function is called to retrieve ULONG parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                ULONG*                      puLong
+                The buffer of returned ULONG value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+MeshTable_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    )
+{
+    PCOSA_DML_MOCA_MESH pMoCAMesh = (PCOSA_DML_MOCA_MESH)hInsContext;
+
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "MeshTxNodeId", TRUE))
+    {
+        /* collect value */
+        *puLong = pMoCAMesh->TxNodeID;
+
+        return TRUE;
+    }
+
+    if( AnscEqualString(ParamName, "MeshRxNodeId", TRUE))
+    {
+        /* collect value */
+        *puLong = pMoCAMesh->RxNodeID;
+
+        return TRUE;
+    }
+
+    if( AnscEqualString(ParamName, "MeshPHYTxRate", TRUE))
+    {
+        /* collect value */
+        *puLong = pMoCAMesh->TxRate;
+
+        return TRUE;
+    }
+
+   /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
 

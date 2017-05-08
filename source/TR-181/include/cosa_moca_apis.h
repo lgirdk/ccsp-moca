@@ -302,7 +302,7 @@ struct _COSA_DML_MOCA_PEER
 
 typedef struct _COSA_DML_MOCA_PEER COSA_DML_MOCA_PEER,  *PCOSA_DML_MOCA_PEER;
 
-
+#if 0
 //Device.MoCA.Interface.{i}.X_RDKCENTRAL-COM_MeshTable.MeshTxNodeTable.{i}.MeshRxNodeTable.{i}.XXX
 struct _COSA_DML_MOCA_MeshRxNode
 {
@@ -319,6 +319,7 @@ struct _COSA_DML_MOCA_MeshTxNode
 }_struct_pack_;
 
 typedef struct _COSA_DML_MOCA_MeshTxNode COSA_DML_MOCA_MeshTxNode,  *PCOSA_DML_MOCA_MeshTxNode;
+#endif
 
 struct _COSA_DML_MOCA_MESH
 {

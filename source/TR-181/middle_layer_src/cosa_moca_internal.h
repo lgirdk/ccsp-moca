@@ -94,7 +94,9 @@ _COSA_DML_MOCA_IF_FULL_TABLE
     PCOSA_DML_MOCA_PEER                     pMoCAPeerTable;
     ULONG                                   ulMoCAPeerTableCount;
     
-    SLIST_HEADER                            MoCAMeshTxNodeTable;
+    //SLIST_HEADER                            MoCAMeshTxNodeTable;
+    PCOSA_DML_MOCA_MESH                     pMoCAMeshTable;
+    ULONG				    ulMoCAMeshTableCount;
 
     PCOSA_DML_MOCA_FLOW                     pMoCAFlowTable;
     ULONG                                   ulMoCAFlowTableCount;

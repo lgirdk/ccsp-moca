@@ -1425,43 +1425,27 @@
 
               <name>X_RDKCENTRAL-COM_MeshTable</name>
 
-              <objectType>object</objectType>
+              <objectType>dynamicTable</objectType>
+
+	      <maxInstance>256</maxInstance>
 
               <functions>
+
+		<func_GetEntryCount>MeshTable_GetEntryCount</func_GetEntryCount>
+
+                <func_GetEntry>MeshTable_GetEntry</func_GetEntry>
+
+                <func_IsUpdated>MeshTable_IsUpdated</func_IsUpdated>
+
+                <func_Synchronize>MeshTable_Synchronize</func_Synchronize>
+
+                <func_GetParamUlongValue>MeshTable_GetParamUlongValue</func_GetParamUlongValue>
 
               </functions>
 
               <parameters>
 
-              </parameters>
-
-              <objects>
-
-                <object>
-
-                  <name>MeshTxNodeTable</name>
-
-                  <objectType>dynamicTable</objectType>
-
-                  <maxInstance>16</maxInstance>
-
-                  <functions>
-
-                    <func_GetEntryCount>MeshTxNodeTable_GetEntryCount</func_GetEntryCount>
-
-                    <func_GetEntry>MeshTxNodeTable_GetEntry</func_GetEntry>
-
-                    <func_IsUpdated>MeshTxNodeTable_IsUpdated</func_IsUpdated>
-
-                    <func_Synchronize>MeshTxNodeTable_Synchronize</func_Synchronize>
-
-                    <func_GetParamUlongValue>MeshTxNodeTable_GetParamUlongValue</func_GetParamUlongValue>
-
-                  </functions>
-
-              <parameters>
-
-                <parameter>
+		<parameter>
 
                   <name>MeshTxNodeId</name>
 
@@ -1469,31 +1453,7 @@
 
                   <syntax>uint32</syntax>
 
-                </parameter>
-
-                  </parameters>
-
-                  <objects>
-
-                    <object>
-
-                      <name>MeshRxNodeTable</name>
-
-                      <objectType>staticTable</objectType>
-
-                      <maxInstance>16</maxInstance>
-
-                      <functions>
-
-                        <func_GetEntryCount>MeshRxNodeTable_GetEntryCount</func_GetEntryCount>
-
-                        <func_GetEntry>MeshRxNodeTable_GetEntry</func_GetEntry>
-
-                        <func_GetParamUlongValue>MeshRxNodeTable_GetParamUlongValue</func_GetParamUlongValue>
-
-                      </functions>
-
-                      <parameters>
+		</parameter>
 
                 <parameter>
 
@@ -1504,6 +1464,7 @@
                   <syntax>uint32</syntax>
 
                 </parameter>
+
                 <parameter>
 
                   <name>MeshPHYTxRate</name>
@@ -1517,15 +1478,6 @@
               </parameters>
 
             </object>
-
-                  </objects>
-
-                </object>
-
-              </objects> 
-            
-                </object>
-
 
             <object>
 

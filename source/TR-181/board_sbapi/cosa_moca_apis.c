@@ -1265,6 +1265,7 @@ CosaDmlMocaIfPeerTableGetTable
     This function is used to get total Mesh tables.
     The returned memory should be allocated by AnscAllocateMemory. Or else there is leaking.
 */
+#if 0
 ANSC_STATUS
 CosaDmlMocaIfMeshTableGetTable
     (
@@ -1300,6 +1301,75 @@ CosaDmlMocaIfMeshTableGetTable
         AnscTraceError(("%s: fail to get MoCA associated device\n", __FUNCTION__));
         return ANSC_STATUS_FAILURE;
     }
+
+    return ANSC_STATUS_SUCCESS;
+}
+#endif
+
+ANSC_STATUS
+CosaDmlMocaIfMeshTableGetTable
+    (
+        ANSC_HANDLE                      hContext,
+        ULONG                            ulInterfaceIndex,
+        PCOSA_DML_MOCA_MESH             *ppMeshTable,
+        PULONG                           pCount
+    )
+{
+    JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
+
+    AnscTraceWarning(("CosaDmlMocaIfMeshTableGetTable -- ulInterfaceIndex:%lu, ppMeshTable:%x\n", ulInterfaceIndex, (UINT)ppMeshTable));
+
+    if ( !pCount || !ppMeshTable || ulInterfaceIndex != 0)
+    {
+        return ANSC_STATUS_FAILURE;
+    }
+
+    moca_mesh_table_t *pmesh_table = (moca_mesh_table_t *)AnscAllocateMemory
+				(sizeof(moca_mesh_table_t) * (kMoca_MaxMocaNodes * ( kMoca_MaxMocaNodes - 1 )));
+
+    *pCount = kMoca_MaxMocaNodes * ( kMoca_MaxMocaNodes - 1 );
+
+    if ( !pmesh_table )
+    {
+        *pCount = 0;
+        return ANSC_STATUS_FAILURE;
+    }
+
+    if (moca_GetFullMeshRates(ulInterfaceIndex, pmesh_table, pCount) != STATUS_SUCCESS)
+    {
+        AnscFreeMemory(pmesh_table);
+        *ppMeshTable = NULL;
+        *pCount = 0;
+        AnscTraceError(("%s: fail to get MoCA Mesh Table\n", __FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    if ( *pCount )
+    {
+	int i;
+	PCOSA_DML_MOCA_MESH pMeshTable;
+
+	*ppMeshTable = (PCOSA_DML_MOCA_MESH)AnscAllocateMemory(sizeof(COSA_DML_MOCA_MESH) * (*pCount) );
+
+	if ( !*ppMeshTable )
+	{
+	    AnscFreeMemory(pmesh_table);
+	    *pCount = 0;
+	    return ANSC_STATUS_FAILURE;
+	}
+
+	pMeshTable = *ppMeshTable;
+
+	for (i = 0; i < *pCount; i++)
+	{
+	    pMeshTable->TxNodeID = pmesh_table[i].TxNodeID;
+	    pMeshTable->RxNodeID = pmesh_table[i].RxNodeID;
+	    pMeshTable->TxRate   = pmesh_table[i].TxRate;
+	    pMeshTable++;
+	}
+    }
+
+    AnscFreeMemory(pmesh_table);
 
     return ANSC_STATUS_SUCCESS;
 }

@@ -368,6 +368,7 @@ X_CISCO_COM_PeerTable_GetParamStringValue
         ULONG*                      pUlSize
     );
 
+#if 0
 /***********************************************************************
 
  APIs for Object:
@@ -442,6 +443,54 @@ MeshRxNodeTable_GetEntry
 
 BOOL
 MeshRxNodeTable_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    );
+#endif
+
+/***********************************************************************
+
+ APIs for Object:
+
+    MoCA.Interface.{i}.X_RDKCENTRAL-COM_MeshTable.{i}.
+
+    *  MeshTable_GetEntryCount
+    *  MeshTable_GetEntry
+    *  MeshTable_IsUpdated
+    *  MeshTable_Synchronize
+    *  MeshTable_GetParamUlongValue
+
+***********************************************************************/
+ULONG
+MeshTable_GetEntryCount
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+ANSC_HANDLE
+MeshTable_GetEntry
+    (
+        ANSC_HANDLE                 hInsContext,
+        ULONG                       nIndex,
+        ULONG*                      pInsNumber
+    );
+
+BOOL
+MeshTable_IsUpdated
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+ULONG
+MeshTable_Synchronize
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+BOOL
+MeshTable_GetParamUlongValue
     (
         ANSC_HANDLE                 hInsContext,
         char*                       ParamName,
