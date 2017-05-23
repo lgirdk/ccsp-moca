@@ -358,7 +358,7 @@ struct _COSA_DML_MOCA_ASSOC_DEVICE
     ULONG                           TxPowerControlReduction;
     INT                             RxPowerLevel;
     ULONG                           TxBcastRate;
-    ULONG                           RxBcastPowerLevel;
+    INT                             RxBcastPowerLevel;
     ULONG                           TxPackets;
     ULONG                           RxPackets;
     ULONG                           RxErroredAndMissedPackets;

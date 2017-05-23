@@ -5758,6 +5758,14 @@ AssociatedDevice_GetParamIntValue
         return TRUE;
     }
 
+    if( AnscEqualString(ParamName, "RxBcastPowerLevel", TRUE))
+    {
+        /* collect value */
+        *pInt = pMoCAAssocDevice->RxBcastPowerLevel;
+        return TRUE;
+    }
+
+
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -5835,13 +5843,6 @@ AssociatedDevice_GetParamUlongValue
     {
         /* collect value */
         *puLong = pMoCAAssocDevice->TxBcastRate;
-        return TRUE;
-    }
-
-    if( AnscEqualString(ParamName, "RxBcastPowerLevel", TRUE))
-    {
-        /* collect value */
-        *puLong = pMoCAAssocDevice->RxBcastPowerLevel;
         return TRUE;
     }
 

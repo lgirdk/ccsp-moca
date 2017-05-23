@@ -1508,6 +1508,7 @@ CosaDmlMocaIfGetAssocDevices
             {
                 INT                 iReturnStatus   = STATUS_SUCCESS;
                 PCOSA_DML_MOCA_ASSOC_DEVICE pDeviceArray = *ppDeviceArray;
+		memset(pdevice_array ,0 , sizeof(moca_associated_device_t) * (*pulCount + COSA_DML_MOCA_AssocDeviceSafeguard));
 
                 iReturnStatus = moca_GetAssociatedDevices(ulInterfaceIndex, &pdevice_array);
 

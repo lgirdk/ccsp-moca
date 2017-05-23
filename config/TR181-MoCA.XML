@@ -1615,9 +1615,9 @@
 
               <name>RxBcastPowerLevel</name>
 
-              <type>unsignedInt</type>
+              <type>int</type>
 
-              <syntax>uint32</syntax>
+              <syntax>int</syntax>
 
               <notify>off</notify>
 
