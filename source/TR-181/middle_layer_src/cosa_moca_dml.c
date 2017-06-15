@@ -1824,8 +1824,6 @@ Interface1_Validate
     ulEntryCount = CosaDmlMocaGetNumberOfIfs((ANSC_HANDLE)NULL/*pPoamMoCADm*/);
         
     keyPassLen = AnscSizeOfString(pMoCAIfFullTable->MoCAIfFull.Cfg.KeyPassphrase);
-    if(pMoCAIfFullTable->MoCAIfFull.Cfg.PrivacyEnabledSetting == TRUE)
-    {
         if( (keyPassLen < 12) || (keyPassLen > 17) )
         {
             AnscCopyString(pReturnParamName, "KeyPassphrase");
@@ -1833,7 +1831,6 @@ Interface1_Validate
 
             return FALSE;
         }
-    }
 
 /*
     for ( ulIndex = 0; ulIndex < ulEntryCount; ulIndex++ )
