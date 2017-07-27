@@ -1247,8 +1247,13 @@ CosaDmlMocaIfPeerTableGetTable
 
     AnscTraceWarning(("CosaDmlMocaIfPeerTableGetTable -- ulInterfaceIndex:%lu, ppConf:%x\n", ulInterfaceIndex, (UINT)ppConf));
 
+    if ( !ppConf || !pCount )
+    {
+        return ANSC_STATUS_FAILURE;
+    }
+
     *ppConf = (PCOSA_DML_MOCA_PEER)AnscAllocateMemory(sizeof(g_MoCAPeer));
-    if ( !ppConf )
+    if ( !(*ppConf) )
     {
         *ppConf = NULL;
         *pCount = 0;
