@@ -456,7 +456,7 @@ void Set_MoCADevices_Status_Offline()
             CcspMoCAConsoleTrace(("RDK_LOG_DEBUG, CcspMoCA %s cur->Updated %d \n", __FUNCTION__ , cur->Updated));
             CcspMoCAConsoleTrace(("RDK_LOG_DEBUG, CcspMoCA %s cur->StatusChange  %d \n", __FUNCTION__ , cur->StatusChange ));
             
-            if(!cur->Updated)
+            if(!cur->Updated && cur->Status)
                 {
                     cur->Status = 0;
                     strcpy(cur->AssociatedDevice, " ");
@@ -577,8 +577,12 @@ void CleanupMoCAList()
     if(mocaList)
     {
         MoCADeviceInfo* cur = mocaList->deviceList;
+        MoCADeviceInfo* next = NULL;
+
         while(cur != NULL)
         {
+            next = cur->next;
+
             if(cur->ssidType)
                 free(cur->ssidType);
 
@@ -596,7 +600,7 @@ void CleanupMoCAList()
 
             free(cur);
 
-            cur = cur->next;
+            cur = next;
         }
 
         free(mocaList);
@@ -620,6 +624,7 @@ void* SynchronizeMoCADevices(void *arg)
 
     while(TRUE)
     {
+        ulCount = 0;
         ret = MocaIf_GetAssocDevices(ulInterfaceIndex, &ulCount, &ppDeviceArray);
         if(ret == ANSC_STATUS_SUCCESS && ppDeviceArray && ulCount > 0)
         {
@@ -649,7 +654,8 @@ void* SynchronizeMoCADevices(void *arg)
 #endif
 
                 CcspMoCAConsoleTrace(("RDK_LOG_DEBUG, SynchronizeMoCADevices  MACAddress [%s] \n", CpeMacHoldingBuf));
-                Set_MoCADevices_Status_Online(CpeMacHoldingBuf, i);                    
+                if(strcmp(CpeMacHoldingBuf, "00:00:00:00:00:00"))
+                    Set_MoCADevices_Status_Online(CpeMacHoldingBuf, i);                    
             }
 
             Set_MoCADevices_Status_Offline();
