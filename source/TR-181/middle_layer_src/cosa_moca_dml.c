@@ -1503,6 +1503,20 @@ Interface1_SetParamBoolValue
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         /* save update to backup */
+        char buf[5] = {0};
+        syscfg_get( NULL, "X_RDKCENTRAL-COM_VIDEOSERVICE", buf, sizeof(buf));
+        if( buf != NULL )
+        {
+                if (strcmp(buf,"1") == 0)
+                {
+                    if(bValue == FALSE)
+                    {
+                        CcspTraceWarning(("Disabling MOCA is not supported when VideoService is ENABLED\n"));
+                        return FALSE;
+                    }
+                }
+        }
+
         pMoCAIfFull->Cfg.bEnabled = bValue;
         return TRUE;
     }
