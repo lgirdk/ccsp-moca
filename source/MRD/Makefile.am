@@ -16,4 +16,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ##########################################################################
-SUBDIRS = TR-181 MoCASsp MRD
+AM_CFLAGS = -D_ANSC_LINUX
+AM_CFLAGS += -D_ANSC_USER
+
+ACLOCAL_AMFLAGS = -I m4
+hardware_platform = i686-linux-gnu
+bin_PROGRAMS = MRD
+
+MRD_SOURCES = mrd.c
