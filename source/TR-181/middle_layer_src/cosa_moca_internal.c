@@ -366,6 +366,8 @@ CosaMoCAInitialize
         
         pMyObject->MoCAIfFullTable[ulIndex].MoCAIfFull.Cfg.InstanceNumber = ulNextInsNum++;    
     }
+    //To disable MoCA during bridgemode.
+    CosaDmlMocaIfSetCfg( NULL, 0, &pMyObject->MoCAIfFullTable[0].MoCAIfFull.Cfg);
     CosaMoCAUpdate();
 #ifdef MOCA_LINK_HEALTH_LOG
     CosaMoCALogger();
