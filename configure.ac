@@ -131,6 +131,7 @@ AC_CONFIG_FILES(
 	source/Makefile
 	Makefile
 	source/MoCASsp/Makefile
+	source/MRD/Makefile
 )
 
 
