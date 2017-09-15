@@ -849,12 +849,18 @@ CosaDmlMocaIfGetCfg
 	moca_cfg_t mocaCfg;
 
     AnscTraceWarning(("CosaDmlMocaIfGetCfg -- ulInterfaceIndex:%lu.\n", uIndex));
-    
+    unsigned int moca_enable_db=0;
+    char buf[10]={0};
     if ( !pCfg )
     {
         return ANSC_STATUS_FAILURE;
     }
 
+    if( (syscfg_get( NULL, "moca_enabled", buf, sizeof(buf)) == 0) && ( buf != NULL ) )
+   {
+	moca_enable_db=atoi(buf);
+	
+   }
     if ( uIndex == 0 )
     {
 		memset(&mocaCfg, 0, sizeof(moca_cfg_t));
@@ -869,6 +875,43 @@ CosaDmlMocaIfGetCfg
 #endif
 		strcpy(pCfg->Alias, 						  mocaCfg.Alias);
 		pCfg->bEnabled 								= mocaCfg.bEnabled;
+
+		if ( ( 1 != pCfg->bSnmpUpdate ) && ( moca_enable_db != pCfg->bEnabled ) )
+		{
+			AnscTraceWarning(("syscfg db and moca driver value are not in sync, setting db value to driver\n"));
+			mocaCfg.bEnabled=moca_enable_db;
+	              moca_SetIfConfig(uIndex, &mocaCfg);
+			pCfg->bEnabled 								= mocaCfg.bEnabled;
+		}
+		else if ( ( 1 == pCfg->bSnmpUpdate ) && ( moca_enable_db != pCfg->bEnabled ) )
+ 		{
+			AnscTraceWarning(("SNMP set for MoCA is received, setting new MoCA enable status to db\n"));
+			 if(pCfg->bEnabled == TRUE) {
+
+			     if (syscfg_set(NULL, "moca_enabled", "1") != 0) {
+				     AnscTraceWarning(("syscfg_set failed\n"));
+			     } else {
+
+				    if (syscfg_commit() != 0) {
+				            AnscTraceWarning(("syscfg_commit failed\n"));
+				    }
+			     }
+
+			 } else {
+
+			     if (syscfg_set(NULL, "moca_enabled", "0") != 0) {
+				     AnscTraceWarning(("syscfg_set failed\n"));
+			     }  else {
+
+				 if (syscfg_commit() != 0) {
+				     AnscTraceWarning(("syscfg_commit failed\n"));
+				 }
+			     }
+			 }
+			 pCfg->bSnmpUpdate = 0;
+
+		}
+
 		pCfg->bPreferredNC 							= mocaCfg.bPreferredNC;
 		pCfg->PrivacyEnabledSetting 				= mocaCfg.PrivacyEnabledSetting;
 		memcpy(pCfg->FreqCurrentMaskSetting, 	  	  mocaCfg.FreqCurrentMaskSetting, 128);

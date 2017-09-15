@@ -188,6 +188,8 @@ static void *Moca_sysevent_handler (void *data)
 		    {
 			  int isUpdated = atoi(val);
 			  if(isUpdated) {
+			 	AnscTraceWarning(("Received moca_updated event , setting bSnmpUpdate to 1\n"));
+				pMyObject->MoCAIfFullTable[0].MoCAIfFull.Cfg.bSnmpUpdate = 1;
 				CosaDmlMocaIfGetCfg(NULL, 0, &pMyObject->MoCAIfFullTable[0].MoCAIfFull.Cfg);
 			  } 		   
 			}

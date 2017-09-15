@@ -170,6 +170,8 @@ struct _COSA_DML_MOCA_IF_CFG
     UCHAR                           NodeTabooMask[128];
     ULONG                           AutoPowerControlPhyRate;
     UCHAR                           X_CISCO_COM_ChannelScanMask[128];
+   
+    BOOLEAN                         bSnmpUpdate;
 }_struct_pack_;
 
 typedef struct _COSA_DML_MOCA_IF_CFG COSA_DML_MOCA_IF_CFG,  *PCOSA_DML_MOCA_IF_CFG;
