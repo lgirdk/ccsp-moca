@@ -279,7 +279,7 @@ MocaIf_GetAssocDevices
     )
 {
    int ulSize = 0;
-
+    
     if ( !pulCount || !ppDeviceArray )
     {
         return ANSC_STATUS_FAILURE;
@@ -292,7 +292,6 @@ MocaIf_GetAssocDevices
                    iReturnStatus = STATUS_SUCCESS;
 
         iReturnStatus =  moca_GetMocaCPEs(ulInterfaceIndex, cpes, &pnum_cpes);
-
         if(( iReturnStatus == STATUS_SUCCESS ) && ( 0 < pnum_cpes ))
         {
             iReturnStatus = moca_GetNumAssociatedDevices(ulInterfaceIndex, pulCount);
@@ -302,21 +301,21 @@ MocaIf_GetAssocDevices
                 moca_associated_device_t*       pdevice_array  = NULL;
                 int                             i;
 
-                ulSize = sizeof(COSA_DML_MOCA_ASSOC_DEVICE) * (*pulCount);
+                ulSize = sizeof(COSA_DML_MOCA_ASSOC_DEVICE) * (pnum_cpes);
                     
                 *ppDeviceArray = (PCOSA_DML_MOCA_ASSOC_DEVICE)AnscAllocateMemory(ulSize);
 
                 pdevice_array = (moca_associated_device_t *)
                     AnscAllocateMemory
                         (
-                            sizeof(moca_associated_device_t) * (*pulCount + COSA_DML_MOCA_AssocDeviceSafeguard)
+                            sizeof(moca_associated_device_t) * (pnum_cpes + COSA_DML_MOCA_AssocDeviceSafeguard)
                         );
                     
                 if ( *ppDeviceArray && pdevice_array )
                 {
                     INT                 iReturnStatus   = STATUS_SUCCESS;
                     PCOSA_DML_MOCA_ASSOC_DEVICE pDeviceArray = *ppDeviceArray;
-                    memset(pdevice_array ,0 , sizeof(moca_associated_device_t) * (*pulCount + COSA_DML_MOCA_AssocDeviceSafeguard));
+                    memset(pdevice_array ,0 , sizeof(moca_associated_device_t) * (pnum_cpes + COSA_DML_MOCA_AssocDeviceSafeguard));
 
                     iReturnStatus = moca_GetAssociatedDevices(ulInterfaceIndex, &pdevice_array);
 
@@ -345,6 +344,38 @@ MocaIf_GetAssocDevices
                             pDeviceArray->X_CISCO_COM_RxBcastRate           = pdevice_array[i].RxBcastRate;
                             pDeviceArray->X_CISCO_COM_NumberOfClients       = pdevice_array[i].NumberOfClients;
                             ++pDeviceArray;  
+                        }
+                        if(pnum_cpes != *pulCount)
+                        {
+                           char mac[18];
+                           char mac1[18];
+                           int j = 0,k = 0;
+			   int bFound = FALSE;
+                           memset(mac,0,sizeof(mac));
+                           memset(mac1,0,sizeof(mac));
+			   *pulCount = pnum_cpes;
+                           for(j =0; j < pnum_cpes; j++)
+                           {
+                               sprintf(mac, "%02x:%02x:%02x:%02x:%02x:%02x",cpes[j].mac_addr[0],cpes[j].mac_addr[1],cpes[j].mac_addr[2],cpes[j].mac_addr[3],cpes[j].mac_addr[4],cpes[j].mac_addr[5]);
+                               for(k = 0;k < i; k++)
+                               {
+                                    sprintf(mac1, "%02x:%02x:%02x:%02x:%02x:%02x",pdevice_array[k].MACAddress[0],pdevice_array[k].MACAddress[1],pdevice_array[k].MACAddress[2],pdevice_array[k].MACAddress[3],pdevice_array[k].MACAddress[4],pdevice_array[k].MACAddress[5]);
+                                    if(!strncmp(mac1,mac,18))
+					{
+					    bFound = TRUE;
+					    break;
+					}
+					else
+					    bFound = FALSE;
+				}
+				    if(bFound == FALSE)
+				    {
+                                    memcpy(pDeviceArray->MACAddress,cpes[j].mac_addr,6);
+                                    ++pDeviceArray;
+                                    }
+                              
+                           memset(mac,0,sizeof(mac));
+                           } 
                         }
 
                         AnscFreeMemory(pdevice_array);
@@ -510,6 +541,8 @@ void Send_Update_to_LMLite(BOOL defaultSend)
                 * Group Received Associated Params as below,
                 * MAC_Address,AssociatedDevice_Alias,SSID_Alias,ParentMac,DeviceType,RSSI_Signal_Strength,Status
                 */
+                if(cur->Status)
+		{
                 snprintf(str, sizeof(str), "%s,%s,%s,%s,%s,%d,%d", 
                                             cur->deviceMac, 
                                             (NULL != cur->AssociatedDevice) ? cur->AssociatedDevice : "NULL", 
@@ -518,6 +551,19 @@ void Send_Update_to_LMLite(BOOL defaultSend)
                                             (NULL != cur->deviceType) ? cur->deviceType : "NULL", 
                                             cur->RSSI,
                                             cur->Status);
+		}
+		else
+		{
+                snprintf(str, sizeof(str), "%s,%s,%s,%s,%s,%d,%d",
+                                            cur->deviceMac,
+                                            (NULL != cur->AssociatedDevice) ? cur->AssociatedDevice : "NULL",
+                                            (NULL != cur->ssidType) ? cur->ssidType : "NULL",
+                                            (NULL != cur->parentMac) ? cur->parentMac : "NULL",
+                                            "Device.MoCA.Interface.1.",
+                                            cur->RSSI,
+                                            cur->Status);
+
+		}
                 
                 AnscTraceWarning(("RDK_LOG_WARN, %s-%d [%s] \n",__FUNCTION__,__LINE__,str));
 
