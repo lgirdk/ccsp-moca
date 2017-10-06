@@ -401,8 +401,22 @@ CosaMoCAInitialize
         
         pMyObject->MoCAIfFullTable[ulIndex].MoCAIfFull.Cfg.InstanceNumber = ulNextInsNum++;    
     }
-    //To disable MoCA during bridgemode.
-    CosaDmlMocaIfSetCfg( NULL, 0, &pMyObject->MoCAIfFullTable[0].MoCAIfFull.Cfg);
+        
+    //If MoCA enabled check the bridge mode.
+    if  (TRUE == pMyObject->MoCAIfFullTable[0].MoCAIfFull.Cfg.bEnabled) 
+    {
+        char bridgeMode[16] = {0};
+        int mode = 0;
+
+        syscfg_get(NULL, "bridge_mode", bridgeMode, sizeof(bridgeMode));
+        mode = atoi(bridgeMode);
+
+        //If bridge mode enabled then Disable MoCA.
+        if (0 != mode) 
+        {
+            CosaDmlMocaIfSetCfg( NULL, 0, &pMyObject->MoCAIfFullTable[0].MoCAIfFull.Cfg);
+        }
+    }
     CosaMoCAGetForceEnable(&pMyObject->MoCACfg);
 
     CosaDmlMocaGetLogStatus(&pMyObject->LogStatus);
