@@ -701,7 +701,7 @@ CosaDmlMocaIfSetCfg
              }
          }
 
-         AnscTraceWarning(("pCfg->KeyPassphrase: %s\n", pCfg->KeyPassphrase));
+         AnscTraceWarning(("pCfg->KeyPassphrase\n"));
 
          if(pCfg->KeyPassphrase) {
 
