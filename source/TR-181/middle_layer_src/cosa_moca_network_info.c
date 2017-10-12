@@ -324,26 +324,28 @@ MocaIf_GetAssocDevices
                         /* Translate the Data Structures */
                         for (i = 0; i < *pulCount; i++)
                         {
-                            memcpy(pDeviceArray->MACAddress,                  pdevice_array[i].MACAddress, 18);
-                            pDeviceArray->NodeID                            = pdevice_array[i].NodeID;
-                            pDeviceArray->PreferredNC                       = pdevice_array[i].PreferredNC;
-                            memcpy(pDeviceArray->HighestVersion,              pdevice_array[i].HighestVersion, 64);
-                            pDeviceArray->PHYTxRate                         = pdevice_array[i].PHYTxRate;
-                            pDeviceArray->PHYRxRate                         = pdevice_array[i].PHYRxRate;
-                            pDeviceArray->TxPowerControlReduction           = pdevice_array[i].TxPowerControlReduction;
-                            pDeviceArray->RxPowerLevel                      = pdevice_array[i].RxPowerLevel;
-                            pDeviceArray->TxBcastRate                       = pdevice_array[i].TxBcastRate;
-                            pDeviceArray->RxBcastPowerLevel                 = pdevice_array[i].RxBcastPowerLevel;
-                            pDeviceArray->TxPackets                         = pdevice_array[i].TxPackets;
-                            pDeviceArray->RxPackets                         = pdevice_array[i].RxPackets;
-                            pDeviceArray->RxErroredAndMissedPackets         = pdevice_array[i].RxErroredAndMissedPackets;
-                            pDeviceArray->QAM256Capable                     = pdevice_array[i].QAM256Capable;
-                            pDeviceArray->PacketAggregationCapability       = pdevice_array[i].PacketAggregationCapability;
-                            pDeviceArray->RxSNR                             = pdevice_array[i].RxSNR;
-                            pDeviceArray->Active                            = pdevice_array[i].Active;
-                            pDeviceArray->X_CISCO_COM_RxBcastRate           = pdevice_array[i].RxBcastRate;
-                            pDeviceArray->X_CISCO_COM_NumberOfClients       = pdevice_array[i].NumberOfClients;
-                            ++pDeviceArray;  
+			    if(pDeviceArray){
+			      memcpy(pDeviceArray->MACAddress,                  pdevice_array[i].MACAddress, 18);
+			      pDeviceArray->NodeID                            = pdevice_array[i].NodeID;
+			      pDeviceArray->PreferredNC                       = pdevice_array[i].PreferredNC;
+			      memcpy(pDeviceArray->HighestVersion,              pdevice_array[i].HighestVersion, 64);
+			      pDeviceArray->PHYTxRate                         = pdevice_array[i].PHYTxRate;
+			      pDeviceArray->PHYRxRate                         = pdevice_array[i].PHYRxRate;
+			      pDeviceArray->TxPowerControlReduction           = pdevice_array[i].TxPowerControlReduction;
+			      pDeviceArray->RxPowerLevel                      = pdevice_array[i].RxPowerLevel;
+			      pDeviceArray->TxBcastRate                       = pdevice_array[i].TxBcastRate;
+			      pDeviceArray->RxBcastPowerLevel                 = pdevice_array[i].RxBcastPowerLevel;
+			      pDeviceArray->TxPackets                         = pdevice_array[i].TxPackets;
+			      pDeviceArray->RxPackets                         = pdevice_array[i].RxPackets;
+			      pDeviceArray->RxErroredAndMissedPackets         = pdevice_array[i].RxErroredAndMissedPackets;
+			      pDeviceArray->QAM256Capable                     = pdevice_array[i].QAM256Capable;
+			      pDeviceArray->PacketAggregationCapability       = pdevice_array[i].PacketAggregationCapability;
+			      pDeviceArray->RxSNR                             = pdevice_array[i].RxSNR;
+			      pDeviceArray->Active                            = pdevice_array[i].Active;
+			      pDeviceArray->X_CISCO_COM_RxBcastRate           = pdevice_array[i].RxBcastRate;
+			      pDeviceArray->X_CISCO_COM_NumberOfClients       = pdevice_array[i].NumberOfClients;
+			      ++pDeviceArray; 
+			    }
                         }
                         if(pnum_cpes != *pulCount)
                         {
