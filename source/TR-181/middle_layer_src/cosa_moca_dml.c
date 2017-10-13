@@ -1832,6 +1832,7 @@ Interface1_Validate
     ULONG                           ulEntryCount            = 0;
     ULONG                           ulIndex                 = 0;
     ULONG                           keyPassLen              = 0;
+    UINT                            uIndex                  = 0;
     
     AnscTraceWarning(("\n"));
 
@@ -1845,6 +1846,16 @@ Interface1_Validate
 
             return FALSE;
         }
+        for ( uIndex = 0; uIndex < keyPassLen; uIndex++ )
+        {
+            if( !isdigit(pMoCAIfFullTable->MoCAIfFull.Cfg.KeyPassphrase[uIndex]) )
+            {
+                AnscCopyString(pReturnParamName, "KeyPassphrase");
+                *puLength = AnscSizeOfString("KeyPassphrase");
+
+                return FALSE;
+            }
+	}
 
 /*
     for ( ulIndex = 0; ulIndex < ulEntryCount; ulIndex++ )
