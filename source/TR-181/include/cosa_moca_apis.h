@@ -71,51 +71,8 @@
 #ifndef  _COSA_MOCA_API_H
 #define  _COSA_MOCA_API_H
 
-#ifndef SA_CUSTOM
-
-/*#include "../middle_layer_src/cosa_apis.h"
-#include "../middle_layer_src/plugin_main_apis.h"*/
-
 #include "cosa_apis.h"
 #include "plugin_main_apis.h"
-
-#else
-
-#define _struct_pack_   __attribute__((packed))
-#define  COSA_DML_ALIAS_NAME_LENGTH     64
-#define ANSC_STATUS                     ULONG
-#define ANSC_HANDLE                     PVOID
-#define PANSC_HANDLE                    PVOID *
-
-typedef  enum
-COSA_DML_IF_STATUS
-{
-    IF_STATUS_Up               = 1,
-    IF_STATUS_Down,
-    IF_STATUS_Unknown,
-    IF_STATUS_Dormant,
-    IF_STATUS_NotPresent,
-    IF_STATUS_LowerLayerDown,
-    IF_STATUS_Error
-}
-COSA_DML_IF_STATUS, *PCOSA_DML_IF_STATUS;
-
-typedef  struct
-_SINGLE_LINK_ENTRY
-{
-    struct  _SINGLE_LINK_ENTRY*     Next;
-}
-SINGLE_LINK_ENTRY,  *PSINGLE_LINK_ENTRY;
-
-typedef  struct
-_SLIST_HEADER
-{
-    SINGLE_LINK_ENTRY               Next;
-    USHORT                          Depth;
-    USHORT                          Sequence;
-}
-SLIST_HEADER,  *PSLIST_HEADER;
-#endif
 
 /**********************************************************************
                 STRUCTURE AND CONSTANT DEFINITIONS
@@ -449,6 +406,15 @@ CosaDmlMocaIfGetStaticInfo
         ULONG                       uIndex,
         PCOSA_DML_MOCA_IF_SINFO       pSInfo
     );
+
+ANSC_STATUS
+CosaDmlMocaIfGetSinfo
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                       ulInstanceNumber,
+        PCOSA_DML_MOCA_IF_SINFO     pSInfo
+    );
+
 
 ANSC_STATUS
 CosaDmlMocaIfGetStats
