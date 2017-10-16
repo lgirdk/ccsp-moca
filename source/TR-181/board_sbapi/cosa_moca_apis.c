@@ -137,6 +137,34 @@ COSA_DML_MOCA_IF_CFG   g_MoCAIfCfg2 =
     };
 #endif
 
+#ifdef SA_CUSTOM
+static void write_log_console(char* msg)
+{
+        FILE *pFile = NULL;
+        char buffer[128]={0};
+
+        char timestring[26]={0};
+        time_t timer;
+        struct tm* tm_info;
+
+        // Get local time and store it in timestring
+        time(&timer);
+        tm_info = localtime(&timer);
+        strftime(timestring, 26, "%Y-%m-%d %H:%M:%S", tm_info);
+
+        //combine time string and the input msg
+        sprintf(buffer, "CiscoARM : %s %s", timestring, msg);
+        pFile = fopen("/rdklogs/logs/Consolelog.txt.0","a+");
+        if(pFile)
+        {
+                fprintf(pFile, buffer);
+                fprintf(pFile, "\n");
+                fclose(pFile);
+        }
+        return;
+}
+#endif
+
 COSA_DML_MOCA_CFG     g_MoCACfg = 
     { 
         "X_CISCO_COM_ProvisioningFilename",
@@ -811,7 +839,18 @@ CosaDmlMocaIfSetCfg
              AnscTraceWarning(("freq: %s\n", str_value));
     
              if(status > 0) {
-        
+
+#ifdef SA_CUSTOM
+                 int ret1,ret2;
+                 ret1 = strcmp(str_value, "1150");
+                 ret2 = strcmp(str_value, "1175");
+                 if( ret1 != 0 && ret2 != 0 )
+                 { 
+                     strcpy(str_value,"1175");
+                     write_log_console ("updating the current moca_freq_plan/str_value to 1175");
+                 }    
+#endif
+
                  if (syscfg_set(NULL, "moca_freq_plan", str_value) != 0) {
                          AnscTraceWarning(("syscfg_set failed\n"));
                  } else {
