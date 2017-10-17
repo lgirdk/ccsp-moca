@@ -324,28 +324,29 @@ MocaIf_GetAssocDevices
                         /* Translate the Data Structures */
                         for (i = 0; i < *pulCount; i++)
                         {
-			    if(pDeviceArray){
-			      memcpy(pDeviceArray->MACAddress,                  pdevice_array[i].MACAddress, 18);
-			      pDeviceArray->NodeID                            = pdevice_array[i].NodeID;
-			      pDeviceArray->PreferredNC                       = pdevice_array[i].PreferredNC;
-			      memcpy(pDeviceArray->HighestVersion,              pdevice_array[i].HighestVersion, 64);
-			      pDeviceArray->PHYTxRate                         = pdevice_array[i].PHYTxRate;
-			      pDeviceArray->PHYRxRate                         = pdevice_array[i].PHYRxRate;
-			      pDeviceArray->TxPowerControlReduction           = pdevice_array[i].TxPowerControlReduction;
-			      pDeviceArray->RxPowerLevel                      = pdevice_array[i].RxPowerLevel;
-			      pDeviceArray->TxBcastRate                       = pdevice_array[i].TxBcastRate;
-			      pDeviceArray->RxBcastPowerLevel                 = pdevice_array[i].RxBcastPowerLevel;
-			      pDeviceArray->TxPackets                         = pdevice_array[i].TxPackets;
-			      pDeviceArray->RxPackets                         = pdevice_array[i].RxPackets;
-			      pDeviceArray->RxErroredAndMissedPackets         = pdevice_array[i].RxErroredAndMissedPackets;
-			      pDeviceArray->QAM256Capable                     = pdevice_array[i].QAM256Capable;
-			      pDeviceArray->PacketAggregationCapability       = pdevice_array[i].PacketAggregationCapability;
-			      pDeviceArray->RxSNR                             = pdevice_array[i].RxSNR;
-			      pDeviceArray->Active                            = pdevice_array[i].Active;
-			      pDeviceArray->X_CISCO_COM_RxBcastRate           = pdevice_array[i].RxBcastRate;
-			      pDeviceArray->X_CISCO_COM_NumberOfClients       = pdevice_array[i].NumberOfClients;
-			      ++pDeviceArray; 
-			    }
+                           if(pDeviceArray && (&pdevice_array[i]) != NULL)
+                           {
+                            memcpy(pDeviceArray->MACAddress,                  pdevice_array[i].MACAddress, 18);
+                            pDeviceArray->NodeID                            = pdevice_array[i].NodeID;
+                            pDeviceArray->PreferredNC                       = pdevice_array[i].PreferredNC;
+                            memcpy(pDeviceArray->HighestVersion,              pdevice_array[i].HighestVersion, 64);
+                            pDeviceArray->PHYTxRate                         = pdevice_array[i].PHYTxRate;
+                            pDeviceArray->PHYRxRate                         = pdevice_array[i].PHYRxRate;
+                            pDeviceArray->TxPowerControlReduction           = pdevice_array[i].TxPowerControlReduction;
+                            pDeviceArray->RxPowerLevel                      = pdevice_array[i].RxPowerLevel;
+                            pDeviceArray->TxBcastRate                       = pdevice_array[i].TxBcastRate;
+                            pDeviceArray->RxBcastPowerLevel                 = pdevice_array[i].RxBcastPowerLevel;
+                            pDeviceArray->TxPackets                         = pdevice_array[i].TxPackets;
+                            pDeviceArray->RxPackets                         = pdevice_array[i].RxPackets;
+                            pDeviceArray->RxErroredAndMissedPackets         = pdevice_array[i].RxErroredAndMissedPackets;
+                            pDeviceArray->QAM256Capable                     = pdevice_array[i].QAM256Capable;
+                            pDeviceArray->PacketAggregationCapability       = pdevice_array[i].PacketAggregationCapability;
+                            pDeviceArray->RxSNR                             = pdevice_array[i].RxSNR;
+                            pDeviceArray->Active                            = pdevice_array[i].Active;
+                            pDeviceArray->X_CISCO_COM_RxBcastRate           = pdevice_array[i].RxBcastRate;
+                            pDeviceArray->X_CISCO_COM_NumberOfClients       = pdevice_array[i].NumberOfClients;
+                            ++pDeviceArray;  
+                           }
                         }
                         if(pnum_cpes != *pulCount)
                         {
@@ -358,9 +359,23 @@ MocaIf_GetAssocDevices
 			   *pulCount = pnum_cpes;
                            for(j =0; j < pnum_cpes; j++)
                            {
+#ifndef INTEL_PUMA7
+                               //Not for AXB6
                                sprintf(mac, "%02x:%02x:%02x:%02x:%02x:%02x",cpes[j].mac_addr[0],cpes[j].mac_addr[1],cpes[j].mac_addr[2],cpes[j].mac_addr[3],cpes[j].mac_addr[4],cpes[j].mac_addr[5]);
+
+#endif
                                for(k = 0;k < i; k++)
                                {
+#ifdef INTEL_PUMA7
+                                    //AXB6 change
+                                    if (!memcmp(cpes[j].mac_addr,pdevice_array[k].MACAddress,6))
+                                    {
+                                        bFound = TRUE;
+                                        break;
+                                    }
+                                    else
+                                        bFound = false;
+#else
                                     sprintf(mac1, "%02x:%02x:%02x:%02x:%02x:%02x",pdevice_array[k].MACAddress[0],pdevice_array[k].MACAddress[1],pdevice_array[k].MACAddress[2],pdevice_array[k].MACAddress[3],pdevice_array[k].MACAddress[4],pdevice_array[k].MACAddress[5]);
                                     if(!strncmp(mac1,mac,18))
 					{
@@ -369,18 +384,26 @@ MocaIf_GetAssocDevices
 					}
 					else
 					    bFound = FALSE;
+
+#endif
 				}
 				    if(bFound == FALSE)
 				    {
+
+                                  if(pDeviceArray){
                                     memcpy(pDeviceArray->MACAddress,cpes[j].mac_addr,6);
                                     ++pDeviceArray;
+                                     }
                                     }
                               
                            memset(mac,0,sizeof(mac));
                            } 
                         }
+						if ( pdevice_array )
+						{
 
                         AnscFreeMemory(pdevice_array);
+						}
                         return  ANSC_STATUS_SUCCESS;
                     }
                     else
