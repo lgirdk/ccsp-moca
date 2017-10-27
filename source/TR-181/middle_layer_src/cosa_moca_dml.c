@@ -1737,8 +1737,16 @@ Interface1_SetParamStringValue
     )
 {
     PCOSA_DML_MOCA_IF_FULL          pMoCAIfFull = &((PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext)->MoCAIfFull;
-    
-    AnscTraceWarning(("ParamName: %s pString: %s\n", ParamName, pString));
+
+   /*KeyPassphrase is sensitive information and should not be printed in log*/
+    if( AnscEqualString(ParamName, "KeyPassphrase", TRUE))
+    {
+        AnscTraceWarning(("ParamName: %s\n",ParamName));
+    }
+    else
+    {
+        AnscTraceWarning(("ParamName: %s pString: %s\n", ParamName, pString));
+    }
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
