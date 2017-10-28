@@ -33,5 +33,5 @@ CcspMoCA_DEPENDENCIES= \
 
 CcspMoCA_CFLAGS = $(SYSTEMD_CFLAGS)
 CcspMoCA_SOURCES = ssp_messagebus_interface.c ssp_main.c ssp_action.c
-CcspMoCA_LDFLAGS = -lccsp_common -ldl -rdynamic $(SYSTEMD_LDFLAGS)
+CcspMoCA_LDFLAGS = -lsyscfg -lsysevent -lccsp_common -ldl -pthread -rdynamic $(SYSTEMD_LDFLAGS)
 CcspMoCA_LDADD =  $(CcspMoCA_DEPENDENCIES)
