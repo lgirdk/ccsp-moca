@@ -1061,7 +1061,11 @@ CosaDmlMocaIfGetStaticInfo
         moca_IfGetStaticInfo(uIndex, &mocaStaticCfg);
 		
 		/* Translate the data structures */
+#if defined(INTEL_PUMA7)
+		AnscCopyString(pSInfo->Name, "nmoca0");
+#else
 		AnscCopyString(pSInfo->Name, "sw_5");
+#endif
 		memcpy(pSInfo->MacAddress, 	mocaStaticCfg.MacAddress, 18);
 		memcpy(pSInfo->FirmwareVersion, mocaStaticCfg.FirmwareVersion, 64);
 		pSInfo->MaxBitRate  = mocaStaticCfg.MaxBitRate;
