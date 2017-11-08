@@ -215,6 +215,8 @@ MoCA_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    PCOSA_DATAMODEL_MOCA            pMyObject     = (PCOSA_DATAMODEL_MOCA    )g_MoCAObject;
+    PCOSA_DML_MOCA_CFG              pCfg          = &pMyObject->MoCACfg;
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -223,6 +225,12 @@ MoCA_GetParamBoolValue
     {
     
         *pBool = FALSE;
+        return TRUE;
+    }
+
+    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_ForceEnable", TRUE))
+    {
+        *pBool = pCfg->bForceEnabled;
         return TRUE;
     }
 
@@ -445,7 +453,8 @@ MoCA_SetParamBoolValue
     )
 {
     PCOSA_DML_MOCA_IF_FULL          pMoCAIfFull = &((PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext)->MoCAIfFull;
-
+    PCOSA_DATAMODEL_MOCA            pMyObject     = (PCOSA_DATAMODEL_MOCA    )g_MoCAObject;
+    PCOSA_DML_MOCA_CFG              pCfg          = &pMyObject->MoCACfg;
     /* check the parameter name and set the corresponding value */
     if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_MoCAHost_Sync", TRUE))
     {
@@ -454,6 +463,12 @@ MoCA_SetParamBoolValue
         return TRUE;
     }
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_ForceEnable", TRUE))
+    {
+		if(MoCA_SetForceEnable(&pMyObject->MoCAIfFullTable[0].MoCAIfFull.Cfg, &pMyObject->MoCACfg, bValue)){
+			return TRUE;
+		}
+    }
     return FALSE;
 }
 
@@ -1496,9 +1511,10 @@ Interface1_SetParamBoolValue
     )
 {
     PCOSA_DML_MOCA_IF_FULL          pMoCAIfFull = &((PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext)->MoCAIfFull;
-
-    AnscTraceWarning(("ParamName: %s bvalue\n", ParamName, bValue));
-
+    PCOSA_DATAMODEL_MOCA            pMyObject     = (PCOSA_DATAMODEL_MOCA    )g_MoCAObject;
+    PCOSA_DML_MOCA_CFG              pCfg          = &pMyObject->MoCACfg;
+    AnscTraceWarning(("ParamName: %s bvalue %d\n", ParamName, bValue));
+    BOOL bridgeId = FALSE;
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
@@ -1516,6 +1532,10 @@ Interface1_SetParamBoolValue
                     }
                 }
         }
+		if((bValue == FALSE) && (pCfg->bForceEnabled == TRUE) && ((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeId)) && (FALSE == bridgeId))){
+			CcspTraceWarning(("MOCA cannot Disabled due to X_RDKCENTRAL-COM_ForceEnable flag\n"));
+			return FALSE;
+	   }
 
         pMoCAIfFull->Cfg.bEnabled = bValue;
         return TRUE;

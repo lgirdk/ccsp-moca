@@ -96,7 +96,7 @@
 #endif
 
 #define MOCA_INTEFACE_NUMBER    1
-
+extern  ANSC_HANDLE                        bus_handle;
 #if 0
 /* Just fill in USGv2 required parameters */
 COSA_DML_MOCA_IF_CFG   g_MoCAIfCfg1 = 
@@ -1698,6 +1698,106 @@ CosaDmlMocaGetLogStatus
 
 }
 #endif
+ANSC_STATUS is_usg_in_bridge_mode(BOOL *pBridgeMode)
+{
+    ULONG ulEntryNameLen;
+    char ucEntryParamName[256] = {0};
+    char ucEntryNameValue[256] = {0};
+    parameterValStruct_t varStruct;
+    ulEntryNameLen   = sizeof(ucEntryNameValue);
+
+    AnscCopyString(ucEntryParamName,"Device.X_CISCO_COM_DeviceControl.LanManagementEntry.1.LanMode");
+    varStruct.parameterName = ucEntryParamName;
+    varStruct.parameterValue = ucEntryNameValue;
+
+    if (ANSC_STATUS_SUCCESS == COSAGetParamValueByPathName(bus_handle,&varStruct,&ulEntryNameLen))
+    {
+        if(AnscEqualString(varStruct.parameterValue, "bridge-static", TRUE)){
+             *pBridgeMode = TRUE;
+        }
+        else{
+            *pBridgeMode = FALSE;
+        }
+
+        return ANSC_STATUS_SUCCESS;
+    }
+    else{
+        return ANSC_STATUS_FAILURE;
+    }
+
+}
+
+ANSC_STATUS CosaMoCAGetForceEnable(PCOSA_DML_MOCA_CFG pCfg)
+{
+	char buf[8] = {0};
+	pCfg->bForceEnabled = FALSE;
+
+	if(syscfg_get( NULL, "X_RDKCENTRAL-COM_ForceEnable", buf, sizeof(buf)) == 0){
+		if( buf != NULL )
+		{
+			pCfg->bForceEnabled =  (strcmp(buf,"true") ? FALSE : TRUE);
+			AnscTraceInfo(("X_RDKCENTRAL-COM_ForceEnable is %d\n",pCfg->bForceEnabled));
+			return ANSC_STATUS_SUCCESS;                  
+		}
+	}
+	return ANSC_STATUS_FAILURE;  
+}
+
+BOOL MoCA_SetForceEnable(PCOSA_DML_MOCA_IF_CFG pCfg, PCOSA_DML_MOCA_CFG  pFCfg, BOOL bValue)
+{
+	ANSC_STATUS         ReturnStatus  = ANSC_STATUS_FAILURE;
+	char buff[16] = {0};
+
+	if(pFCfg->bForceEnabled == bValue)
+	{
+		AnscTraceInfo(("MoCA ForceEnable already = %d\n",bValue));
+	}
+	else
+	{
+		sprintf(buff,"%s",( bValue ) ? "true" :"false" );
+		if(syscfg_set(NULL, "X_RDKCENTRAL-COM_ForceEnable", buff) != 0)
+		{
+			AnscTraceWarning(("syscfg_set failed\n"));
+			return FALSE;
+		}
+		else
+		{
+			if (syscfg_commit() != 0)
+			{
+				AnscTraceWarning(("syscfg_commit failed\n"));
+				return FALSE;
+			}
+			else
+			{
+				pFCfg->bForceEnabled = bValue;
+				AnscTraceInfo(("X_RDKCENTRAL-COM_ForceEnable = %d\n",bValue));
+			}
+
+			if (bValue)
+			{
+				if(!(pCfg->bEnabled))
+				{
+					pCfg->bEnabled = TRUE;
+					ReturnStatus = CosaDmlMocaIfSetCfg((ANSC_HANDLE)NULL, pCfg->InstanceNumber-1, pCfg);
+					if(ReturnStatus == ANSC_STATUS_SUCCESS)
+					{
+						AnscTraceInfo(("Enabling MoCA due to Force Enable Flag TRUE\n"));
+					}
+					else
+					{
+						AnscTraceWarning(("CosaDmlMocaIfSetCfg Failed\n"));
+					}
+				}
+				else
+				{
+					AnscTraceInfo(("MoCA already Enabled\n"));
+				}
+			}
+		}
+	}
+	return TRUE;
+}
+
 #elif (_COSA_DRG_TPG_)
 
 #include <utctx.h>
@@ -1983,6 +2083,25 @@ CosaDmlMocaIfGetDinfo
 
     return ANSC_STATUS_FAILURE;
 }
+
+ANSC_STATUS is_usg_in_bridge_mode(BOOL *pBridgeMode)
+{
+	AnscTraceWarning(("_COSA_DRG_TPG_-- \n"));
+	return 0;
+}
+
+ANSC_STATUS CosaMoCAGetForceEnable(PCOSA_DML_MOCA_CFG pCfg)
+{
+	AnscTraceWarning(("CosaMoCAForceEnable_FUNCTION-- \n"));
+	return 0;
+}
+
+BOOL MoCA_SetForceEnable(PCOSA_DML_MOCA_IF_CFG pCfg, PCOSA_DML_MOCA_CFG  pFCfg)
+{
+	AnscTraceWarning(("MoCA_SetForceEnable_FUNCTION\n"));
+	return 0;
+}
+
 
 #elif ( _COSA_SIM_ )
 
@@ -2352,6 +2471,23 @@ CosaDmlMocaIfGetAssocDevices
     AnscTraceWarning(("CosaDmlMocaIfGetAssocDevices -- ulInterfaceIndex:%lu, pulCount:%lu\n", ulInterfaceIndex, *pulCount));
 
     return ANSC_STATUS_SUCCESS;
+}
+ANSC_STATUS is_usg_in_bridge_mode(BOOL *pBridgeMode)
+{
+        AnscTraceWarning(("_COSA_SIM-- \n"));
+        return 0;
+}
+
+ANSC_STATUS CosaMoCAGetForceEnable(PCOSA_DML_MOCA_CFG pCfg)
+{
+	AnscTraceWarning(("CosaMoCAForceEnable_FUNCTION-- \n"));
+	return 0;
+}
+
+BOOL MoCA_SetForceEnable(PCOSA_DML_MOCA_IF_CFG pCfg, PCOSA_DML_MOCA_CFG  pFCfg)
+{
+	AnscTraceWarning(("MoCA_SetForceEnable_FUNCTION\n"));
+	return 0;
 }
 
 #endif

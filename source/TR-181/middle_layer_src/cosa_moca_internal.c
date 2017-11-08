@@ -384,7 +384,7 @@ CosaMoCAInitialize
             CosaDmlMocaIfSetCfg( NULL, 0, &pMyObject->MoCAIfFullTable[0].MoCAIfFull.Cfg);
         }
     }
-
+    CosaMoCAGetForceEnable(&pMyObject->MoCACfg);
     CosaMoCAUpdate();
 #ifdef MOCA_LINK_HEALTH_LOG
     CosaMoCALogger();

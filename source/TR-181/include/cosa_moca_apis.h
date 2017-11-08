@@ -91,6 +91,7 @@ struct _COSA_DML_MOCA_CFG
 {
     UCHAR                                 X_CISCO_COM_ProvisioningFilename[128];
     UCHAR                                 X_CISCO_COM_ProvisioningServerAddress[64];
+    BOOLEAN				  bForceEnabled;
     MOCA_PROVISIONING_SERVERADDRESS_TYPE  X_CISCO_COM_ProvisioningServerAddressType;
 }_struct_pack_;
 
@@ -531,8 +532,7 @@ CosaDmlMocaIfFlowTableGetTable
         PULONG                           pCount
     );
 
-
-
-
-
+ANSC_STATUS is_usg_in_bridge_mode(BOOL *pBridgeMode);
+ANSC_STATUS CosaMoCAGetForceEnable(PCOSA_DML_MOCA_CFG pCfg);
+BOOL MoCA_SetForceEnable(PCOSA_DML_MOCA_IF_CFG pCfg, PCOSA_DML_MOCA_CFG pFCfg, BOOL bValue);
 #endif
