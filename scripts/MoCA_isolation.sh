@@ -17,6 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #######################################################################################
+source /etc/device.properties
 
 HOME_LAN_ISOLATION=`psmcli get dmsb.l2net.HomeNetworkIsolation`
 if [ "$HOME_LAN_ISOLATION" -eq 1 ]; then
@@ -24,7 +25,12 @@ echo "Starting brlan10 initialization, check whether brlan10 is there or not"
 ifconfig | grep brlan10
 if [ $? == 1 ]; then
     echo "brlan10 not present go ahead and create it"
-    sysevent set multinet-up 9
+    if [ "$BOX_TYPE" = "XF3" ]; then
+        sh /usr/ccsp/lan_handler.sh home_lan_isolation_enable
+    else
+        sysevent set multinet-up 9
+    fi
+
 fi
 
 # Waiting for brlan10 -MoCA bridge interface creation for 30 sec
@@ -44,7 +50,11 @@ else
     killall igmpproxy
     killall MRD
     sleep 1
-    sysevent set mcastproxy-restart
+    if [ "$BOX_TYPE" = "XF3" ]; then
+    	sh /etc/utopia/service.d/service_mcastproxy.sh mcastproxy-restart
+    else 
+        sysevent set mcastproxy-restart
+    fi
     #smcroute -f /usr/ccsp/moca/smcroute.conf -d
     MRD &
     sysevent set firewall-restart
