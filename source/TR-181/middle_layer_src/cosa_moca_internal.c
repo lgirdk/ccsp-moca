@@ -217,13 +217,16 @@ void MoCA_Log()
 	ULONG Interface_count, ulIndex,  ulIndex1, AssocDeviceCount;
 	PCOSA_DML_MOCA_ASSOC_DEVICE             pMoCAAssocDevice = NULL;
 	COSA_DML_MOCA_IF_DINFO DynamicInfo={0};
+    ANSC_STATUS            returnStatusAssocDevices = ANSC_STATUS_SUCCESS;
+    ANSC_STATUS            returnStatusDinfo = ANSC_STATUS_SUCCESS;
 
 	Interface_count = CosaDmlMocaGetNumberOfIfs((ANSC_HANDLE)NULL);
 
 	for ( ulIndex = 0; ulIndex < Interface_count; ulIndex++ )
 	{
 		AssocDeviceCount = 0;
-		CosaDmlMocaIfGetAssocDevices
+        pMoCAAssocDevice = NULL;
+		returnStatusAssocDevices = CosaDmlMocaIfGetAssocDevices
 		(
 		    (ANSC_HANDLE)NULL, 
 		    pMyObject->MoCAIfFullTable[ulIndex].MoCAIfFull.Cfg.InstanceNumber-1, 
@@ -231,18 +234,25 @@ void MoCA_Log()
 		    &pMoCAAssocDevice,
 		    NULL
 		);
-		CosaDmlMocaIfGetDinfo(NULL, pMyObject->MoCAIfFullTable[ulIndex].MoCAIfFull.Cfg.InstanceNumber-1, &DynamicInfo);          
+        _ansc_memset(&DynamicInfo, 0, sizeof(COSA_DML_MOCA_IF_DINFO));
+		returnStatusDinfo = CosaDmlMocaIfGetDinfo(NULL, pMyObject->MoCAIfFullTable[ulIndex].MoCAIfFull.Cfg.InstanceNumber-1, &DynamicInfo);          
 		AnscTraceWarning(("----------------------\n"));
-                AnscTraceWarning(("MOCA_HEALTH : NCMacAddress %s \n",DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress));
+        if (returnStatusDinfo == ANSC_STATUS_SUCCESS)
+        {
+            AnscTraceWarning(("MOCA_HEALTH : NCMacAddress %s \n",DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress));
+        }
 		AnscTraceWarning(("MOCA_HEALTH : Interface %d , Number of Associated Devices %d \n", ulIndex+1 , AssocDeviceCount));
-		for ( ulIndex1 = 0; ulIndex1 < AssocDeviceCount; ulIndex1++ )
-		{
-			AnscTraceWarning(("MOCA_HEALTH : Device %d \n", ulIndex1 + 1));
-			AnscTraceWarning(("MOCA_HEALTH : PHYTxRate %lu \n", pMoCAAssocDevice[ulIndex1].PHYTxRate));
-			AnscTraceWarning(("MOCA_HEALTH : PHYRxRate %lu \n", pMoCAAssocDevice[ulIndex1].PHYRxRate));
-			AnscTraceWarning(("MOCA_HEALTH : TxPowerControlReduction %lu \n", pMoCAAssocDevice[ulIndex1].TxPowerControlReduction));
-			AnscTraceWarning(("MOCA_HEALTH : RxPowerLevel %d \n", pMoCAAssocDevice[ulIndex1].RxPowerLevel));			
-		}
+        if ((returnStatusAssocDevices == ANSC_STATUS_SUCCESS) && (pMoCAAssocDevice !=NULL))
+        {
+   		    for ( ulIndex1 = 0; ulIndex1 < AssocDeviceCount; ulIndex1++ )
+		    {
+		    	AnscTraceWarning(("MOCA_HEALTH : Device %d \n", ulIndex1 + 1));
+	    		AnscTraceWarning(("MOCA_HEALTH : PHYTxRate %lu \n", pMoCAAssocDevice[ulIndex1].PHYTxRate));
+			    AnscTraceWarning(("MOCA_HEALTH : PHYRxRate %lu \n", pMoCAAssocDevice[ulIndex1].PHYRxRate));
+			    AnscTraceWarning(("MOCA_HEALTH : TxPowerControlReduction %lu \n", pMoCAAssocDevice[ulIndex1].TxPowerControlReduction));
+			    AnscTraceWarning(("MOCA_HEALTH : RxPowerLevel %d \n", pMoCAAssocDevice[ulIndex1].RxPowerLevel));			
+		    }
+        }
 		AnscTraceWarning(("----------------------\n"));
 
 		if (pMoCAAssocDevice)
