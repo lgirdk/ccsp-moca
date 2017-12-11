@@ -219,6 +219,7 @@ void MoCA_Log()
 	COSA_DML_MOCA_IF_DINFO DynamicInfo={0};
     ANSC_STATUS            returnStatusAssocDevices = ANSC_STATUS_SUCCESS;
     ANSC_STATUS            returnStatusDinfo = ANSC_STATUS_SUCCESS;
+    char                   X_CISCO_NetworkCoordinatorMACAddress[18];
 
 	Interface_count = CosaDmlMocaGetNumberOfIfs((ANSC_HANDLE)NULL);
 
@@ -239,7 +240,8 @@ void MoCA_Log()
 		AnscTraceWarning(("----------------------\n"));
         if (returnStatusDinfo == ANSC_STATUS_SUCCESS)
         {
-            AnscTraceWarning(("MOCA_HEALTH : NCMacAddress %s \n",DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress));
+            snprintf(X_CISCO_NetworkCoordinatorMACAddress, sizeof(X_CISCO_NetworkCoordinatorMACAddress), "%s", DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress);
+            AnscTraceWarning(("MOCA_HEALTH : NCMacAddress %s \n", X_CISCO_NetworkCoordinatorMACAddress));
         }
 		AnscTraceWarning(("MOCA_HEALTH : Interface %d , Number of Associated Devices %d \n", ulIndex+1 , AssocDeviceCount));
         if ((returnStatusAssocDevices == ANSC_STATUS_SUCCESS) && (pMoCAAssocDevice !=NULL))
@@ -260,7 +262,6 @@ void MoCA_Log()
 			AnscFreeMemory(pMoCAAssocDevice);
 			pMoCAAssocDevice= NULL;
 		}   
-		
 	}
 }
 void * Logger_Thread(void *data)
@@ -272,7 +273,6 @@ void * Logger_Thread(void *data)
 	while(1)
 	{
 		CosaDmlMocaGetLogStatus(&Log_Status);
-
 		if(Log_Status.Log_Enable)
 			MoCA_Log();
 
@@ -287,11 +287,11 @@ void CosaMoCALogger()
 
 	if(res != 0) 
 	{
-		AnscTraceWarning(("Create Logger_Thread error %d\n", res));
+		AnscTraceWarning(("CosaMoCAInitialize Create Logger_Thread error %d\n", res));
 	}
 	else
 	{
-		AnscTraceWarning(("Logger Thread Created\n"));
+		AnscTraceWarning(("CosaMoCAInitialize Logger Thread Created\n"));
 	}
 
 }
@@ -348,12 +348,36 @@ CosaMoCAInitialize
         CcspTraceWarning(("CosaMoCAInitialize - LPC role is %lu...\n", ulRole));
     }
 */
+
+    AnscTraceWarning(("CosaMoCAInitialize start. \n"));
+
+    if( !pMyObject )
+    {
+        AnscTraceWarning(("CosaMoCAInitialize -- ERROR!!!!! NULL pMyObject.\n"));
+        return ANSC_STATUS_FAILURE;
+    }
+
     pMyObject->pSlapMoCADm = (ANSC_HANDLE)pSlapMoCADm;
     pMyObject->pPoamMoCADm = (ANSC_HANDLE)pPoamMoCADm;
 
-    CosaDmlMocaInit(NULL, (ANSC_HANDLE)&pMyObject);
+    if ( CosaDmlMocaInit(NULL, (ANSC_HANDLE)&pMyObject) != ANSC_STATUS_SUCCESS )
+    {
+        AnscTraceWarning(("CosaMoCAInitialize -- ERROR!!!!! CosaDmlMocaInit.\n"));
+    }
+    else
+    {
+        AnscTraceWarning(("CosaMoCAInitialize -- Success CosaDmlMocaInit.\n"));
+    }
 
-    CosaDmlMocaGetCfg(NULL, &pMyObject->MoCACfg);
+
+    if ( CosaDmlMocaGetCfg(NULL, &pMyObject->MoCACfg) != ANSC_STATUS_SUCCESS )
+    {
+        AnscTraceWarning(("CosaMoCAInitialize -- ERROR!!!!! CosaDmlMocaGetCfg.\n"));
+    }
+    else
+    {
+        AnscTraceWarning(("CosaMoCAInitialize -- Success CosaDmlMocaGetCfg.\n"));
+    }
 
     _ansc_memset(pMyObject->MoCAIfFullTable, 0, sizeof(COSA_DML_MOCA_IF_FULL_TABLE) * MOCA_INTEFACE_NUMBER);
 
@@ -362,6 +386,10 @@ CosaMoCAInitialize
     {
         AnscTraceWarning(("CosaMoCAInitialize -- ERROR!!!!! the real MoCA interface number(%lu) is bigger than predefined number(%d).\n", ulCount, MOCA_INTEFACE_NUMBER));
         assert(ulCount <= MOCA_INTEFACE_NUMBER );
+    }
+    else
+    {
+        AnscTraceWarning(("CosaMoCAInitialize -- Success CosaDmlMocaGetNumberOfIfs.\n"));
     }
     
     ulNextInsNum = 1;
@@ -374,8 +402,15 @@ CosaMoCAInitialize
         AnscSListInitializeHeader( &pMyObject->MoCAIfFullTable[ulIndex].pMoCAExtAggrCounterTable );
         //AnscSListInitializeHeader( &pMyObject->MoCAIfFullTable[ulIndex].MoCAMeshTxNodeTable );
 
-        CosaDmlMocaIfGetQos(NULL, ulIndex, &pMyObject->MoCAIfFullTable[ulIndex].MoCAIfQos);
-        
+        if ( CosaDmlMocaIfGetQos(NULL, ulIndex, &pMyObject->MoCAIfFullTable[ulIndex].MoCAIfQos) != ANSC_STATUS_SUCCESS )
+        {
+            AnscTraceWarning(("CosaMoCAInitialize -- ERROR!!!!! CosaDmlMocaIfGetQos.\n"));
+        }
+        else
+        {
+            AnscTraceWarning(("CosaMoCAInitialize -- Success CosaDmlMocaIfGetQos.\n"));
+        }
+
         pMyObject->MoCAIfFullTable[ulIndex].MoCAIfFull.Cfg.InstanceNumber = ulNextInsNum++;    
     }
     
@@ -391,10 +426,25 @@ CosaMoCAInitialize
         //If bridge mode enabled then Disable MoCA.
         if (0 != mode) 
         {
-            CosaDmlMocaIfSetCfg( NULL, 0, &pMyObject->MoCAIfFullTable[0].MoCAIfFull.Cfg);
+            if ( CosaDmlMocaIfSetCfg( NULL, 0, &pMyObject->MoCAIfFullTable[0].MoCAIfFull.Cfg) != ANSC_STATUS_SUCCESS )
+            {
+                AnscTraceWarning(("CosaMoCAInitialize -- ERROR!!!!! CosaDmlMocaIfSetCfg.\n"));
+            }
+            else
+            {
+                AnscTraceWarning(("CosaMoCAInitialize -- Success CosaDmlMocaIfSetCfg.\n"));
+            }
         }
     }
-    CosaMoCAGetForceEnable(&pMyObject->MoCACfg);
+    if ( CosaMoCAGetForceEnable(&pMyObject->MoCACfg) != ANSC_STATUS_SUCCESS )
+    {
+        AnscTraceWarning(("CosaMoCAInitialize -- ERROR!!!!! CosaMoCAGetForceEnable.\n"));
+    }
+    else
+    {
+        AnscTraceWarning(("CosaMoCAInitialize -- Success CosaMoCAGetForceEnable.\n"));
+    }
+
     CosaMoCAUpdate();
 #ifdef MOCA_LINK_HEALTH_LOG
     CosaMoCALogger();
@@ -405,6 +455,8 @@ CosaMoCAInitialize
         CcspTraceError(("RDK_LOG_ERROR, CcspMoCA %s : Failed to Start Thread to start SynchronizeMoCADevices  \n", __FUNCTION__ ));
         return ANSC_STATUS_FAILURE;
     }
+
+    AnscTraceWarning(("CosaMoCAInitialize end. \n"));
 
     return returnStatus;
 }
@@ -476,7 +528,10 @@ CosaMoCARemove
     }
 #endif
     /* Remove self */
-    AnscFreeMemory((ANSC_HANDLE)pMyObject);
+    if (pMyObject)
+    {
+        AnscFreeMemory((ANSC_HANDLE)pMyObject);
+    }
 
     return returnStatus;
 }

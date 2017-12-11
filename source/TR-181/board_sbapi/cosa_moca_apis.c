@@ -153,7 +153,7 @@ static void write_log_console(char* msg)
         strftime(timestring, 26, "%Y-%m-%d %H:%M:%S", tm_info);
 
         //combine time string and the input msg
-        sprintf(buffer, "CiscoARM : %s %s", timestring, msg);
+        snprintf(buffer, sizeof(buffer), "CiscoARM : %s %s", timestring, msg);
         pFile = fopen("/rdklogs/logs/Consolelog.txt.0","a+");
         if(pFile)
         {
@@ -415,11 +415,17 @@ CosaDmlMocaSetCfg
         PCOSA_DML_MOCA_CFG          pCfg
     )
 {
+    char X_CISCO_COM_ProvisioningFilename[128];
+    char X_CISCO_COM_ProvisioningServerAddress[64];
+
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
 
+    snprintf(X_CISCO_COM_ProvisioningFilename, sizeof(X_CISCO_COM_ProvisioningFilename), "%s", pCfg->X_CISCO_COM_ProvisioningFilename);
+    snprintf(X_CISCO_COM_ProvisioningServerAddress, sizeof(X_CISCO_COM_ProvisioningServerAddress), "%s", pCfg->X_CISCO_COM_ProvisioningServerAddress);
+
     AnscTraceWarning(("CosaDmlMocaSetCfg -- %s %s %s.\n", 
-        pCfg->X_CISCO_COM_ProvisioningFilename, 
-        pCfg->X_CISCO_COM_ProvisioningServerAddress, 
+        X_CISCO_COM_ProvisioningFilename, 
+        X_CISCO_COM_ProvisioningServerAddress, 
         (pCfg->X_CISCO_COM_ProvisioningServerAddressType==1)?"IPv4":"IPv6"));
 
 
@@ -491,6 +497,7 @@ CosaDmlMocaIfSetCfg
     )
 {
     char str_value[kMax_StringValue];
+    char FreqCurrentMaskSetting[128];
     int status,mode=0;
     int mask;
     int freq;
@@ -829,7 +836,8 @@ CosaDmlMocaIfSetCfg
 
          if(pCfg->X_CISCO_COM_ChannelScanning == FALSE) {
 
-             AnscTraceWarning(("pCfg->FreqCurrentMaskSetting: %s\n", pCfg->FreqCurrentMaskSetting));
+             snprintf(FreqCurrentMaskSetting, sizeof(FreqCurrentMaskSetting), "%s", pCfg->FreqCurrentMaskSetting);
+             AnscTraceWarning(("pCfg->FreqCurrentMaskSetting: %s\n", FreqCurrentMaskSetting));
     
              //sscanf(pCfg->FreqCurrentMaskSetting, "%016x", &mask);
              //freq = moca_FreqMaskToValue(mask); 
@@ -1558,9 +1566,12 @@ CosaDmlMocaIfGetAssocDevices
         return ANSC_STATUS_FAILURE;
     }
 
+    *pulCount      = 0;    
+    *ppDeviceArray = NULL;
+
     if ( ulInterfaceIndex == 0 )
     {
-	moca_cpe_t cpes[kMoca_MaxCpeList];
+	    moca_cpe_t cpes[kMoca_MaxCpeList];
         int        pnum_cpes     = 0,
                    iReturnStatus = STATUS_SUCCESS;
 
@@ -1584,6 +1595,11 @@ CosaDmlMocaIfGetAssocDevices
             ulSize = sizeof(COSA_DML_MOCA_ASSOC_DEVICE) * (*pulCount);
                 
             *ppDeviceArray = (PCOSA_DML_MOCA_ASSOC_DEVICE)AnscAllocateMemory(ulSize);
+            if (*ppDeviceArray)
+            {
+                _ansc_memset(*ppDeviceArray, 0, sizeof(ulSize)); 
+
+            }
 
 		    pdevice_array = (moca_associated_device_t *)
                 AnscAllocateMemory
@@ -1595,8 +1611,8 @@ CosaDmlMocaIfGetAssocDevices
             {
                 INT                 iReturnStatus   = STATUS_SUCCESS;
                 PCOSA_DML_MOCA_ASSOC_DEVICE pDeviceArray = *ppDeviceArray;
-		memset(pdevice_array ,0 , sizeof(moca_associated_device_t) * (*pulCount + COSA_DML_MOCA_AssocDeviceSafeguard));
 
+                _ansc_memset(pdevice_array ,0 , sizeof(moca_associated_device_t) * (*pulCount + COSA_DML_MOCA_AssocDeviceSafeguard)); 
                 iReturnStatus = moca_GetAssociatedDevices(ulInterfaceIndex, &pdevice_array);
 
                 if ( iReturnStatus == STATUS_SUCCESS )
@@ -1604,10 +1620,11 @@ CosaDmlMocaIfGetAssocDevices
         			/* Translate the Data Structures */
     				for (i = 0; i < *pulCount; i++)
     				{
-    					memcpy(pDeviceArray->MACAddress, 		  		  pdevice_array[i].MACAddress, 18);
+                        memcpy(pDeviceArray->MACAddress,                 pdevice_array[i].MACAddress, 18);
+
     					pDeviceArray->NodeID 							= pdevice_array[i].NodeID;
     					pDeviceArray->PreferredNC 						= pdevice_array[i].PreferredNC;
-    					memcpy(pDeviceArray->HighestVersion, 	  		  pdevice_array[i].HighestVersion, 64);
+    					strncpy(pDeviceArray->HighestVersion, 	  		  pdevice_array[i].HighestVersion, 64);
     					pDeviceArray->PHYTxRate 						= pdevice_array[i].PHYTxRate;
     					pDeviceArray->PHYRxRate 						= pdevice_array[i].PHYRxRate;
     					pDeviceArray->TxPowerControlReduction 			= pdevice_array[i].TxPowerControlReduction;
@@ -1958,6 +1975,9 @@ CosaDmlMocaIfGetAssocDevices
         return ANSC_STATUS_FAILURE;
     }
          
+    *pulCount      = 0;
+    *ppDeviceArray = NULL;
+
     if(Utopia_Count_AssociateDeviceEntry(pulCount) != 0){
             AnscTraceWarning(("MoCA: Count Associate device failed !!! \n"));
             return ANSC_STATUS_FAILURE;
@@ -2144,13 +2164,16 @@ CosaDmlMocaSetCfg
         PCOSA_DML_MOCA_CFG          pCfg
     )
 {
+    char X_CISCO_COM_ProvisioningFilename[128];
+    char X_CISCO_COM_ProvisioningServerAddress[64];
+
+    snprintf(X_CISCO_COM_ProvisioningFilename, sizeof(X_CISCO_COM_ProvisioningFilename), "%s", pCfg->X_CISCO_COM_ProvisioningFilename);
+    snprintf(X_CISCO_COM_ProvisioningServerAddress, sizeof(X_CISCO_COM_ProvisioningServerAddress), "%s", pCfg->X_CISCO_COM_ProvisioningServerAddress);
+
     AnscTraceWarning(("CosaDmlMocaSetCfg -- %s %s %s.\n", 
-        pCfg->X_CISCO_COM_ProvisioningFilename, 
-        pCfg->X_CISCO_COM_ProvisioningServerAddress, 
+        X_CISCO_COM_ProvisioningFilename, 
+        X_CISCO_COM_ProvisioningServerAddress, 
         (pCfg->X_CISCO_COM_ProvisioningServerAddressType==1)?"IPv4":"IPv6"));
-
-
-
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -2463,7 +2486,6 @@ CosaDmlMocaIfGetAssocDevices
     {
         return ANSC_STATUS_FAILURE;
     }
-
 
     *pulCount      = 0;
     *ppDeviceArray = NULL;
