@@ -279,11 +279,16 @@ MocaIf_GetAssocDevices
     )
 {
    int ulSize = 0;
+   int allocNum = 0;
+   int DeviceArrayCount = 0;
     
     if ( !pulCount || !ppDeviceArray )
     {
         return ANSC_STATUS_FAILURE;
     }
+
+    *pulCount      = 0;
+    *ppDeviceArray = NULL;
 
     if ( ulInterfaceIndex == 0 )
     {
@@ -292,71 +297,98 @@ MocaIf_GetAssocDevices
                    iReturnStatus = STATUS_SUCCESS;
 
         iReturnStatus =  moca_GetMocaCPEs(ulInterfaceIndex, cpes, &pnum_cpes);
+        AnscTraceWarning(("MocaIf_GetAssocDevices -- pnum_cpes:%d\n", pnum_cpes));
         if(( iReturnStatus == STATUS_SUCCESS ) && ( 0 < pnum_cpes ))
         {
             iReturnStatus = moca_GetNumAssociatedDevices(ulInterfaceIndex, pulCount);
+            AnscTraceWarning(("MocaIf_GetAssocDevices -- ulInterfaceIndex:%lu, pulCount:%lu\n", ulInterfaceIndex, *pulCount));
 
             if(( iReturnStatus == STATUS_SUCCESS ) && ( 0 < *pulCount ))
             {
                 moca_associated_device_t*       pdevice_array  = NULL;
                 int                             i;
 
-                ulSize = sizeof(COSA_DML_MOCA_ASSOC_DEVICE) * (pnum_cpes);
+                /* Allocate the larger of pnum_cpes or pulCount since the */
+                /* allocated array will be appended. */
+
+                if (pnum_cpes > *pulCount)
+                {
+                    allocNum = pnum_cpes;
+                }
+                else
+                {
+                    allocNum = *pulCount;
+                }
+
+                ulSize = sizeof(COSA_DML_MOCA_ASSOC_DEVICE) * (allocNum);
                     
                 *ppDeviceArray = (PCOSA_DML_MOCA_ASSOC_DEVICE)AnscAllocateMemory(ulSize);
+                if (*ppDeviceArray)
+                {
+                    _ansc_memset(*ppDeviceArray, 0, sizeof(ulSize));
+                }
 
                 pdevice_array = (moca_associated_device_t *)
                     AnscAllocateMemory
                         (
-                            sizeof(moca_associated_device_t) * (pnum_cpes + COSA_DML_MOCA_AssocDeviceSafeguard)
+                            sizeof(moca_associated_device_t) * (allocNum + COSA_DML_MOCA_AssocDeviceSafeguard)
                         );
+                if (pdevice_array)
+                {
+                    _ansc_memset(pdevice_array ,0 , sizeof(moca_associated_device_t) * (allocNum + COSA_DML_MOCA_AssocDeviceSafeguard));
+                }
                     
                 if ( *ppDeviceArray && pdevice_array )
                 {
                     INT                 iReturnStatus   = STATUS_SUCCESS;
                     PCOSA_DML_MOCA_ASSOC_DEVICE pDeviceArray = *ppDeviceArray;
-                    memset(pdevice_array ,0 , sizeof(moca_associated_device_t) * (pnum_cpes + COSA_DML_MOCA_AssocDeviceSafeguard));
 
                     iReturnStatus = moca_GetAssociatedDevices(ulInterfaceIndex, &pdevice_array);
-
                     if ( iReturnStatus == STATUS_SUCCESS )
                     {
                         /* Translate the Data Structures */
-                        for (i = 0; i < *pulCount; i++)
+                        for (i = 0; i < *pulCount; i++)  
                         {
-                           if(pDeviceArray && (&pdevice_array[i]) != NULL)
+                           if(pDeviceArray && ((&pdevice_array[i]) != NULL) && (i < allocNum))
                            {
-                            memcpy(pDeviceArray->MACAddress,                  pdevice_array[i].MACAddress, 18);
-                            pDeviceArray->NodeID                            = pdevice_array[i].NodeID;
-                            pDeviceArray->PreferredNC                       = pdevice_array[i].PreferredNC;
-                            memcpy(pDeviceArray->HighestVersion,              pdevice_array[i].HighestVersion, 64);
-                            pDeviceArray->PHYTxRate                         = pdevice_array[i].PHYTxRate;
-                            pDeviceArray->PHYRxRate                         = pdevice_array[i].PHYRxRate;
-                            pDeviceArray->TxPowerControlReduction           = pdevice_array[i].TxPowerControlReduction;
-                            pDeviceArray->RxPowerLevel                      = pdevice_array[i].RxPowerLevel;
-                            pDeviceArray->TxBcastRate                       = pdevice_array[i].TxBcastRate;
-                            pDeviceArray->RxBcastPowerLevel                 = pdevice_array[i].RxBcastPowerLevel;
-                            pDeviceArray->TxPackets                         = pdevice_array[i].TxPackets;
-                            pDeviceArray->RxPackets                         = pdevice_array[i].RxPackets;
-                            pDeviceArray->RxErroredAndMissedPackets         = pdevice_array[i].RxErroredAndMissedPackets;
-                            pDeviceArray->QAM256Capable                     = pdevice_array[i].QAM256Capable;
-                            pDeviceArray->PacketAggregationCapability       = pdevice_array[i].PacketAggregationCapability;
-                            pDeviceArray->RxSNR                             = pdevice_array[i].RxSNR;
-                            pDeviceArray->Active                            = pdevice_array[i].Active;
-                            pDeviceArray->X_CISCO_COM_RxBcastRate           = pdevice_array[i].RxBcastRate;
-                            pDeviceArray->X_CISCO_COM_NumberOfClients       = pdevice_array[i].NumberOfClients;
+                            memcpy(pDeviceArray->MACAddress,            pdevice_array[i].MACAddress, 18);
+                            pDeviceArray->NodeID                      = pdevice_array[i].NodeID;
+                            pDeviceArray->PreferredNC                 = pdevice_array[i].PreferredNC;
+                            memcpy(pDeviceArray->HighestVersion,        pdevice_array[i].HighestVersion, 64);
+                            pDeviceArray->PHYTxRate                   = pdevice_array[i].PHYTxRate;
+                            pDeviceArray->PHYRxRate                   = pdevice_array[i].PHYRxRate;
+                            pDeviceArray->TxPowerControlReduction     = pdevice_array[i].TxPowerControlReduction;
+                            pDeviceArray->RxPowerLevel                = pdevice_array[i].RxPowerLevel;
+                            pDeviceArray->TxBcastRate                 = pdevice_array[i].TxBcastRate;
+                            pDeviceArray->RxBcastPowerLevel           = pdevice_array[i].RxBcastPowerLevel;
+                            pDeviceArray->TxPackets                   = pdevice_array[i].TxPackets;
+                            pDeviceArray->RxPackets                   = pdevice_array[i].RxPackets;
+                            pDeviceArray->RxErroredAndMissedPackets   = pdevice_array[i].RxErroredAndMissedPackets;
+                            pDeviceArray->QAM256Capable               = pdevice_array[i].QAM256Capable;
+                            pDeviceArray->PacketAggregationCapability = pdevice_array[i].PacketAggregationCapability;
+                            pDeviceArray->RxSNR                       = pdevice_array[i].RxSNR;
+                            pDeviceArray->Active                      = pdevice_array[i].Active;
+                            pDeviceArray->X_CISCO_COM_RxBcastRate     = pdevice_array[i].RxBcastRate;
+                            pDeviceArray->X_CISCO_COM_NumberOfClients = pdevice_array[i].NumberOfClients;
                             ++pDeviceArray;  
+                            ++DeviceArrayCount;
                            }
                         }
+
+                        /* Append missing entries */
+
                         if(pnum_cpes != *pulCount)
                         {
                            char mac[18];
                            char mac1[18];
                            int j = 0,k = 0;
-			   int bFound = FALSE;
+                           int appendEntry = FALSE;
+
                            memset(mac,0,sizeof(mac));
                            memset(mac1,0,sizeof(mac));
-			   *pulCount = pnum_cpes;
+
+                           *pulCount = DeviceArrayCount;
+
                            for(j =0; j < pnum_cpes; j++)
                            {
 #ifndef INTEL_PUMA7
@@ -364,45 +396,60 @@ MocaIf_GetAssocDevices
                                sprintf(mac, "%02x:%02x:%02x:%02x:%02x:%02x",cpes[j].mac_addr[0],cpes[j].mac_addr[1],cpes[j].mac_addr[2],cpes[j].mac_addr[3],cpes[j].mac_addr[4],cpes[j].mac_addr[5]);
 
 #endif
-                               for(k = 0;k < i; k++)
+
+                               appendEntry = FALSE;
+
+                               /* Check all MACS in cpes and append if missing from pdevice_array */
+
+                               for(k = 0; k < i; k++)
                                {
 #ifdef INTEL_PUMA7
                                     //AXB6 change
-                                    if (!memcmp(cpes[j].mac_addr,pdevice_array[k].MACAddress,6))
+                                    if (!memcmp(cpes[j].mac_addr, pdevice_array[k].MACAddress,6))
                                     {
-                                        bFound = TRUE;
+                                        appendEntry = FALSE;
                                         break;
                                     }
                                     else
-                                        bFound = false;
+                                        appendEntry = TRUE;
 #else
                                     sprintf(mac1, "%02x:%02x:%02x:%02x:%02x:%02x",pdevice_array[k].MACAddress[0],pdevice_array[k].MACAddress[1],pdevice_array[k].MACAddress[2],pdevice_array[k].MACAddress[3],pdevice_array[k].MACAddress[4],pdevice_array[k].MACAddress[5]);
-                                    if(!strncmp(mac1,mac,18))
-					{
-					    bFound = TRUE;
-					    break;
-					}
-					else
-					    bFound = FALSE;
+
+                                    if(!strncmp(mac1, mac, 18))
+					                {
+					                    appendEntry = FALSE;
+					                    break;
+					                }
+					                else
+					                    appendEntry = TRUE;
 
 #endif
-				}
-				    if(bFound == FALSE)
-				    {
+                                }
 
-                                  if(pDeviceArray){
-                                    memcpy(pDeviceArray->MACAddress,cpes[j].mac_addr,6);
-                                    ++pDeviceArray;
-                                     }
+                                /* Append the missing entry onto the pDeviceArray */
+
+				                if(appendEntry == TRUE) 
+			            	    {
+                                    if((DeviceArrayCount < allocNum) && pDeviceArray)
+                                    {
+                                        AnscTraceWarning(("MocaIf_GetAssocDevices -- appending entry\n"));
+                                        memcpy(pDeviceArray->MACAddress, cpes[j].mac_addr, 6);
+                                        ++pDeviceArray;
+                                        ++DeviceArrayCount;
+
+                                        /* The returned count is the actual number of elements in the returned array */
+
+                                        *pulCount = DeviceArrayCount;
                                     }
+                                }
                               
-                           memset(mac,0,sizeof(mac));
-                           } 
+                                memset(mac,0,sizeof(mac));
+                            } 
                         }
+
 						if ( pdevice_array )
 						{
-
-                        AnscFreeMemory(pdevice_array);
+                            AnscFreeMemory(pdevice_array);
 						}
                         return  ANSC_STATUS_SUCCESS;
                     }
@@ -416,6 +463,7 @@ MocaIf_GetAssocDevices
                         {
                             AnscFreeMemory(*ppDeviceArray);
                             *ppDeviceArray = NULL;
+                            *pulCount      = 0;
                         }
 
                         return iReturnStatus;
@@ -434,6 +482,7 @@ MocaIf_GetAssocDevices
                     {
                         AnscFreeMemory(*ppDeviceArray);
                         *ppDeviceArray = NULL;
+                        *pulCount      = 0;
                     }
 
                     return  ANSC_STATUS_RESOURCES;
@@ -446,7 +495,6 @@ MocaIf_GetAssocDevices
         }
     }
 
-    AnscTraceWarning(("MocaIf_GetAssocDevices -- ulInterfaceIndex:%lu, pulCount:%lu\n", ulInterfaceIndex, *pulCount));
 
     return ANSC_STATUS_SUCCESS;
 }
