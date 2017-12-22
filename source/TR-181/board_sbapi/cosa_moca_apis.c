@@ -898,12 +898,10 @@ CosaDmlMocaIfGetCfg
     AnscTraceWarning(("CosaDmlMocaIfGetCfg -- ulInterfaceIndex:%lu.\n", uIndex));
     unsigned int moca_enable_db=0;
     char buf[10]={0};
-
     if ( !pCfg )
     {
         return ANSC_STATUS_FAILURE;
     }
-    _ansc_memset(pCfg, 0, sizeof(COSA_DML_MOCA_IF_CFG));
 
     if( (syscfg_get( NULL, "moca_enabled", buf, sizeof(buf)) == 0) && ( buf != NULL ) )
    {
@@ -1008,6 +1006,7 @@ CosaDmlMocaIfGetDinfo
     {
         return ANSC_STATUS_FAILURE;
     }
+
     _ansc_memset(pInfo, 0, sizeof(COSA_DML_MOCA_IF_DINFO));
         
     if (ulInterfaceIndex == 0)
@@ -1063,7 +1062,6 @@ CosaDmlMocaIfGetStaticInfo
     {
         return ANSC_STATUS_FAILURE;
     }
-    _ansc_memset(pSInfo, 0, sizeof(COSA_DML_MOCA_IF_SINFO));
 
     if ( uIndex == 0 )
     {
@@ -1112,6 +1110,7 @@ CosaDmlMocaIfGetStats
     {
         return ANSC_STATUS_FAILURE;
     }
+
     _ansc_memset(pStats, 0, sizeof(COSA_DML_MOCA_STATS));
 
     if ( ulInterfaceIndex == 1 )
@@ -1524,12 +1523,6 @@ CosaDmlMocaIfGetQos
 {
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
 
-    if (!pConf)
-    {
-        return ANSC_STATUS_FAILURE;
-    }
-    _ansc_memset(pConf, 0, sizeof(COSA_DML_MOCA_QOS));
-
     pConf->Enabled = FALSE;
     
     AnscTraceWarning(("CosaDmlMocaIfGetQos -- ulInterfaceIndex:%lu, Enabled:%s\n", ulInterfaceIndex, (pConf->Enabled==TRUE)?"TRUE":"FALSE" ));
@@ -1631,7 +1624,7 @@ CosaDmlMocaIfGetAssocDevices
 
     					pDeviceArray->NodeID 							= pdevice_array[i].NodeID;
     					pDeviceArray->PreferredNC 						= pdevice_array[i].PreferredNC;
-    					memcpy(pDeviceArray->HighestVersion, 	  		  pdevice_array[i].HighestVersion, 64);
+    					strncpy(pDeviceArray->HighestVersion, 	  		  pdevice_array[i].HighestVersion, 64);
     					pDeviceArray->PHYTxRate 						= pdevice_array[i].PHYTxRate;
     					pDeviceArray->PHYRxRate 						= pdevice_array[i].PHYRxRate;
     					pDeviceArray->TxPowerControlReduction 			= pdevice_array[i].TxPowerControlReduction;
@@ -1667,11 +1660,10 @@ CosaDmlMocaIfGetAssocDevices
                 if ( *ppDeviceArray )
                 {
                     AnscFreeMemory(*ppDeviceArray);
+                    *ppDeviceArray = NULL;
                 }
-                *ppDeviceArray = NULL;
-                *pulCount      = 0;    
 
-                return  ANSC_STATUS_RESOURCES;
+			return  ANSC_STATUS_RESOURCES;
 		    }
 		}
         }
