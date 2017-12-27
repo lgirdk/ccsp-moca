@@ -207,6 +207,7 @@ MoCADeviceInfo* FindDeviceInMoCAList(char* device_mac)
     CcspMoCAConsoleTrace(("RDK_LOG_DEBUG,  ENTRY [%s] \n", __FUNCTION__ ));
     CcspMoCAConsoleTrace(("RDK_LOG_DEBUG,  Input MAC [%s] \n", device_mac ));
 
+    pthread_mutex_lock(&mocaListMutex);
     if(mocaList)
     {
         MoCADeviceInfo* tmp = mocaList->deviceList;
@@ -216,16 +217,19 @@ MoCADeviceInfo* FindDeviceInMoCAList(char* device_mac)
 
             if(!strcasecmp(tmp->deviceMac, device_mac))
             {
+                pthread_mutex_unlock(&mocaListMutex);
                 return tmp;
             }
 
             tmp = tmp->next;    
         }
         
+        pthread_mutex_unlock(&mocaListMutex);
         return NULL;          
     }
     else
     {
+        pthread_mutex_unlock(&mocaListMutex);
         return NULL;
     }
   
