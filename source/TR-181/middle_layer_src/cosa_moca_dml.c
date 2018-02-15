@@ -458,8 +458,11 @@ MoCA_SetParamBoolValue
     /* check the parameter name and set the corresponding value */
     if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_MoCAHost_Sync", TRUE))
     {
-        
+#ifdef _COSA_INTEL_XB3_ARM_
+        moca_sendMoCAListUpdate(TRUE);
+#else       
         Send_Update_to_LMLite(TRUE);
+#endif
         return TRUE;
     }
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */

@@ -73,6 +73,9 @@
 
 #include "cosa_apis.h"
 #include "plugin_main_apis.h"
+#ifdef _COSA_INTEL_XB3_ARM_
+#include "moca_hal.h"
+#endif
 
 /**********************************************************************
                 STRUCTURE AND CONSTANT DEFINITIONS
@@ -535,4 +538,13 @@ CosaDmlMocaIfFlowTableGetTable
 ANSC_STATUS is_usg_in_bridge_mode(BOOL *pBridgeMode);
 ANSC_STATUS CosaMoCAGetForceEnable(PCOSA_DML_MOCA_CFG pCfg);
 BOOL MoCA_SetForceEnable(PCOSA_DML_MOCA_IF_CFG pCfg, PCOSA_DML_MOCA_CFG pFCfg, BOOL bValue);
+
+#ifdef _COSA_INTEL_XB3_ARM_
+INT CosaMoCA_AssocDeviceSync_cb
+    (   
+        ULONG               ifIndex, 
+        MoCAHalDeviceInfo   *moca_dev
+    );
+#endif
+
 #endif

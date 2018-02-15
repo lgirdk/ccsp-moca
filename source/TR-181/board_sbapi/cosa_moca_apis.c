@@ -1815,6 +1815,204 @@ BOOL MoCA_SetForceEnable(PCOSA_DML_MOCA_IF_CFG pCfg, PCOSA_DML_MOCA_CFG  pFCfg, 
 	return TRUE;
 }
 
+#ifdef _COSA_INTEL_XB3_ARM_
+static char deviceMACAddr[32]={'\0'}; 
+
+static int CosaMoCA_DiscoverComponent(char** pcomponentName, char** pcomponentPath )
+{
+    char CrName[256] = {0};
+    int ret = 0;
+    AnscTraceInfo(("RDK_LOG_DEBUG, CcspMoCA %s ENTER\n", __FUNCTION__ ));
+
+    CrName[0] = 0;
+    strcpy(CrName, "eRT.");
+    strcat(CrName, CCSP_DBUS_INTERFACE_CR);
+
+    componentStruct_t **components = NULL;
+    int compNum = 0;
+    int res = CcspBaseIf_discComponentSupportingNamespace (
+            bus_handle,
+            CrName,
+#ifndef _XF3_PRODUCT_REQ_
+            "Device.X_CISCO_COM_CableModem.MACAddress",
+#else
+            "Device.DPoE.Mac_address",
+#endif      
+            "",
+            &components,
+            &compNum);
+    if(res != CCSP_SUCCESS || compNum < 1)
+    {
+        CcspTraceError(("%s find eRT PAM component error %d\n", __FUNCTION__, res));
+        ret = -1;
+    }
+    else
+    {
+        *pcomponentName = AnscCloneString(components[0]->componentName);
+        *pcomponentPath = AnscCloneString(components[0]->dbusPath);
+        free_componentStruct_t(bus_handle, compNum, components);
+        CcspTraceInfo(("%s find eRT PAM component %s--%s\n", __FUNCTION__, *pcomponentName, *pcomponentPath));
+    }
+    
+    AnscTraceInfo(("RDK_LOG_DEBUG, CcspMoCA %s EXIT\n", __FUNCTION__ ));
+    return ret;
+}
+
+static char* getDeviceMacAddr(void)
+{
+    AnscTraceInfo(("RDK_LOG_DEBUG, CcspMoCA %s ENTER\n", __FUNCTION__ ));
+
+    while(!strlen(deviceMACAddr))
+    {
+        int ret = -1, val_size =0,cnt =0;
+        char *pcomponentName = NULL, *pcomponentPath = NULL;
+        parameterValStruct_t **parameterval = NULL;
+
+#ifndef _XF3_PRODUCT_REQ_
+        char *getList[] = {"Device.X_CISCO_COM_CableModem.MACAddress"};
+#else
+        char *getList[] = {"Device.DPoE.Mac_address"};
+#endif
+
+        if (strlen(deviceMACAddr))
+        {
+            break;
+        }
+
+        if(pcomponentPath == NULL || pcomponentName == NULL)
+        {
+            if(-1 == CosaMoCA_DiscoverComponent(&pcomponentName, &pcomponentPath)){
+                CcspTraceError(("%s ComponentPath or pcomponentName is NULL, waiting for compponent to come up\n", __FUNCTION__));
+                sleep(30);
+                continue;
+            }
+        }
+
+        ret = CcspBaseIf_getParameterValues(bus_handle,
+                    pcomponentName, pcomponentPath,
+                    getList,
+                    1, &val_size, &parameterval);
+        if(ret == CCSP_SUCCESS)
+        {
+            AnscTraceInfo(("RDK_LOG_DEBUG, val_size : %d\n",val_size));
+            for (cnt = 0; cnt < val_size; cnt++)
+            {
+                AnscTraceInfo(("RDK_LOG_DEBUG, parameterval[%d]->parameterName : %s\n",cnt,parameterval[cnt]->parameterName));
+                AnscTraceInfo(("RDK_LOG_DEBUG, parameterval[%d]->parameterValue : %s\n",cnt,parameterval[cnt]->parameterValue));
+                AnscTraceInfo(("RDK_LOG_DEBUG, parameterval[%d]->type :%d\n",cnt,parameterval[cnt]->type));           
+            }
+            strcpy(deviceMACAddr, parameterval[0]->parameterValue);
+            if(pcomponentName)
+            {
+                AnscFreeMemory(pcomponentName);
+            }
+            if(pcomponentPath)
+            {
+                AnscFreeMemory(pcomponentPath);
+            }
+
+        }
+        else
+        {
+            CcspTraceError(("RDK_LOG_ERROR, Failed to get values for %s ret: %d\n",getList[0],ret));
+            sleep(10);
+        }
+     
+        AnscTraceInfo(("RDK_LOG_DEBUG, Before free_parameterValStruct_t...\n"));
+        free_parameterValStruct_t(bus_handle, val_size, parameterval);
+        AnscTraceInfo(("RDK_LOG_DEBUG, After free_parameterValStruct_t...\n"));        
+    }
+        
+    AnscTraceInfo(("RDK_LOG_DEBUG, CcspMoCA %s EXIT\n", __FUNCTION__ ));
+
+    return deviceMACAddr;
+}
+
+
+INT CosaMoCA_AssocDeviceSync_cb(ULONG ifIndex, MoCAHalDeviceInfo *moca_dev)
+{
+
+    parameterValStruct_t notif_val[1];
+    char                 param_name[256] = "Device.Hosts.X_RDKCENTRAL-COM_LMHost_Sync_From_MoCA";
+    char                 component[256]  = "eRT.com.cisco.spvtg.ccsp.lmlite";
+    char                 bus[256]        = "/com/cisco/spvtg/ccsp/lmlite";
+    char                 str[2048]       = {0};
+    char*                faultParam      = NULL;
+    int                  ret             = 0; 
+
+    if (!moca_dev)
+    {
+        return CCSP_ERR_INVALID_ARGUMENTS;
+    }  
+
+    moca_dev->parentMac = getDeviceMacAddr();
+
+    AnscTraceInfo(("RDK_LOG_DEBUG, CcspMoCA %s moca_dev->deviceMac %s \n", __FUNCTION__ , moca_dev->deviceMac));
+    AnscTraceInfo(("RDK_LOG_DEBUG, CcspMoCA %s moca_dev->parentMac %s \n", __FUNCTION__ , moca_dev->parentMac));
+    AnscTraceInfo(("RDK_LOG_DEBUG, CcspMoCA %s moca_dev->ssidType %s \n", __FUNCTION__ , moca_dev->ssidType));
+    AnscTraceInfo(("RDK_LOG_DEBUG, CcspMoCA %s moca_dev->AssociatedDevice %s \n", __FUNCTION__ , moca_dev->AssociatedDevice));
+    AnscTraceInfo(("RDK_LOG_DEBUG, CcspMoCA %s moca_dev->RSSI %d \n", __FUNCTION__ , moca_dev->RSSI));
+    AnscTraceInfo(("RDK_LOG_DEBUG, CcspMoCA %s moca_dev->Status %d \n", __FUNCTION__ , moca_dev->Status));
+    AnscTraceInfo(("RDK_LOG_DEBUG, CcspMoCA %s moca_dev->Updated %d \n", __FUNCTION__ , moca_dev->Updated));
+    AnscTraceInfo(("RDK_LOG_DEBUG, CcspMoCA %s moca_dev->StatusChange  %d \n", __FUNCTION__ , moca_dev->StatusChange ));
+
+    /* 
+    * Group Received Associated Params as below,
+    * MAC_Address,AssociatedDevice_Alias,SSID_Alias,ParentMac,DeviceType,RSSI_Signal_Strength,Status
+    */
+    if(moca_dev->Status)
+    {
+        snprintf(   str, sizeof(str), "%s,%s,%s,%s,%s,%d,%d", 
+                    moca_dev->deviceMac, 
+                    (NULL != moca_dev->AssociatedDevice) ? moca_dev->AssociatedDevice : "NULL", 
+                    (NULL != moca_dev->ssidType) ? moca_dev->ssidType : "NULL", 
+                    (NULL != moca_dev->parentMac) ? moca_dev->parentMac : "NULL", 
+                    (NULL != moca_dev->deviceType) ? moca_dev->deviceType : "NULL", 
+                    moca_dev->RSSI,
+                    moca_dev->Status);
+    }
+    else
+    {
+        snprintf(   str, sizeof(str), "%s,%s,%s,%s,%s,%d,%d",
+                    moca_dev->deviceMac,
+                    (NULL != moca_dev->AssociatedDevice) ? moca_dev->AssociatedDevice : "NULL",
+                    (NULL != moca_dev->ssidType) ? moca_dev->ssidType : "NULL",
+                    (NULL != moca_dev->parentMac) ? moca_dev->parentMac : "NULL",
+                    "Device.MoCA.Interface.1.",
+                    moca_dev->RSSI,
+                    moca_dev->Status);
+    }
+
+    AnscTraceWarning(("RDK_LOG_WARN, %s-%d [%s] \n",__FUNCTION__,__LINE__,str));
+
+    notif_val[0].parameterName  = param_name;
+    notif_val[0].parameterValue = str;
+    notif_val[0].type           = ccsp_string;
+
+    ret = CcspBaseIf_setParameterValues(    bus_handle,
+                                            component,
+                                            bus,
+                                            0,
+                                            0,
+                                            notif_val,
+                                            1,
+                                            TRUE,
+                                            &faultParam);
+    if(ret == CCSP_SUCCESS)
+    {
+        CcspTraceWarning(("%s : Success \n",__FUNCTION__));
+    }
+    else
+    {
+        CcspTraceWarning(("%s : Failed ret %d\n",__FUNCTION__,ret));
+        AnscTraceInfo(("RDK_LOG_WARN, CcspMoCA : Sending Notification Fail [%d] \n", ret));
+    }
+    AnscTraceInfo(("RDK_LOG_DEBUG, CcspMoCA %s EXIT\n", __FUNCTION__ ));
+
+    return ANSC_STATUS_SUCCESS;
+}
+#endif
+
 #elif (_COSA_DRG_TPG_)
 
 #include <utctx.h>

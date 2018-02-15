@@ -79,6 +79,8 @@
 #include <sysevent/sysevent.h>
 #include <time.h>
 #include "cosa_moca_network_info.h"
+#include "cosa_moca_apis.h"
+
 extern void * g_pDslhDmlAgent;
 extern ANSC_HANDLE g_MoCAObject ;
 
@@ -450,12 +452,21 @@ CosaMoCAInitialize
     CosaMoCALogger();
 #endif
 
+#ifdef _COSA_INTEL_XB3_ARM_  
+    moca_associatedDevice_callback_register(CosaMoCA_AssocDeviceSync_cb);
+
+    if  (TRUE == pMyObject->MoCAIfFullTable[0].MoCAIfFull.Cfg.bEnabled)
+    {
+        AnscTraceWarning(("CosaMoCAInitialize -- start Assoc Devices Thread\n"));
+        moca_startAssocDevicesThread();
+    }
+#else
     if (pthread_create(&tid, NULL, SynchronizeMoCADevices, NULL))
     {
         CcspTraceError(("RDK_LOG_ERROR, CcspMoCA %s : Failed to Start Thread to start SynchronizeMoCADevices  \n", __FUNCTION__ ));
         return ANSC_STATUS_FAILURE;
     }
-
+#endif
     AnscTraceWarning(("CosaMoCAInitialize end. \n"));
 
     return returnStatus;
