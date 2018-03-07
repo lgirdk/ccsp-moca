@@ -211,7 +211,7 @@ void CosaMoCAUpdate()
 	}
 	return;
 }
-#ifdef MOCA_LINK_HEALTH_LOG
+
 void MoCA_Log()
 {
 
@@ -222,6 +222,7 @@ void MoCA_Log()
     ANSC_STATUS            returnStatusAssocDevices = ANSC_STATUS_SUCCESS;
     ANSC_STATUS            returnStatusDinfo = ANSC_STATUS_SUCCESS;
     char                   X_CISCO_NetworkCoordinatorMACAddress[18];
+	char					mac_buff[32] , mac_buff1[256] ;
 
 	Interface_count = CosaDmlMocaGetNumberOfIfs((ANSC_HANDLE)NULL);
 
@@ -246,6 +247,7 @@ void MoCA_Log()
             AnscTraceWarning(("MOCA_HEALTH : NCMacAddress %s \n", X_CISCO_NetworkCoordinatorMACAddress));
         }
 		AnscTraceWarning(("MOCA_HEALTH : Interface %d , Number of Associated Devices %d \n", ulIndex+1 , AssocDeviceCount));
+		memset(mac_buff1,0,sizeof(mac_buff1));
         if ((returnStatusAssocDevices == ANSC_STATUS_SUCCESS) && (pMoCAAssocDevice !=NULL))
         {
    		    for ( ulIndex1 = 0; ulIndex1 < AssocDeviceCount; ulIndex1++ )
@@ -255,10 +257,33 @@ void MoCA_Log()
 			    AnscTraceWarning(("MOCA_HEALTH : PHYRxRate %lu \n", pMoCAAssocDevice[ulIndex1].PHYRxRate));
 			    AnscTraceWarning(("MOCA_HEALTH : TxPowerControlReduction %lu \n", pMoCAAssocDevice[ulIndex1].TxPowerControlReduction));
 			    AnscTraceWarning(("MOCA_HEALTH : RxPowerLevel %d \n", pMoCAAssocDevice[ulIndex1].RxPowerLevel));			
+
+				memset(mac_buff,0,sizeof(mac_buff));
+#if defined(_COSA_BCM_MIPS_)
+		        AnscCopyString(mac_buff,pMoCAAssocDevice[ulIndex1].MACAddress);
+#else
+		        /* collect value */
+		        _ansc_sprintf
+		            (
+		                mac_buff,
+		                "%02X:%02X:%02X:%02X:%02X:%02X",
+		                pMoCAAssocDevice[ulIndex1].MACAddress[0],
+		                pMoCAAssocDevice[ulIndex1].MACAddress[1],
+		                pMoCAAssocDevice[ulIndex1].MACAddress[2],
+		                pMoCAAssocDevice[ulIndex1].MACAddress[3],
+		                pMoCAAssocDevice[ulIndex1].MACAddress[4],
+		                pMoCAAssocDevice[ulIndex1].MACAddress[5]
+		            );
+#endif
+				strcat(mac_buff1,mac_buff);
+				if(ulIndex1 < (AssocDeviceCount-1))
+					strcat(mac_buff1,",");
 		    }
         }
 		AnscTraceWarning(("----------------------\n"));
 
+		AnscTraceWarning(("MOCA_MAC_%d_TOTAL_COUNT:%d\n", ulIndex+1 , AssocDeviceCount));
+		AnscTraceWarning(("MOCA_MAC_%d:%s\n", ulIndex+1 , mac_buff1));
 		if (pMoCAAssocDevice)
 		{
 			AnscFreeMemory(pMoCAAssocDevice);
@@ -270,15 +295,27 @@ void * Logger_Thread(void *data)
 {
 
 	COSA_DML_MOCA_LOG_STATUS Log_Status={3600,FALSE};
+	LONG timeleft;
+	ULONG Log_Period_old;
 	pthread_detach(pthread_self());
 	sleep(60);
+  
+  	while(!g_MoCAObject)
+          sleep(10);
+  
+	volatile PCOSA_DATAMODEL_MOCA            pMyObject     = (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
 	while(1)
 	{
-		CosaDmlMocaGetLogStatus(&Log_Status);
-		if(Log_Status.Log_Enable)
+		if(pMyObject->LogStatus.Log_Enable)
 			MoCA_Log();
 
-		sleep(Log_Status.Log_Period);
+		timeleft = pMyObject->LogStatus.Log_Period;
+		while(timeleft > 0)
+		{
+			Log_Period_old = pMyObject->LogStatus.Log_Period;
+			sleep(60);
+			timeleft=timeleft-60+(pMyObject->LogStatus.Log_Period)-Log_Period_old;
+		}
 	}
 }
 void CosaMoCALogger()
@@ -297,7 +334,7 @@ void CosaMoCALogger()
 	}
 
 }
-#endif
+
 /**********************************************************************
 
     caller:     self
@@ -447,10 +484,10 @@ CosaMoCAInitialize
         AnscTraceWarning(("CosaMoCAInitialize -- Success CosaMoCAGetForceEnable.\n"));
     }
 
+	CosaDmlMocaGetLogStatus(&pMyObject->LogStatus);
+
     CosaMoCAUpdate();
-#ifdef MOCA_LINK_HEALTH_LOG
     CosaMoCALogger();
-#endif
 
 #ifdef _COSA_INTEL_XB3_ARM_  
     moca_associatedDevice_callback_register(CosaMoCA_AssocDeviceSync_cb);

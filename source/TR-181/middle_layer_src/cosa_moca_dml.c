@@ -6106,22 +6106,11 @@ Logging_GetParamBoolValue
     )
 {
     /* check the parameter name and return the corresponding value */
-    char buf[8]={0};
-    
+    PCOSA_DATAMODEL_MOCA            pMyObject           = (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
 	
     if( AnscEqualString(ParamName, "xOpsDMMoCALogEnabled", TRUE))
     {
-#ifdef MOCA_LINK_HEALTH_LOG      
-	if(syscfg_get( NULL, "moca_log_enabled", buf, sizeof(buf)) == 0)
-	{
-		if( buf != NULL )
-		{
-			*pBool =  (strcmp(buf,"true") ? FALSE : TRUE);
-		}
-	}
-#else
-		*pBool = FALSE;
-#endif	      
+	*pBool =  pMyObject->LogStatus.Log_Enable;
        	return TRUE;
     }
 
@@ -6168,22 +6157,11 @@ Logging_GetParamUlongValue
     )
 {    
     /* check the parameter name and return the corresponding value */
-    char buf[16]={0};
+	PCOSA_DATAMODEL_MOCA			pMyObject			= (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
 
-	
     if( AnscEqualString(ParamName, "xOpsDMMoCALogPeriod", TRUE))
     {
-#ifdef MOCA_LINK_HEALTH_LOG         
-	if(syscfg_get( NULL, "moca_log_period", buf, sizeof(buf)) == 0)
-	{
-		if( buf != NULL )
-		{
-			*puLong =  atoi(buf);
-		}
-	}
-#else
-		*puLong = 0;
-#endif	      
+	*puLong =  pMyObject->LogStatus.Log_Period;
 	return TRUE;
     }
 
@@ -6234,11 +6212,10 @@ Logging_SetParamBoolValue
 {
     /* check the parameter name and return the corresponding value */
     char buf[8]={0};
-
+	PCOSA_DATAMODEL_MOCA			pMyObject			= (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
 	
     if( AnscEqualString(ParamName, "xOpsDMMoCALogEnabled", TRUE))
     {
-#ifdef MOCA_LINK_HEALTH_LOG       
 	if(bValue)
 		strcpy(buf,"true");
 	else
@@ -6254,8 +6231,11 @@ Logging_SetParamBoolValue
 		{
 			AnscTraceWarning(("syscfg_commit failed\n"));
 		}
+		else
+		{
+			pMyObject->LogStatus.Log_Enable = bValue;
+		}
 	}
-#endif
         return TRUE;
     }
 
@@ -6306,11 +6286,10 @@ Logging_SetParamUlongValue
 {    
     /* check the parameter name and return the corresponding value */    
     char buf[16]={0};
+	PCOSA_DATAMODEL_MOCA			pMyObject			= (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
 
-	
     if( AnscEqualString(ParamName, "xOpsDMMoCALogPeriod", TRUE))
     {
-#ifdef MOCA_LINK_HEALTH_LOG         
         /* collect value */
 
 	sprintf(buf,"%d",uValue);
@@ -6325,8 +6304,11 @@ Logging_SetParamUlongValue
 		{
 			AnscTraceWarning(("syscfg_commit failed\n"));
 		}
+		else
+		{
+			pMyObject->LogStatus.Log_Period = uValue;
+		}
 	}
-#endif
         return TRUE;
     }
 

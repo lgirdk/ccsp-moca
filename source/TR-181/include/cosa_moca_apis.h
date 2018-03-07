@@ -337,7 +337,6 @@ struct _COSA_DML_MOCA_ASSOC_DEVICE
 
 typedef struct _COSA_DML_MOCA_ASSOC_DEVICE COSA_DML_MOCA_ASSOC_DEVICE,  *PCOSA_DML_MOCA_ASSOC_DEVICE;
 
-#ifdef MOCA_LINK_HEALTH_LOG
 struct _COSA_DML_MOCA_LOG_STATUS
 {
     ULONG			Log_Period;
@@ -345,7 +344,6 @@ struct _COSA_DML_MOCA_LOG_STATUS
 }_struct_pack_;
 
 typedef struct _COSA_DML_MOCA_LOG_STATUS COSA_DML_MOCA_LOG_STATUS,  *PCOSA_DML_MOCA_LOG_STATUS;
-#endif
 /**********************************************************************
                 FUNCTION PROTOTYPES
 **********************************************************************/

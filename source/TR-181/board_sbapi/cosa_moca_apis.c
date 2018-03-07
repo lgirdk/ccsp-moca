@@ -1684,7 +1684,7 @@ CosaDmlMocaGetResetCount
 	moca_GetResetCount(pValue);	
     return ANSC_STATUS_SUCCESS;
 }
-#ifdef MOCA_LINK_HEALTH_LOG
+
 ANSC_STATUS
 CosaDmlMocaGetLogStatus
 	(
@@ -1714,7 +1714,7 @@ CosaDmlMocaGetLogStatus
 	}
 
 }
-#endif
+
 ANSC_STATUS is_usg_in_bridge_mode(BOOL *pBridgeMode)
 {
     ULONG ulEntryNameLen;
