@@ -397,7 +397,11 @@ MocaIf_GetAssocDevices
                            {
 #ifndef INTEL_PUMA7
                                //Not for AXB6
+#if defined(_COSA_BCM_MIPS_)
+                               sprintf(mac, "%02x:%02x:%02x:%02x:%02x:%02x", 0xff & cpes[j].mac_addr[0],0xff & cpes[j].mac_addr[1], 0xff & cpes[j].mac_addr[2], 0xff & cpes[j].mac_addr[3], 0xff & cpes[j].mac_addr[4],0xff & cpes[j].mac_addr[5]);
+#else
                                sprintf(mac, "%02x:%02x:%02x:%02x:%02x:%02x",cpes[j].mac_addr[0],cpes[j].mac_addr[1],cpes[j].mac_addr[2],cpes[j].mac_addr[3],cpes[j].mac_addr[4],cpes[j].mac_addr[5]);
+#endif
 
 #endif
 
