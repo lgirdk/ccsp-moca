@@ -355,7 +355,7 @@ MocaIf_GetAssocDevices
                         {
                            if(pDeviceArray && ((&pdevice_array[i]) != NULL) && (i < allocNum))
                            {
-                            memcpy(pDeviceArray->MACAddress,            pdevice_array[i].MACAddress, 18);
+                            memcpy(pDeviceArray->MACAddress,            pdevice_array[i].MACAddress, 6);
                             pDeviceArray->NodeID                      = pdevice_array[i].NodeID;
                             pDeviceArray->PreferredNC                 = pdevice_array[i].PreferredNC;
                             memcpy(pDeviceArray->HighestVersion,        pdevice_array[i].HighestVersion, 64);
@@ -395,15 +395,8 @@ MocaIf_GetAssocDevices
 
                            for(j =0; j < pnum_cpes; j++)
                            {
-#ifndef INTEL_PUMA7
-                               //Not for AXB6
-#if defined(_COSA_BCM_MIPS_)
-                               sprintf(mac, "%02x:%02x:%02x:%02x:%02x:%02x", 0xff & cpes[j].mac_addr[0],0xff & cpes[j].mac_addr[1], 0xff & cpes[j].mac_addr[2], 0xff & cpes[j].mac_addr[3], 0xff & cpes[j].mac_addr[4],0xff & cpes[j].mac_addr[5]);
-#else
-                               sprintf(mac, "%02x:%02x:%02x:%02x:%02x:%02x",cpes[j].mac_addr[0],cpes[j].mac_addr[1],cpes[j].mac_addr[2],cpes[j].mac_addr[3],cpes[j].mac_addr[4],cpes[j].mac_addr[5]);
-#endif
 
-#endif
+                               sprintf(mac, "%02x:%02x:%02x:%02x:%02x:%02x",cpes[j].mac_addr[0],cpes[j].mac_addr[1],cpes[j].mac_addr[2],cpes[j].mac_addr[3],cpes[j].mac_addr[4],cpes[j].mac_addr[5]);
 
                                appendEntry = FALSE;
 
@@ -411,16 +404,7 @@ MocaIf_GetAssocDevices
 
                                for(k = 0; k < i; k++)
                                {
-#ifdef INTEL_PUMA7
-                                    //AXB6 change
-                                    if (!memcmp(cpes[j].mac_addr, pdevice_array[k].MACAddress,6))
-                                    {
-                                        appendEntry = FALSE;
-                                        break;
-                                    }
-                                    else
-                                        appendEntry = TRUE;
-#else
+
                                     sprintf(mac1, "%02x:%02x:%02x:%02x:%02x:%02x",pdevice_array[k].MACAddress[0],pdevice_array[k].MACAddress[1],pdevice_array[k].MACAddress[2],pdevice_array[k].MACAddress[3],pdevice_array[k].MACAddress[4],pdevice_array[k].MACAddress[5]);
 
                                     if(!strncmp(mac1, mac, 18))
@@ -431,7 +415,6 @@ MocaIf_GetAssocDevices
 					                else
 					                    appendEntry = TRUE;
 
-#endif
                                 }
 
                                 /* Append the missing entry onto the pDeviceArray */
@@ -761,12 +744,6 @@ void* SynchronizeMoCADevices(void *arg)
             {
                 memset(CpeMacHoldingBuf, 0, sizeof CpeMacHoldingBuf);
 
-#if defined(_COSA_BCM_MIPS_) || defined(_COSA_BCM_ARM_)
-                // I'm not sure what they are trying to acheive with the conversion in the non-BCM case. The MACAddress
-                // in the data structure is already a char 18, so the conversion is only taking the 1st 6 bytes.
-                AnscCopyString(CpeMacHoldingBuf,ps->MACAddress);
-#else
-                /* collect value */
                 _ansc_sprintf
                     (
                         CpeMacHoldingBuf,
@@ -778,7 +755,6 @@ void* SynchronizeMoCADevices(void *arg)
                         ps->MACAddress[4],
                         ps->MACAddress[5]
                     );
-#endif
 
                 CcspMoCAConsoleTrace(("RDK_LOG_DEBUG, SynchronizeMoCADevices  MACAddress [%s] \n", CpeMacHoldingBuf));
                 if( ( NULL != ps->MACAddress ) && \

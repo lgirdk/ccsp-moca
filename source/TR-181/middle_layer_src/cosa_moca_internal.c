@@ -259,10 +259,7 @@ void MoCA_Log()
 			    AnscTraceWarning(("MOCA_HEALTH : RxPowerLevel %d \n", pMoCAAssocDevice[ulIndex1].RxPowerLevel));			
 
 				memset(mac_buff,0,sizeof(mac_buff));
-#if defined(_COSA_BCM_MIPS_)
-		        AnscCopyString(mac_buff,pMoCAAssocDevice[ulIndex1].MACAddress);
-#else
-		        /* collect value */
+
 		        _ansc_sprintf
 		            (
 		                mac_buff,
@@ -274,7 +271,7 @@ void MoCA_Log()
 		                pMoCAAssocDevice[ulIndex1].MACAddress[4],
 		                pMoCAAssocDevice[ulIndex1].MACAddress[5]
 		            );
-#endif
+
 				strcat(mac_buff1,mac_buff);
 				if(ulIndex1 < (AssocDeviceCount-1))
 					strcat(mac_buff1,",");

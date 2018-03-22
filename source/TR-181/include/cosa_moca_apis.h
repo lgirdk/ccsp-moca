@@ -312,7 +312,7 @@ typedef struct _COSA_DML_MOCA_FLOW COSA_DML_MOCA_FLOW, *PCOSA_DML_MOCA_FLOW;
 
 struct _COSA_DML_MOCA_ASSOC_DEVICE
 {
-    UCHAR                           MACAddress[18];
+    UCHAR                           MACAddress[6];
     ULONG                           NodeID;
     BOOLEAN                         PreferredNC;
     char                            HighestVersion[64];
