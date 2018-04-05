@@ -781,8 +781,13 @@ void* SynchronizeMoCADevices(void *arg)
 #endif
 
                 CcspMoCAConsoleTrace(("RDK_LOG_DEBUG, SynchronizeMoCADevices  MACAddress [%s] \n", CpeMacHoldingBuf));
-                if(strcmp(CpeMacHoldingBuf, "00:00:00:00:00:00"))
+                if( ( NULL != ps->MACAddress ) && \
+					( '\0' != ps->MACAddress[ 0 ] ) && \
+					( strcmp(CpeMacHoldingBuf, "00:00:00:00:00:00") )
+				   )
+            	{
                     Set_MoCADevices_Status_Online(CpeMacHoldingBuf, i);                    
+            	}
             }
 
             Set_MoCADevices_Status_Offline();
