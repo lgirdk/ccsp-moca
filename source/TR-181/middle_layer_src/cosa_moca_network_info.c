@@ -396,8 +396,11 @@ MocaIf_GetAssocDevices
                            for(j =0; j < pnum_cpes; j++)
                            {
 
+#if defined(_COSA_BCM_MIPS_)
+                               sprintf(mac, "%02x:%02x:%02x:%02x:%02x:%02x", 0xff & cpes[j].mac_addr[0],0xff & cpes[j].mac_addr[1], 0xff & cpes[j].mac_addr[2], 0xff & cpes[j].mac_addr[3], 0xff & cpes[j].mac_addr[4],0xff & cpes[j].mac_addr[5]);
+#else
                                sprintf(mac, "%02x:%02x:%02x:%02x:%02x:%02x",cpes[j].mac_addr[0],cpes[j].mac_addr[1],cpes[j].mac_addr[2],cpes[j].mac_addr[3],cpes[j].mac_addr[4],cpes[j].mac_addr[5]);
-
+#endif
                                appendEntry = FALSE;
 
                                /* Check all MACS in cpes and append if missing from pdevice_array */
@@ -757,8 +760,8 @@ void* SynchronizeMoCADevices(void *arg)
                     );
 
                 CcspMoCAConsoleTrace(("RDK_LOG_DEBUG, SynchronizeMoCADevices  MACAddress [%s] \n", CpeMacHoldingBuf));
-                if( ( NULL != ps->MACAddress ) && \
-					( '\0' != ps->MACAddress[ 0 ] ) && \
+                if(/* ( NULL != ps->MACAddress ) && \
+					( '\0' != ps->MACAddress[ 0 ] ) && \*/
 					( strcmp(CpeMacHoldingBuf, "00:00:00:00:00:00") )
 				   )
             	{
