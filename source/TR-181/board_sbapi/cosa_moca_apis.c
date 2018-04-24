@@ -585,6 +585,13 @@ CosaDmlMocaIfSetCfg
 
          if(pCfg->bEnabled == TRUE) {
 
+#if defined(_XF3_PRODUCT_REQ_)
+             /* 
+              * handle this in lan_config.sh instead of here so that bridges are 
+              * correctly setup 
+              */
+             system("sysevent set moca_enabled 1");
+#endif
              if (syscfg_set(NULL, "moca_enabled", "1") != 0) {
                      AnscTraceWarning(("syscfg_set failed\n"));
              } else {
@@ -596,6 +603,9 @@ CosaDmlMocaIfSetCfg
 
          } else {
 
+#if defined(_XF3_PRODUCT_REQ_)
+             system("sysevent set moca_enabled 0");
+#endif
              if (syscfg_set(NULL, "moca_enabled", "0") != 0) {
                      AnscTraceWarning(("syscfg_set failed\n"));
              }  else {
@@ -604,6 +614,7 @@ CosaDmlMocaIfSetCfg
                      AnscTraceWarning(("syscfg_commit failed\n"));
                  }
              }
+
          }
 
          AnscTraceWarning(("pCfg->X_CISCO_COM_EnableTabooBit: %d\n", pCfg->X_CISCO_COM_EnableTabooBit));
