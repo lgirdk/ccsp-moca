@@ -871,12 +871,12 @@ CosaDmlMocaIfGetCfg
         moca_GetIfConfig(uIndex, &mocaCfg);
 		
 		/* Translate the data structures */
-#ifndef _XB6_PRODUCT_REQ_
+#if !defined( _XB6_PRODUCT_REQ_ ) && !defined( _XF3_PRODUCT_REQ )
 		//ARRISXB6-3829: RDKB DB Not Syncing if set through SNMP
 		//Instance number is passed in the function as uindex, modifying it may affect next function call.
 		//Keeping it as it is for other devices, not sure whether it is needed.
 		pCfg->InstanceNumber 						= mocaCfg.InstanceNumber;
-#endif
+#endif /* !defined( _XB6_PRODUCT_REQ_ ) && !defined( _XF3_PRODUCT_REQ ) */
 		strcpy(pCfg->Alias, 						  mocaCfg.Alias);
 		pCfg->bEnabled 								= mocaCfg.bEnabled;
 
