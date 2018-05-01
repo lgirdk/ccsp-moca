@@ -545,7 +545,7 @@ CosaDmlMocaIfSetCfg
 			mocaCfg.TxPowerLimit 					= 7;
 			mocaCfg.BeaconPowerLimit 				= 9;
 			mocaCfg.AutoPowerControlPhyRate 		= 235;
-            mocaCfg.Reset 							= FALSE;
+            mocaCfg.Reset 							= TRUE;
          } else {
 			/* Translate the data structures */
 			mocaCfg.InstanceNumber 					= pCfg->InstanceNumber;
