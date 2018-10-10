@@ -544,7 +544,11 @@ CosaDmlMocaIfSetCfg
 			memcpy(mocaCfg.ChannelScanMask, 		  pCfg->X_CISCO_COM_ChannelScanMask, 128);
 		 }
 
-         moca_SetIfConfig(ulInterfaceIndex, &mocaCfg);
+         if ( moca_SetIfConfig(ulInterfaceIndex, &mocaCfg) != STATUS_SUCCESS)
+         {
+            AnscTraceWarning(("%s: moca_SetIfConfig returns error returning \n", __FUNCTION__));
+            return ANSC_STATUS_FAILURE;            
+         }
 
          AnscTraceWarning(("pCfg->bEnabled: %d\n", pCfg->bEnabled));
 

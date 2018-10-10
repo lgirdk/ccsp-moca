@@ -1927,7 +1927,11 @@ Interface1_Commit
 
     AnscTraceWarning(("\n"));
 
-    ReturnStatus = CosaDmlMocaIfSetCfg((ANSC_HANDLE)NULL, pMoCAIfFull->Cfg.InstanceNumber-1, &pMoCAIfFull->Cfg);
+    if ( (ReturnStatus = CosaDmlMocaIfSetCfg((ANSC_HANDLE)NULL, pMoCAIfFull->Cfg.InstanceNumber-1, &pMoCAIfFull->Cfg)) != ANSC_STATUS_SUCCESS)
+    {
+       AnscTraceWarning(("%s: CosaDmlMocaIfSetCfg retunrs Error Calling Interface1_Rollback\n", __FUNCTION__));
+       Interface1_Rollback(hInsContext); 
+    }
     
     return ReturnStatus;
 }
@@ -1963,6 +1967,7 @@ Interface1_Rollback
 {
     PCOSA_DML_MOCA_IF_FULL          pMoCAIfFull = &((PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext)->MoCAIfFull;
     PCOSA_DATAMODEL_MOCA            pMyObject   = (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
+
 
     CosaDmlMocaIfGetCfg((ANSC_HANDLE)NULL, pMoCAIfFull->Cfg.InstanceNumber-1, &pMoCAIfFull->Cfg);
 
