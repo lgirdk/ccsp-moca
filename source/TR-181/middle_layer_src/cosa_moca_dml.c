@@ -1854,20 +1854,30 @@ Interface1_Validate
     ULONG                           ulEntryCount            = 0;
     ULONG                           ulIndex                 = 0;
     ULONG                           keyPassLen              = 0;
-    
+    PCHAR                           tempKeyPassphrase       = NULL;
+
     AnscTraceWarning(("\n"));
 
     ulEntryCount = CosaDmlMocaGetNumberOfIfs((ANSC_HANDLE)NULL/*pPoamMoCADm*/);
         
     keyPassLen = AnscSizeOfString(pMoCAIfFullTable->MoCAIfFull.Cfg.KeyPassphrase);
-        if( (keyPassLen < 12) || (keyPassLen > 17) )
-        {
-            AnscCopyString(pReturnParamName, "KeyPassphrase");
-            *puLength = AnscSizeOfString("KeyPassphrase");
-
-            return FALSE;
-        }
-
+    if( (keyPassLen < 12) || (keyPassLen > 17) )
+    {
+       AnscCopyString(pReturnParamName, "KeyPassphrase");
+       *puLength = AnscSizeOfString("KeyPassphrase");
+       AnscTraceWarning(("%s: KeyPassphrase length must be from 12 to 17 characters\n", __FUNCTION__));
+       return FALSE;
+    }
+    tempKeyPassphrase = pMoCAIfFullTable->MoCAIfFull.Cfg.KeyPassphrase;
+    while(*tempKeyPassphrase)
+    {
+       if (*tempKeyPassphrase < 48 || *tempKeyPassphrase > 57)
+       {
+          AnscTraceWarning(("%s: KeyPassphrase must be composed of numeric digits 0-9\n", __FUNCTION__));
+          return FALSE;
+       }
+       tempKeyPassphrase++;
+    }
 /*
     for ( ulIndex = 0; ulIndex < ulEntryCount; ulIndex++ )
     {
@@ -1931,6 +1941,7 @@ Interface1_Commit
     {
        AnscTraceWarning(("%s: CosaDmlMocaIfSetCfg retunrs Error Calling Interface1_Rollback\n", __FUNCTION__));
        Interface1_Rollback(hInsContext); 
+       return ANSC_STATUS_DISCARD;
     }
     
     return ReturnStatus;
