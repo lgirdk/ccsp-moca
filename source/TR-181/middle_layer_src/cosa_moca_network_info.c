@@ -41,13 +41,6 @@
 
     -------------------------------------------------------------------
 
-    copyright:
-
-        Cisco Systems, Inc.
-        All Rights Reserved.
-
-    -------------------------------------------------------------------
-
     description:
 
         This file implementes the syncing of MoCA device informations
