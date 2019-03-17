@@ -19,6 +19,8 @@
 AM_CFLAGS = -D_ANSC_LINUX
 AM_CFLAGS += -D_ANSC_USER
 
+AM_LDFLAGS = -lsecure_wrapper
+
 ACLOCAL_AMFLAGS = -I m4
 hardware_platform = i686-linux-gnu
 bin_PROGRAMS = MRD

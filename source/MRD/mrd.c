@@ -18,6 +18,7 @@
 **************************************************************************/
 #include <stdio.h>
 #include <string.h>
+#include "secure_wrapper.h"
 char LanMCastTable[20][20];
 char WanMCastTable[20][20];
 char LanMCcount = 0;
@@ -47,7 +48,6 @@ int main()
 {
     FILE *fp = NULL;
     char buf[200] = {0};
-    char cmd[200] = {0};
     char subnet[25] = {0};
     char FirstTime = 1;
     char wFirstTime = 1;
@@ -55,7 +55,6 @@ int main()
     memset(LanMCastTable, 0, sizeof(LanMCastTable[0][0]) * 20 * 20);
     memset(WanMCastTable, 0, sizeof(WanMCastTable[0][0]) * 20 * 20);
     memset(subnet, 0, sizeof(subnet));
-    memset(cmd, 0, sizeof(cmd));
    while(1)
     {
      snprintf(buf, sizeof(buf), "ip -s mroute |grep 'Iif: brlan0' |grep 169 | cut -d '(' -f 2 | cut -d ',' -f 1|awk '{print $1}'");
@@ -75,13 +74,8 @@ int main()
 			strcpy(LanMCastTable[LanMCcount],buf);
 			FirstTime = 0;
 			GetSubnet(buf,subnet);
-			snprintf(cmd, sizeof(cmd), "ip route add %s dev brlan0", subnet);
-			system(cmd);
-			memset(subnet, 0, sizeof(subnet));
-			memset(cmd, 0, sizeof(cmd));
-			snprintf(cmd, sizeof(cmd), "arp -i brlan10 -Ds %s brlan0 pub", buf);
-			system(cmd);
-			memset(cmd, 0, sizeof(cmd));
+			v_secure_system("ip route add %s dev brlan0", subnet);
+			v_secure_system("arp -i brlan10 -Ds %s brlan0 pub", buf);
 			LanMCcount++;
 		}
 		else
@@ -99,13 +93,8 @@ int main()
 			{
 				strcpy(LanMCastTable[LanMCcount],buf);
 				GetSubnet(buf,subnet);
-				snprintf(cmd, sizeof(cmd), "ip route add %s dev brlan0", subnet);
-				system(cmd);
-				memset(subnet, 0, sizeof(subnet));
-				memset(cmd, 0, sizeof(cmd));
-				snprintf(cmd, sizeof(cmd), "arp -i brlan10 -Ds %s brlan0 pub", buf);
-				system(cmd);
-				memset(cmd, 0, sizeof(cmd));
+				v_secure_system("ip route add %s dev brlan0", subnet);
+				v_secure_system("arp -i brlan10 -Ds %s brlan0 pub", buf);
 				printf("new LanMCastTable[%d] = %s\n",LanMCcount,LanMCastTable[LanMCcount]);
 				LanMCcount++;
 			}
@@ -132,13 +121,8 @@ int main()
 			strcpy(WanMCastTable[WanMCcount],buf);
 			wFirstTime = 0;
 			GetSubnet(buf,subnet);
-			snprintf(cmd, sizeof(cmd), "ip route add %s dev brlan10 table moca", subnet);
-			system(cmd);
-			memset(subnet, 0, sizeof(subnet));
-			memset(cmd, 0, sizeof(cmd));
-			snprintf(cmd, sizeof(cmd), "arp -i brlan0 -Ds %s brlan10 pub", buf);
-			system(cmd);
-			memset(cmd, 0, sizeof(cmd));
+			v_secure_system("ip route add %s dev brlan10 table moca", subnet);
+			v_secure_system("arp -i brlan0 -Ds %s brlan10 pub", buf);
 			WanMCcount++;
 		}
 		else
@@ -157,13 +141,8 @@ int main()
 			{
 				strcpy(WanMCastTable[WanMCcount],buf);
 				GetSubnet(buf,subnet);
-				snprintf(cmd, sizeof(cmd), "ip route add %s dev brlan10 table moca", subnet);
-				system(cmd);
-				memset(subnet, 0, sizeof(subnet));
-				memset(cmd, 0, sizeof(cmd));
-				snprintf(cmd, sizeof(cmd), "arp -i brlan0 -Ds %s brlan10 pub", buf);
-				system(cmd);
-				memset(cmd, 0, sizeof(cmd));
+				v_secure_system("ip route add %s dev brlan10 table moca", subnet);
+				v_secure_system("arp -i brlan0 -Ds %s brlan10 pub", buf);
 				printf("new WanMCastTable[%d] = %s\n",WanMCcount,WanMCastTable[WanMCcount]);
 				WanMCcount++;
 			}
