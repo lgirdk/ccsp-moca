@@ -713,22 +713,37 @@ void CleanupMoCAList()
             next = cur->next;
 
             if(cur->ssidType)
-                free(cur->ssidType);
+             {
+		 free(cur->ssidType);
+                 cur->ssidType = NULL;
+             }
 
             if(cur->AssociatedDevice)            
+            {
                 free(cur->AssociatedDevice);
+                cur->AssociatedDevice = NULL;
+            }
 
             if(cur->deviceMac)
-                free(cur->deviceMac);
+            {
+		free(cur->deviceMac);
+		cur->deviceMac = NULL;
+            }
 
             if(cur->parentMac)
-                free(cur->parentMac);
+            {
+		free(cur->parentMac);
+		cur->parentMac = NULL;
+            }
 
             if(cur->deviceType)
-                free(cur->deviceType);
+            {
+		free(cur->deviceType);
+		cur->deviceType = NULL;
+            }
 
             free(cur);
-
+            
             cur = next;
         }
 
