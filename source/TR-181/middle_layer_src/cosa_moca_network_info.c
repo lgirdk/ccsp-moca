@@ -423,7 +423,7 @@ MocaIf_GetAssocDevices
 			            	    {
                                     if((DeviceArrayCount < allocNum) && pDeviceArray)
                                     {
-                                        AnscTraceWarning(("MocaIf_GetAssocDevices -- appending entry\n"));
+                                        //AnscTraceWarning(("MocaIf_GetAssocDevices -- appending entry\n"));
                                         memcpy(pDeviceArray->MACAddress, cpes[j].mac_addr, 6);
                                         ++pDeviceArray;
                                         ++DeviceArrayCount;
