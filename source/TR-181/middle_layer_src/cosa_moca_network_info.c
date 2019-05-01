@@ -308,6 +308,10 @@ MocaIf_GetAssocDevices
                 /* Allocate the larger of pnum_cpes or pulCount since the */
                 /* allocated array will be appended. */
 
+#ifdef CISCO_MOCA_CPE
+                pnum_cpes = *pulCount ; //temporary work around to bypass connected client behind node implementation for CXB3 due to CISCOXB3-4969
+#endif
+
                 if (pnum_cpes > *pulCount)
                 {
                     allocNum = pnum_cpes;
