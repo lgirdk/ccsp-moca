@@ -6217,6 +6217,7 @@ Logging_SetParamBoolValue
 		else
 		{
 			pMyObject->LogStatus.Log_Enable = bValue;
+			CosaMocaTelemetryxOpsLogSettingsSync();
 		}
 	}
         return TRUE;
@@ -6290,6 +6291,7 @@ Logging_SetParamUlongValue
 		else
 		{
 			pMyObject->LogStatus.Log_Period = uValue;
+			CosaMocaTelemetryxOpsLogSettingsSync();
 		}
 	}
         return TRUE;
