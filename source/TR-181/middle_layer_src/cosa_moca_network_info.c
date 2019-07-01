@@ -530,8 +530,17 @@ void Set_MoCADevices_Status_Online(char* assoc_device_mac, int assoc_dev_num)
             device_info->Status = 1;
             device_info->Updated = 1;
             device_info->StatusChange = 1;
-            strcpy(device_info->AssociatedDevice, paramname);
-            strcpy(device_info->ssidType, "Device.MoCA.Interface.1.");
+            // need to free before copy new string data over
+            if (device_info->AssociatedDevice) {
+                free(device_info->AssociatedDevice);
+                device_info->AssociatedDevice = NULL;
+            }
+            device_info->AssociatedDevice = strdup(paramname);
+            if (device_info->ssidType) {
+                free(device_info->ssidType);
+                device_info->ssidType = NULL;
+            }
+            device_info->ssidType = strdup("Device.MoCA.Interface.1.");
         }
     }
 }          
@@ -554,8 +563,17 @@ void Set_MoCADevices_Status_Offline()
             if(!cur->Updated && cur->Status)
                 {
                     cur->Status = 0;
-                    strcpy(cur->AssociatedDevice, " ");
-                    strcpy(cur->ssidType, " ");
+                    // need to free before copy new string data over
+                    if (cur->AssociatedDevice) {
+                        free(cur->AssociatedDevice);
+                        cur->AssociatedDevice = NULL;
+                    }
+                    cur->AssociatedDevice = strdup(" ");
+                    if (cur->ssidType) {
+                        free(cur->ssidType);
+                        cur->ssidType = NULL;
+                    }
+                    cur->ssidType = strdup(" ");
                     cur->Updated = 1;
                     cur->StatusChange = 1;
                 }
