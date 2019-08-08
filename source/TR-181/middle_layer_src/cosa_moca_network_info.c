@@ -167,7 +167,7 @@ char* getDeviceMac()
                 CcspMoCAConsoleTrace(("RDK_LOG_DEBUG, parameterval[%d]->type :%d\n",cnt,parameterval[cnt]->type));
             
             }
-            strcpy(deviceMAC, parameterval[0]->parameterValue);
+            strncpy(deviceMAC, parameterval[0]->parameterValue, sizeof(deviceMAC) - 1);
             if(pcomponentName)
             {
                 AnscFreeMemory(pcomponentName);
@@ -502,11 +502,12 @@ void Set_MoCADevices_Status_Online(char* assoc_device_mac, int assoc_dev_num)
     {
         MoCADeviceInfo *moca_device = malloc(sizeof(*moca_device));
         memset(moca_device, 0, sizeof(*moca_device));
-
-        moca_device->deviceMac = strdup(assoc_device_mac);
+	if (assoc_device_mac) {
+		moca_device->deviceMac = strdup(assoc_device_mac);
+	}
         getDeviceMac();
 
-        if(deviceMAC)
+        if(deviceMAC[0])
             moca_device->parentMac = strdup(deviceMAC);
 
         moca_device->AssociatedDevice = strdup(paramname);
