@@ -340,21 +340,6 @@ static int is_moca_available = 0;
         return RET; \
     }; 
 
-#define MOCA_LOGVALUE_FILE "/tmp/moca_telemetry_xOpsLogSettings.txt"
-
-void CosaMocaTelemetryxOpsLogSettingsSync()
-{
-    FILE *fp = fopen(MOCA_LOGVALUE_FILE, "w");
-    if (fp != NULL) {
-	char buff[64] = {0};     
-	memset(buff,sizeof(buff),0);
-	syscfg_get(NULL, "moca_log_period", buff, 32);
-	syscfg_get(NULL,"moca_log_enabled", &buff[32], 32);
-	fprintf(fp,"%s,%s\n", &buff[0], &buff[32]);
-	fclose(fp);
-    }
-}
-
 ULONG
 CosaDmlGetMocaHardwareStatus
     (

@@ -96,8 +96,6 @@ _COSA_DML_MOCA_IF_FULL_TABLE
 }_struct_pack_ ;
 typedef struct _COSA_DML_MOCA_IF_FULL_TABLE COSA_DML_MOCA_IF_FULL_TABLE,  *PCOSA_DML_MOCA_IF_FULL_TABLE;
 
-void CosaMocaTelemetryxOpsLogSettingsSync();
-
 #define  COSA_DATAMODEL_MOCA_CLASS_CONTENT                                  \
     /* duplication of the base object class content */                      \
     COSA_BASE_CONTENT                                                       \
