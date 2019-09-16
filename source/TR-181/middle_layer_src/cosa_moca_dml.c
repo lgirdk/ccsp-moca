@@ -69,6 +69,7 @@
 #include "cosa_moca_dml.h"
 #include "dml_tr181_custom_cfg.h"
 #include "cosa_moca_network_info.h"
+#include "safe_str_lib.h"
 
 #ifdef CONFIG_SYSTEM_MOCA
 
@@ -1744,61 +1745,148 @@ Interface1_SetParamStringValue
     )
 {
     PCOSA_DML_MOCA_IF_FULL          pMoCAIfFull = &((PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext)->MoCAIfFull;
+    errno_t                         rc          = -1;
+    int                             ind         =  -1;
 
-   /*KeyPassphrase is sensitive information and should not be printed in log*/
-    if( AnscEqualString(ParamName, "KeyPassphrase", TRUE))
+    if((pString == NULL) || (ParamName == NULL))
     {
-        AnscTraceWarning(("ParamName: %s\n",ParamName));
-    }
-    else
-    {
-        AnscTraceWarning(("ParamName: %s pString: %s\n", ParamName, pString));
-    }
-
-    /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE))
-    {
-        /* save update to backup */
-        AnscCopyString(pMoCAIfFull->Cfg.Alias, pString);
-        return TRUE;
-    }
-
-    if( AnscEqualString(ParamName, "LowerLayers", TRUE))
-    {
-        /* save update to backup */
-        /* Interface is a layer 1 interface. LowerLayers will not be used. */
+        AnscTraceWarning(("RDK_LOG_WARN,%s %s:%d\n",__FILE__, __FUNCTION__,__LINE__));
         return FALSE;
     }
 
-    if( AnscEqualString(ParamName, "FreqCurrentMaskSetting", TRUE))
+   /*KeyPassphrase is sensitive information and should not be printed in log*/
+    if (!(rc = strcmp_s("KeyPassphrase", strlen("KeyPassphrase"), ParamName, &ind)))
     {
-        /* save update to backup */
-        
-        AnscCopyString((PCHAR)pMoCAIfFull->Cfg.FreqCurrentMaskSetting, pString);
-        return TRUE;
+        if(!ind)
+        {
+             AnscTraceWarning(("ParamName: %s\n",ParamName));
+        }
+        else
+        {
+             AnscTraceWarning(("ParamName: %s pString: %s\n", ParamName, pString));
+        }
+    }
+    else if(rc != EOK)
+    {
+        AnscTraceWarning(("RDK_LOG_WARN, %s-%d rc =%d \n",__FUNCTION__,__LINE__,rc));
+        return FALSE;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_ChannelScanMask", TRUE))
+    /* check the parameter name and set the corresponding value */
+    if (!(rc = strcmp_s("Alias", strlen("Alias"), ParamName, &ind)))
     {
-        /* save update to backup */
-        AnscCopyString((PCHAR)pMoCAIfFull->Cfg.X_CISCO_COM_ChannelScanMask, pString);
-        return TRUE;
+        if(!ind)
+        {
+            /* save update to backup */
+            rc = strcpy_s(pMoCAIfFull->Cfg.Alias, sizeof( pMoCAIfFull->Cfg.Alias ), pString);
+            if(rc != EOK)
+            {
+                AnscTraceWarning(("RDK_LOG_WARN, %s-%d rc =%d \n",__FUNCTION__,__LINE__,rc));
+                return FALSE;
+            }
+            return TRUE;
+       }
+    }
+    else if(rc != EOK)
+    {
+        AnscTraceWarning(("RDK_LOG_WARN, %s-%d rc =%d \n",__FUNCTION__,__LINE__,rc));
+        return FALSE;
     }
 
-    if( AnscEqualString(ParamName, "KeyPassphrase", TRUE))
+    if (!(rc = strcmp_s("LowerLayers", strlen("LowerLayers"), ParamName, &ind)))
     {
-        /* save update to backup */
-        AnscCopyString(pMoCAIfFull->Cfg.KeyPassphrase, pString);
-        return TRUE;
+        if(!ind)
+        {
+            /* save update to backup */
+            /* Interface is a layer 1 interface. LowerLayers will not be used. */
+            return FALSE;
+        }
+    }
+    else if(rc != EOK)
+    {
+        AnscTraceWarning(("RDK_LOG_WARN, %s-%d rc =%d \n",__FUNCTION__,__LINE__,rc));
+        return FALSE;
     }
 
-    if( AnscEqualString(ParamName, "NodeTabooMask", TRUE))
+    if (!(rc = strcmp_s("FreqCurrentMaskSetting", strlen("FreqCurrentMaskSetting"), ParamName, &ind)))
     {
-        /* save update to backup */
-	AnscCopyString((PCHAR)pMoCAIfFull->Cfg.NodeTabooMask, pString);
-        return TRUE;
+        if(!ind)
+        {
+            /* save update to backup */
+            rc = strcpy_s((PCHAR)pMoCAIfFull->Cfg.FreqCurrentMaskSetting, sizeof( pMoCAIfFull->Cfg.FreqCurrentMaskSetting ), pString);
+            if(rc != EOK)
+            {
+                AnscTraceWarning(("RDK_LOG_WARN, %s-%d rc =%d \n",__FUNCTION__,__LINE__,rc));
+                return FALSE;
+            }
+            return TRUE;
+        }
+    }
+    else if(rc != EOK)
+    {
+        AnscTraceWarning(("RDK_LOG_WARN, %s-%d rc =%d \n",__FUNCTION__,__LINE__,rc));
+        return FALSE;
     }
 
+    if (!(rc = strcmp_s("X_CISCO_COM_ChannelScanMask", strlen("X_CISCO_COM_ChannelScanMask"), ParamName, &ind)))
+    {
+        if(!ind)
+        {
+            /* save update to backup */
+            rc = strcpy_s((PCHAR)pMoCAIfFull->Cfg.X_CISCO_COM_ChannelScanMask, sizeof( pMoCAIfFull->Cfg.X_CISCO_COM_ChannelScanMask ), pString);
+            if(rc != EOK)
+            {
+                 AnscTraceWarning(("RDK_LOG_WARN, %s-%d rc =%d \n",__FUNCTION__,__LINE__,rc));
+                 return FALSE;
+            }
+            return TRUE;
+        }
+    }
+    else if(rc != EOK)
+    {
+        AnscTraceWarning(("RDK_LOG_WARN, %s-%d rc =%d \n",__FUNCTION__,__LINE__,rc));
+        return FALSE;
+    }
+
+    if (!(rc = strcmp_s("KeyPassphrase", strlen("KeyPassphrase"), ParamName, &ind)))
+    {
+        if(!ind)
+        {
+            /* save update to backup */
+            rc = strcpy_s(pMoCAIfFull->Cfg.KeyPassphrase, sizeof( pMoCAIfFull->Cfg.KeyPassphrase ), pString);
+            if(rc != EOK)
+            {
+                 AnscTraceWarning(("RDK_LOG_WARN, %s-%d rc =%d \n",__FUNCTION__,__LINE__,rc));
+                 return FALSE;
+            }
+            return TRUE;
+         }
+     }
+     else if(rc != EOK)
+     {
+         AnscTraceWarning(("RDK_LOG_WARN, %s-%d rc =%d \n",__FUNCTION__,__LINE__,rc));
+         return FALSE;
+     }
+
+    if (!(rc = strcmp_s("NodeTabooMask", strlen("NodeTabooMask"), ParamName, &ind)))
+    {
+        if(!ind)
+        {
+             /* save update to backup */
+             rc = strcpy_s((PCHAR)pMoCAIfFull->Cfg.NodeTabooMask, sizeof( pMoCAIfFull->Cfg.NodeTabooMask ), pString);
+             if(rc != EOK)
+             {
+                 AnscTraceWarning(("RDK_LOG_WARN, %s-%d rc =%d \n",__FUNCTION__,__LINE__,rc));
+                 return FALSE;
+             }
+             return TRUE;
+        }
+    }
+    else if(rc != EOK)
+    {
+        AnscTraceWarning(("RDK_LOG_WARN, %s-%d rc =%d \n",__FUNCTION__,__LINE__,rc));
+        return FALSE;
+    }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
