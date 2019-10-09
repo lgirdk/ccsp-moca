@@ -917,13 +917,13 @@ CosaDmlMocaIfGetCfg
 		memset(&mocaCfg, 0, sizeof(moca_cfg_t));
         moca_GetIfConfig(uIndex, &mocaCfg);
 		
-		/* Translate the data structures */
-#if !defined( _XB6_PRODUCT_REQ_ ) && !defined( _XF3_PRODUCT_REQ )
-		//ARRISXB6-3829: RDKB DB Not Syncing if set through SNMP
-		//Instance number is passed in the function as uindex, modifying it may affect next function call.
-		//Keeping it as it is for other devices, not sure whether it is needed.
-		pCfg->InstanceNumber 						= mocaCfg.InstanceNumber;
-#endif /* !defined( _XB6_PRODUCT_REQ_ ) && !defined( _XF3_PRODUCT_REQ ) */
+
+        /* XF3-5279 - PCOSA_DML_MOCA_IF_CFG instancenumber starts from 1.
+         * but moca_cfg_t instance number starts from 0.
+         * cosa instance number already updated in CosaMoCAInitialize()
+         * Hence disabled it. 
+         */
+// 		pCfg->InstanceNumber 						= mocaCfg.InstanceNumber;
 		strcpy(pCfg->Alias, 						  mocaCfg.Alias);
 		pCfg->bEnabled 								= mocaCfg.bEnabled;
 
