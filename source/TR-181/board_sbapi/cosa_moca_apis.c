@@ -342,18 +342,33 @@ static int is_moca_available = 0;
 
 #define MOCA_LOGVALUE_FILE "/tmp/moca_telemetry_xOpsLogSettings.txt"
 
+
 void CosaMocaTelemetryxOpsLogSettingsSync()
 {
     FILE *fp = fopen(MOCA_LOGVALUE_FILE, "w");
     if (fp != NULL) {
-	char buff[64] = {0};     
-	memset(buff,sizeof(buff),0);
-	syscfg_get(NULL, "moca_log_period", buff, 32);
-	syscfg_get(NULL,"moca_log_enabled", &buff[32], 32);
-	fprintf(fp,"%s,%s\n", &buff[0], &buff[32]);
-	fclose(fp);
+        char log_period[32] = {0};
+        char log_enable[32] = {0};
+
+        memset(log_period,0,sizeof(log_period));
+        memset(log_enable,0,sizeof(log_enable));
+        if((syscfg_get( NULL, "moca_log_enabled", log_enable, sizeof(log_enable)) != 0) || (log_enable[0] == '\0'))
+        {
+                CcspTraceWarning(("moca_log_enabled syscfg failed\n"));
+                sprintf(log_enable,"false");
+        }
+
+        if((syscfg_get( NULL, "moca_log_period", log_period, sizeof(log_period)) != 0) || (log_period[0] == '\0'))
+        {
+                CcspTraceWarning(("moca_log_period syscfg failed\n"));
+                sprintf(log_period,"3600");
+        }
+
+        fprintf(fp,"%s,%s\n", log_period, log_enable);
+        fclose(fp);
     }
 }
+
 
 ULONG
 CosaDmlGetMocaHardwareStatus
@@ -386,6 +401,8 @@ CosaDmlMocaInit
 {
     PCOSA_DATAMODEL_MOCA  pMyObject    = (PCOSA_DATAMODEL_MOCA)phContext;
 
+    syscfg_init();
+
     if (CosaDmlGetMocaHardwareStatus(NULL) != 1 ) { 
         CcspTraceWarning(("-- Moca hardware is not available.\n")); 
         return ANSC_STATUS_FAILURE; 
@@ -395,7 +412,6 @@ CosaDmlMocaInit
 
     AnscTraceWarning(("CosaDmlMocaInit -- \n"));
 
-    syscfg_init();
 
     return ANSC_STATUS_SUCCESS;
 }
