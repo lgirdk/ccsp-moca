@@ -69,7 +69,6 @@
 #include "cosa_moca_dml.h"
 #include "dml_tr181_custom_cfg.h"
 #include "cosa_moca_network_info.h"
-#include "safe_str_lib.h"
 
 #ifdef CONFIG_SYSTEM_MOCA
 
@@ -80,6 +79,16 @@ extern ANSC_HANDLE g_MoCAObject ;
 #undef AnscTraceWarning
 #define AnscTraceWarning(a) printf("%s:%d> ", __FUNCTION__, __LINE__); printf a
 #endif
+#endif
+
+
+#ifdef SAFEC_DUMMY_API
+//adding strcmp_s definition
+errno_t strcmp_s(const char * d,int max ,const char * src,int *r)
+{
+  *r= strcmp(d,src);
+  return EOK;
+}
 #endif
 
 /***********************************************************************
