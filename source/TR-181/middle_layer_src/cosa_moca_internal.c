@@ -142,10 +142,14 @@ static void *Moca_sysevent_handler (void *data)
 {
 	async_id_t moca_update;
 	sysevent_setnotification(sysevent_fd, sysevent_token, "moca_updated", &moca_update);
-	PCOSA_DATAMODEL_MOCA            pMyObject     = (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
 	time_t time_now = { 0 }, time_before = { 0 };
 
 	pthread_detach(pthread_self());
+
+        while(!g_MoCAObject)
+          sleep(5);
+
+        PCOSA_DATAMODEL_MOCA            pMyObject     = (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
 
 	for (;;)
     {
