@@ -79,6 +79,8 @@
 extern void * g_pDslhDmlAgent;
 extern ANSC_HANDLE g_MoCAObject ;
 
+ /* Coverity Issue Fix - CID:56550 : Buffer Over Run*/
+#define MAX_GETFORMAT_TIME_SIZE 128
 
 void* SynchronizeMoCADevices(void *arg);
 
@@ -342,7 +344,7 @@ static char *get_formatted_time(char *time)
 {
     struct tm *tm_info;
     struct timeval tv_now;
-    char tmp[128];
+    char tmp[MAX_GETFORMAT_TIME_SIZE] = {0};
 
     gettimeofday(&tv_now, NULL);
     tm_info = localtime(&tv_now.tv_sec);
@@ -374,7 +376,8 @@ static void write_to_file(const char *file_name, char *fmt, ...)
 static void read_updated_log_interval()
 {
     FILE *fp = NULL;
-    char buff[256] = {0}, tmp[64] = {0};
+     /* Coverity Issue Fix - CID:56550 : Buffer Over Run*/
+    char buff[256] = {0}, tmp[MAX_GETFORMAT_TIME_SIZE] = {0};
     fp = fopen(MOCA_LOG_FILE, "r");
     if (fp == NULL) {
         CcspTraceError(("%s  %s file open error!!!\n", __func__, MOCA_LOG_FILE));
@@ -382,10 +385,7 @@ static void read_updated_log_interval()
     }
     fscanf(fp, "%d,%s", &gMoCALogInterval, gMoCALogEnable);
     fclose(fp);
-
-    memset(tmp,0,sizeof(tmp));
     get_formatted_time(tmp);
-    memset(buff,0,sizeof(buff));
     snprintf(buff, 256, "%s MOCA_TELEMETRY_LOG_PERIOD:%d\n", tmp, gMoCALogInterval);
     write_to_file(moca_telemetry_log, buff);
     
