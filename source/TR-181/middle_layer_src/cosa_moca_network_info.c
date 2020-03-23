@@ -72,6 +72,7 @@
 #include "ansc_platform.h"
 #include "ccsp_mocaLog_wrapper.h"
 #include "moca_hal.h"
+#include "safec_lib_common.h"
 
 MoCADeviceList *mocaList = NULL;
 pthread_mutex_t mocaListMutex = PTHREAD_MUTEX_INITIALIZER;
@@ -84,11 +85,21 @@ int WebpaInterface_DiscoverComponent(char** pcomponentName, char** pcomponentPat
 {
     char CrName[256] = {0};
     int ret = 0;
+    errno_t rc = -1;
     CcspMoCAConsoleTrace(("RDK_LOG_DEBUG, CcspMoCA %s ENTER\n", __FUNCTION__ ));
 
-    CrName[0] = 0;
-    strcpy(CrName, "eRT.");
-    strcat(CrName, CCSP_DBUS_INTERFACE_CR);
+    rc = strcpy_s(CrName, sizeof(CrName), "eRT.");
+    if(rc != EOK)
+    {
+	    ERR_CHK(rc);
+	    return -1;
+    }
+    rc = strcat_s(CrName, sizeof(CrName), CCSP_DBUS_INTERFACE_CR);
+    if(rc != EOK)
+    {
+            ERR_CHK(rc);
+            return -1;
+    }
 
     componentStruct_t **components = NULL;
     int compNum = 0;
@@ -129,6 +140,7 @@ char* getDeviceMac()
         int ret = -1, val_size =0,cnt =0;
         char *pcomponentName = NULL, *pcomponentPath = NULL;
         parameterValStruct_t **parameterval = NULL;
+	errno_t rc = -1;
 
 #ifndef _XF3_PRODUCT_REQ_
         char *getList[] = {"Device.X_CISCO_COM_CableModem.MACAddress"};
@@ -167,7 +179,8 @@ char* getDeviceMac()
                 CcspMoCAConsoleTrace(("RDK_LOG_DEBUG, parameterval[%d]->type :%d\n",cnt,parameterval[cnt]->type));
             
             }
-            strncpy(deviceMAC, parameterval[0]->parameterValue, sizeof(deviceMAC) - 1);
+            rc = strncpy_s(deviceMAC, sizeof(deviceMAC), parameterval[0]->parameterValue, sizeof(deviceMAC) - 1);
+	    ERR_CHK(rc);
             if(pcomponentName)
             {
                 AnscFreeMemory(pcomponentName);
@@ -278,6 +291,7 @@ MocaIf_GetAssocDevices
    int ulSize = 0;
    int allocNum = 0;
    int DeviceArrayCount = 0;
+   errno_t rc = -1;
     
     if ( !pulCount || !ppDeviceArray )
     {
@@ -326,7 +340,8 @@ MocaIf_GetAssocDevices
                 *ppDeviceArray = (PCOSA_DML_MOCA_ASSOC_DEVICE)AnscAllocateMemory(ulSize);
                 if (*ppDeviceArray)
                 {
-                    _ansc_memset(*ppDeviceArray, 0, sizeof(ulSize));
+                    rc = memset_s(*ppDeviceArray, ulSize, 0, ulSize);
+		    ERR_CHK(rc);
                 }
 
                 pdevice_array = (moca_associated_device_t *)
@@ -336,7 +351,8 @@ MocaIf_GetAssocDevices
                         );
                 if (pdevice_array)
                 {
-                    _ansc_memset(pdevice_array ,0 , sizeof(moca_associated_device_t) * (allocNum + COSA_DML_MOCA_AssocDeviceSafeguard));
+                    rc = memset_s(pdevice_array , sizeof(moca_associated_device_t) * (allocNum + COSA_DML_MOCA_AssocDeviceSafeguard), 0 , sizeof(moca_associated_device_t) * (allocNum + COSA_DML_MOCA_AssocDeviceSafeguard));
+		    ERR_CHK(rc);
                 }
                     
                 if ( *ppDeviceArray && pdevice_array )
@@ -352,10 +368,20 @@ MocaIf_GetAssocDevices
                         {
                            if(pDeviceArray && ((&pdevice_array[i]) != NULL) && (i < allocNum))
                            {
-                            memcpy(pDeviceArray->MACAddress,            pdevice_array[i].MACAddress, 6);
+                            rc = memcpy_s(pDeviceArray->MACAddress, sizeof(pDeviceArray->MACAddress), pdevice_array[i].MACAddress, sizeof(pDeviceArray->MACAddress));
+			    if(rc != EOK)
+		            {
+                                ERR_CHK(rc);
+				return ANSC_STATUS_FAILURE;
+			    }
                             pDeviceArray->NodeID                      = pdevice_array[i].NodeID;
                             pDeviceArray->PreferredNC                 = pdevice_array[i].PreferredNC;
-                            memcpy(pDeviceArray->HighestVersion,        pdevice_array[i].HighestVersion, 64);
+                            rc = memcpy_s(pDeviceArray->HighestVersion,  sizeof(pDeviceArray->HighestVersion), pdevice_array[i].HighestVersion, sizeof(pDeviceArray->HighestVersion));
+			    if(rc != EOK)
+                            {
+                                ERR_CHK(rc);
+                                return ANSC_STATUS_FAILURE;
+                            }
                             pDeviceArray->PHYTxRate                   = pdevice_array[i].PHYTxRate;
                             pDeviceArray->PHYRxRate                   = pdevice_array[i].PHYRxRate;
                             pDeviceArray->TxPowerControlReduction     = pdevice_array[i].TxPowerControlReduction;
@@ -380,13 +406,12 @@ MocaIf_GetAssocDevices
 
                         if(pnum_cpes != *pulCount)
                         {
-                           char mac[18];
-                           char mac1[18];
+                           char mac[18] = {0};
+                           char mac1[18]= {0};
                            int j = 0,k = 0;
                            int appendEntry = FALSE;
+			   errno_t rc = -1;
 
-                           memset(mac,0,sizeof(mac));
-                           memset(mac1,0,sizeof(mac));
 
                            *pulCount = DeviceArrayCount;
 
@@ -424,7 +449,12 @@ MocaIf_GetAssocDevices
                                     if((DeviceArrayCount < allocNum) && pDeviceArray)
                                     {
                                         //AnscTraceWarning(("MocaIf_GetAssocDevices -- appending entry\n"));
-                                        memcpy(pDeviceArray->MACAddress, cpes[j].mac_addr, 6);
+                                        rc = memcpy_s(pDeviceArray->MACAddress, sizeof(pDeviceArray->MACAddress), cpes[j].mac_addr, sizeof(pDeviceArray->MACAddress));
+					if(rc != EOK)
+					{
+						ERR_CHK(rc);
+						ANSC_STATUS_FAILURE;
+					}
                                         ++pDeviceArray;
                                         ++DeviceArrayCount;
 
@@ -434,7 +464,6 @@ MocaIf_GetAssocDevices
                                     }
                                 }
                               
-                                memset(mac,0,sizeof(mac));
                             } 
                         }
 
@@ -494,6 +523,7 @@ void Set_MoCADevices_Status_Online(char* assoc_device_mac, int assoc_dev_num)
 {
     CcspMoCAConsoleTrace(("RDK_LOG_DEBUG, CcspMoCA %s ENTER\n", __FUNCTION__ ));
     char paramname[128];
+    errno_t rc = -1;
     snprintf(paramname, sizeof(paramname), "Device.MoCA.Interface.1.AssociatedDevice.%d.", assoc_dev_num+1);
 
     MoCADeviceInfo* device_info = FindDeviceInMoCAList(assoc_device_mac);
@@ -501,10 +531,13 @@ void Set_MoCADevices_Status_Online(char* assoc_device_mac, int assoc_dev_num)
     if(!device_info)
     {
         MoCADeviceInfo *moca_device = malloc(sizeof(*moca_device));
-        memset(moca_device, 0, sizeof(*moca_device));
-	if (assoc_device_mac) {
+        if(moca_device != NULL)
+        {
+            rc = memset_s(moca_device,  sizeof(*moca_device), 0, sizeof(*moca_device));
+	    ERR_CHK(rc);
+	    if (assoc_device_mac) {
 		moca_device->deviceMac = strdup(assoc_device_mac);
-	}
+	   }
         getDeviceMac();
 
         if(deviceMAC[0])
@@ -518,6 +551,7 @@ void Set_MoCADevices_Status_Online(char* assoc_device_mac, int assoc_dev_num)
         moca_device->Updated = 1;
         moca_device->StatusChange = 1;
         add_to_moca_list(moca_device);
+        }
     }
     else
     {
@@ -765,6 +799,8 @@ void* SynchronizeMoCADevices(void *arg)
     PCOSA_DML_MOCA_ASSOC_DEVICE ps = NULL;
     char CpeMacHoldingBuf[ 20 ] = {0};
     int i = 0;
+    errno_t rc = -1;
+    int ind = -1;
 
     while(TRUE)
     {
@@ -776,8 +812,6 @@ void* SynchronizeMoCADevices(void *arg)
 
             for(i = 0, ps = ppDeviceArray;  i < ulCount; i++, ps++)
             {
-                memset(CpeMacHoldingBuf, 0, sizeof CpeMacHoldingBuf);
-
                 _ansc_sprintf
                     (
                         CpeMacHoldingBuf,
@@ -791,9 +825,11 @@ void* SynchronizeMoCADevices(void *arg)
                     );
 
                 CcspMoCAConsoleTrace(("RDK_LOG_DEBUG, SynchronizeMoCADevices  MACAddress [%s] \n", CpeMacHoldingBuf));
+		rc =  strcmp_s(CpeMacHoldingBuf, sizeof(CpeMacHoldingBuf), "00:00:00:00:00:00", &ind);
+		ERR_CHK(rc);
                 if(/* ( NULL != ps->MACAddress ) && \
 					( '\0' != ps->MACAddress[ 0 ] ) && \*/
-					( strcmp(CpeMacHoldingBuf, "00:00:00:00:00:00") )
+					( (rc == EOK) && (ind) )
 				   )
             	{
                     Set_MoCADevices_Status_Online(CpeMacHoldingBuf, i);                    
