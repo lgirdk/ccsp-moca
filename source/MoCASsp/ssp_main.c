@@ -41,6 +41,8 @@
 #include "ssp_global.h"
 #include "stdlib.h"
 #include "ccsp_dm_api.h"
+#include "safec_lib_common.h"
+
 #ifdef INCLUDE_BREAKPAD
 #include "breakpad_wrapper.h"
 #endif
@@ -219,6 +221,8 @@ int main(int argc, char* argv[])
     BOOL                            bRunAsDaemon       = TRUE;
     int                             cmdChar            = 0;
     int                             idx = 0;
+    errno_t rc       = -1;
+    int     ind      = -1;
 
     extern ANSC_HANDLE bus_handle;
     char *subSys            = NULL;  
@@ -227,20 +231,40 @@ int main(int argc, char* argv[])
 
     for (idx = 1; idx < argc; idx++)
     {
-        if ( (strcmp(argv[idx], "-subsys") == 0) )
+        rc = strcmp_s("-subsys",strlen("-subsys"),argv[idx],&ind);
+        ERR_CHK(rc);
+        if ((!ind) && (rc == EOK))
         {
-            AnscCopyString(g_Subsystem, argv[idx+1]);
+            rc = strcpy_s(g_Subsystem,sizeof(g_Subsystem),argv[idx+1]);
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return ANSC_STATUS_FAILURE;
+            }
+            
         }
-        else if ( strcmp(argv[idx], "-c") == 0 )
+        else
         {
-            bRunAsDaemon = FALSE;
+            rc = strcmp_s( "-c",strlen( "-c"),argv[idx],&ind);
+            ERR_CHK(rc);
+        if ((!ind) && (rc == EOK))   
+        {
+             bRunAsDaemon = FALSE;
         }
-        else if ( (strcmp(argv[idx], "-DEBUG") == 0) )
+        else
+        {
+           rc = strcmp_s("-DEBUG",strlen("-DEBUG"),argv[idx],&ind);
+           ERR_CHK(rc);
+        if ((!ind) && (rc == EOK))
         {
             consoleDebugEnable = 1;
             fprintf(stderr, "DEBUG ENABLE ON \n");
         }
-        else if ( (strcmp(argv[idx], "-LOGFILE") == 0) )
+        else
+        { 
+            rc = strcmp_s("-LOGFILE",strlen("-LOGFILE"),argv[idx],&ind);
+            ERR_CHK(rc);
+        if ((!ind) && (rc == EOK))
         {
             // We assume argv[1] is a filename to open
             debugLogFile = fopen( argv[idx + 1], "a+" );
@@ -256,6 +280,9 @@ int main(int argc, char* argv[])
                 fprintf(debugLogFile, "Log File [%s] Opened for Writing in Append Mode \n",  argv[idx+1]);
             }
 
+        }
+        }
+        }
         }         
     }
 

@@ -75,6 +75,7 @@
 #include <sys/time.h>
 #include <sys/inotify.h>
 #include <sys/stat.h>
+#include "safec_lib_common.h"
 
 extern void * g_pDslhDmlAgent;
 extern ANSC_HANDLE g_MoCAObject ;
@@ -161,6 +162,8 @@ static void *Moca_sysevent_handler (void *data)
         int namelen = sizeof(name);
         int vallen  = sizeof(val);
         int err;
+	errno_t rc = -1;
+	int ind = -1;
         async_id_t getnotification_asyncid;
         err = sysevent_getnotification(sysevent_fd, sysevent_token, name, &namelen,  val, &vallen, &getnotification_asyncid);
 
@@ -187,7 +190,9 @@ static void *Moca_sysevent_handler (void *data)
         }
 		else 
 		{
-			if (strcmp(name, "moca_updated")==0)
+		    rc = strcmp_s(name, sizeof(name), "moca_updated", &ind);
+		    ERR_CHK(rc);
+		    if((rc == EOK) && (ind == 0))
 		    {
 			  int isUpdated = atoi(val);
 			  if(isUpdated) {
@@ -221,6 +226,7 @@ void MoCA_Log()
 	PCOSA_DML_MOCA_ASSOC_DEVICE             pMoCAAssocDevice = NULL;
 	COSA_DML_MOCA_IF_DINFO DynamicInfo={0};
 	char					mac_buff[32] , mac_buff1[256] ;
+	errno_t rc = -1;
 
 	Interface_count = CosaDmlMocaGetNumberOfIfs((ANSC_HANDLE)NULL);
 
@@ -239,7 +245,8 @@ void MoCA_Log()
 		AnscTraceWarning(("----------------------\n"));
                 AnscTraceWarning(("MOCA_HEALTH : NCMacAddress %s \n",DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress));
 		AnscTraceWarning(("MOCA_HEALTH : Interface %d , Number of Associated Devices %d \n", ulIndex+1 , AssocDeviceCount));
-		memset(mac_buff1,0,sizeof(mac_buff1));
+		rc = memset_s(mac_buff1, sizeof(mac_buff1), 0, sizeof(mac_buff1));
+		ERR_CHK(rc);
 		for ( ulIndex1 = 0; ulIndex1 < AssocDeviceCount; ulIndex1++ )
 		{
 			AnscTraceWarning(("MOCA_HEALTH : Device %d \n", ulIndex1 + 1));
@@ -248,7 +255,8 @@ void MoCA_Log()
 			AnscTraceWarning(("MOCA_HEALTH : TxPowerControlReduction %lu \n", pMoCAAssocDevice[ulIndex1].TxPowerControlReduction));
 			AnscTraceWarning(("MOCA_HEALTH : RxPowerLevel %d \n", pMoCAAssocDevice[ulIndex1].RxPowerLevel));			
 
-				memset(mac_buff,0,sizeof(mac_buff));
+			rc = memset_s(mac_buff, sizeof(mac_buff), 0, sizeof(mac_buff));
+			ERR_CHK(rc);
 
 		        _ansc_sprintf
 		            (
@@ -262,9 +270,13 @@ void MoCA_Log()
 		                pMoCAAssocDevice[ulIndex1].MACAddress[5]
 		            );
 
-				strcat(mac_buff1,mac_buff);
+				rc = strcat_s(mac_buff1, sizeof(mac_buff1), mac_buff);
+				ERR_CHK(rc);
 				if(ulIndex1 < (AssocDeviceCount-1))
-					strcat(mac_buff1,",");
+				{
+					rc = strcat_s(mac_buff1, sizeof(mac_buff1), ",");
+					ERR_CHK(rc);
+				}
 		}
 		AnscTraceWarning(("----------------------\n"));
 
@@ -378,6 +390,7 @@ static void read_updated_log_interval()
     FILE *fp = NULL;
      /* Coverity Issue Fix - CID:56550 : Buffer Over Run*/
     char buff[256] = {0}, tmp[MAX_GETFORMAT_TIME_SIZE] = {0};
+    errno_t rc = -1;
     fp = fopen(MOCA_LOG_FILE, "r");
     if (fp == NULL) {
         CcspTraceError(("%s  %s file open error!!!\n", __func__, MOCA_LOG_FILE));
@@ -385,13 +398,14 @@ static void read_updated_log_interval()
     }
     fscanf(fp, "%d,%s", &gMoCALogInterval, gMoCALogEnable);
     fclose(fp);
+
     get_formatted_time(tmp);
     snprintf(buff, 256, "%s MOCA_TELEMETRY_LOG_PERIOD:%d\n", tmp, gMoCALogInterval);
     write_to_file(moca_telemetry_log, buff);
     
-    memset(tmp,0,sizeof(tmp));
+    rc = memset_s(tmp, sizeof(tmp), 0, sizeof(tmp));
+    ERR_CHK(rc);
     get_formatted_time(tmp);
-    memset(buff,0,sizeof(buff));
     snprintf(buff, 256, "%s MOCA_TELEMETRY_LOG_ENABLED:%s\n", tmp, gMoCALogEnable);
     write_to_file(moca_telemetry_log, buff);
 }
@@ -402,7 +416,8 @@ static void MocaTelemetryPush()
     ULONG Interface_count, ulIndex,  ulIndex1, AssocDeviceCount;
     PCOSA_DML_MOCA_ASSOC_DEVICE             pMoCAAssocDevice = NULL;
     char                                    mac_buff[32] , mac_buff1[2048];
-    char tmp[128] = {0}, buff[2048] = {0};	
+    char tmp[128] = {0}, buff[2048] = {0};
+    errno_t rc = -1;    
 
     Interface_count = CosaDmlMocaGetNumberOfIfs((ANSC_HANDLE)NULL);
 
@@ -418,10 +433,12 @@ static void MocaTelemetryPush()
 	     NULL
 	    );
 
-	memset(mac_buff1,0,sizeof(mac_buff1));
+	rc = memset_s(mac_buff1, sizeof(mac_buff1), 0,sizeof(mac_buff1));
+	ERR_CHK(rc);
 	for ( ulIndex1 = 0; ulIndex1 < AssocDeviceCount; ulIndex1++ )
 	{
-	    memset(mac_buff,0,sizeof(mac_buff));
+	    rc = memset_s(mac_buff, sizeof(mac_buff), 0,sizeof(mac_buff));
+	    ERR_CHK(rc);
 
 	    _ansc_sprintf
 		(
@@ -435,19 +452,25 @@ static void MocaTelemetryPush()
 		 pMoCAAssocDevice[ulIndex1].MACAddress[5]
 		);
 
-	    strcat(mac_buff1,mac_buff);
+	    rc = strcat_s(mac_buff1, sizeof(mac_buff1), mac_buff);
+	    ERR_CHK(rc);
 	    if(ulIndex1 < (AssocDeviceCount-1))
-		strcat(mac_buff1,",");
+            {
+		rc = strcat_s(mac_buff1, sizeof(mac_buff1), ",");
+		ERR_CHK(rc);
+	    }
 	}
 
-	memset(tmp,0,sizeof(tmp));
+	rc = memset_s(tmp, sizeof(tmp), 0, sizeof(tmp));
+	ERR_CHK(rc);
 	get_formatted_time(tmp);
-	memset(buff,0,sizeof(buff));
+	rc = memset_s(buff, sizeof(buff), 0, sizeof(buff));
+	ERR_CHK(rc);
 	snprintf(buff, 2048, "%s MOCA_MAC_%d_TOTAL_COUNT:%d\n", tmp, ulIndex+1 , AssocDeviceCount);
 	write_to_file(moca_telemetry_log, buff);
-	memset(tmp,0,sizeof(tmp));
+	rc = memset_s(tmp, sizeof(tmp), 0, sizeof(tmp));
+	ERR_CHK(rc);
 	get_formatted_time(tmp);
-	memset(buff,0,sizeof(buff));
 	snprintf(buff, 2048, "%s MOCA_MAC_%d:%s\n", tmp, ulIndex+1 , mac_buff1);
 	write_to_file(moca_telemetry_log, buff);
 	if (pMoCAAssocDevice)
@@ -586,6 +609,7 @@ CosaMoCAInitialize
     ULONG                     ulRole         = 0;
     ULONG                     ulNextInsNum   = 0;
     pthread_t tid;
+    errno_t rc = -1;
 
 /*
     pProc = (COSAGetHandleProc)pPlugInfo->AcquireFunction("COSAGetLPCRole");
@@ -603,7 +627,8 @@ CosaMoCAInitialize
 
     CosaDmlMocaGetCfg(NULL, &pMyObject->MoCACfg);
 
-    _ansc_memset(pMyObject->MoCAIfFullTable, 0, sizeof(COSA_DML_MOCA_IF_FULL_TABLE) * MOCA_INTEFACE_NUMBER);
+    rc = memset_s(pMyObject->MoCAIfFullTable, sizeof(pMyObject->MoCAIfFullTable), 0, sizeof(pMyObject->MoCAIfFullTable));
+    ERR_CHK(rc);
 
     ulCount = CosaDmlMocaGetNumberOfIfs((ANSC_HANDLE)pPoamMoCADm);
     if ( ulCount > MOCA_INTEFACE_NUMBER )

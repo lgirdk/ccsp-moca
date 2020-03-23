@@ -19,6 +19,10 @@
 #include <stdio.h>
 #include <string.h>
 #include "secure_wrapper.h"
+#include "safec_lib_common.h"
+
+#define MAX_SUBNET_SIZE 25
+
 char LanMCastTable[20][20];
 char WanMCastTable[20][20];
 char LanMCcount = 0;
@@ -28,6 +32,7 @@ void GetSubnet(char *ip, char *subnet)
 	int token = 0;
 	int i = 0;
 	int len = strlen(ip);
+        errno_t rc = -1;
 	for(i = 0; i <len ; i++)
 	{
 		subnet[i] = ip[i];
@@ -37,8 +42,9 @@ void GetSubnet(char *ip, char *subnet)
 		}
 		if(token == 3)
 		{
-			strcat(subnet,"0/24");
-			break;
+		      rc = strcat_s(subnet,MAX_SUBNET_SIZE,"0/24");
+                      ERR_CHK(rc);
+		      break;
 		}
 	}
 	printf("IP = %s\n", ip);
@@ -48,13 +54,19 @@ int main()
 {
     FILE *fp = NULL;
     char buf[200] = {0};
-    char subnet[25] = {0};
+    char subnet[MAX_SUBNET_SIZE] = {0};
     char FirstTime = 1;
     char wFirstTime = 1;
 	int i = 0;
-    memset(LanMCastTable, 0, sizeof(LanMCastTable[0][0]) * 20 * 20);
-    memset(WanMCastTable, 0, sizeof(WanMCastTable[0][0]) * 20 * 20);
-    memset(subnet, 0, sizeof(subnet));
+    errno_t rc = -1;
+    int ind = -1;
+    rc = memset_s(LanMCastTable,sizeof(LanMCastTable), 0, sizeof(LanMCastTable[0][0]) * 20 * 20);
+    ERR_CHK(rc);
+    rc = memset_s(WanMCastTable,sizeof(WanMCastTable), 0, sizeof(WanMCastTable[0][0]) * 20 * 20);
+    ERR_CHK(rc);
+    rc = memset_s(subnet,sizeof(subnet), 0, sizeof(subnet));
+    ERR_CHK(rc);
+    
    while(1)
     {
      snprintf(buf, sizeof(buf), "ip -s mroute |grep 'Iif: brlan0' |grep 169 | cut -d '(' -f 2 | cut -d ',' -f 1|awk '{print $1}'");
@@ -71,7 +83,13 @@ int main()
 		*pos = '\0';
 		if(FirstTime)
 		{
-			strcpy(LanMCastTable[LanMCcount],buf);
+                        rc = strcpy_s(LanMCastTable[LanMCcount],sizeof(LanMCastTable[LanMCcount]),buf);
+                        if(rc != EOK)
+                        {
+                           ERR_CHK(rc);
+                           return -1;
+                        }
+                    
 			FirstTime = 0;
 			GetSubnet(buf,subnet);
 			v_secure_system("ip route add %s dev brlan0", subnet);
@@ -82,7 +100,9 @@ int main()
 		{
 			for(i = 0;i<LanMCcount;i++)
 			{
-				if(strcmp(LanMCastTable[i],buf) == 0)
+                                rc = strcmp_s(LanMCastTable[i],sizeof(LanMCastTable[i]),buf,&ind);
+                                ERR_CHK(rc);
+                                if((!ind) && (rc == EOK))
 				{
 					i = 0;
 					break;
@@ -91,7 +111,13 @@ int main()
 			}
 			if(i)
 			{
-				strcpy(LanMCastTable[LanMCcount],buf);
+                                rc = strcpy_s(LanMCastTable[LanMCcount],sizeof(LanMCastTable[LanMCcount]),buf);
+                                if(rc != EOK)
+                                {
+                                   ERR_CHK(rc);
+                                   return -1;
+                                 }
+
 				GetSubnet(buf,subnet);
 				v_secure_system("ip route add %s dev brlan0", subnet);
 				v_secure_system("arp -i brlan10 -Ds %s brlan0 pub", buf);
@@ -102,7 +128,8 @@ int main()
     }
     pclose(fp);
 	
-	memset(buf, 0, sizeof(buf));
+        rc = memset_s(buf,sizeof(buf), 0, sizeof(buf));
+        ERR_CHK(rc);
 
 	snprintf(buf, sizeof(buf), "ip -s mroute |grep 'Iif: brlan10' |grep 169 | cut -d '(' -f 2 | cut -d ',' -f 1|awk '{print $1}'");
 	system(buf); 
@@ -118,7 +145,12 @@ int main()
 		*pos = '\0';
 		if(wFirstTime)
 		{
-			strcpy(WanMCastTable[WanMCcount],buf);
+                        rc = strcpy_s(WanMCastTable[WanMCcount],sizeof(WanMCastTable[WanMCcount]),buf);
+                         if(rc != EOK)
+                        {
+                           ERR_CHK(rc);
+                           return -1;
+                        }                        
 			wFirstTime = 0;
 			GetSubnet(buf,subnet);
 			v_secure_system("ip route add %s dev brlan10 table moca", subnet);
@@ -129,7 +161,9 @@ int main()
 		{
 			for(i = 0;i<WanMCcount;i++)
 			{
-				if(strcmp(WanMCastTable[i],buf) == 0)
+                                rc = strcmp_s(WanMCastTable[i],sizeof(WanMCastTable[i]),buf,&ind);
+                                ERR_CHK(rc);
+                                 if((!ind) && (rc == EOK))
 				{
 					i = 0;
 					break;
@@ -139,7 +173,12 @@ int main()
 			}
 			if(i)
 			{
-				strcpy(WanMCastTable[WanMCcount],buf);
+                         rc = strcpy_s(WanMCastTable[WanMCcount],sizeof(WanMCastTable[WanMCcount]),buf);
+                         if(rc != EOK)
+                        {
+                           ERR_CHK(rc);
+                           return -1;
+                        }
 				GetSubnet(buf,subnet);
 				v_secure_system("ip route add %s dev brlan10 table moca", subnet);
 				v_secure_system("arp -i brlan0 -Ds %s brlan10 pub", buf);

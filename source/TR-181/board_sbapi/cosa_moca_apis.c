@@ -70,6 +70,7 @@
 
 #include "cosa_moca_apis.h"
 #include "cosa_moca_internal.h"
+#include "safec_lib_common.h"
 #include "syscfg/syscfg.h"
 
 #ifndef CONFIG_SYSTEM_MOCA
@@ -358,9 +359,8 @@ void CosaMocaTelemetryxOpsLogSettingsSync()
     if (fp != NULL) {
         char log_period[32] = {0};
         char log_enable[32] = {0};
+        errno_t rc = -1;
 
-        memset(log_period,0,sizeof(log_period));
-        memset(log_enable,0,sizeof(log_enable));
         if((syscfg_get( NULL, "moca_log_enabled", log_enable, sizeof(log_enable)) != 0) || (log_enable[0] == '\0'))
         {
                 CcspTraceWarning(("moca_log_enabled syscfg failed\n"));
@@ -481,12 +481,14 @@ CosaDmlMocaIfGetEntry
     )
 {
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
+    errno_t rc = -1;
 
     AnscTraceWarning(("CosaDmlMocaIfGetEntry -- ulInterfaceIndex:%lu.\n", ulInterfaceIndex));
 
     if (pEntry)
     {
-        _ansc_memset(pEntry, 0, sizeof(COSA_DML_MOCA_IF_FULL));
+        rc = memset_s(pEntry, sizeof(COSA_DML_MOCA_IF_FULL), 0, sizeof(COSA_DML_MOCA_IF_FULL));
+        ERR_CHK(rc);
     }
     else
     {
@@ -646,12 +648,14 @@ CosaDmlMocaIfSetCfg
     int status,mode=0;
     int mask;
     int freq;
-	char bridgeMode[64];
-	moca_cfg_t mocaCfg;
+    char bridgeMode[64] = {0};
+    errno_t rc = -1;
+    moca_cfg_t mocaCfg;
 
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
 
-	memset(&mocaCfg, 0, sizeof(moca_cfg_t));
+    rc = memset_s(&mocaCfg, sizeof(moca_cfg_t), 0, sizeof(moca_cfg_t));
+    ERR_CHK(rc);
 
     AnscTraceWarning(("CosaDmlMocaIfSetCfg -- ulInterfaceIndex:%lu.\n", ulInterfaceIndex));
     
@@ -659,9 +663,8 @@ CosaDmlMocaIfSetCfg
     {
         return ANSC_STATUS_FAILURE;
     }
-	memset(bridgeMode,sizeof(bridgeMode),0);
-	syscfg_get(NULL,"bridge_mode",bridgeMode,sizeof(bridgeMode));
-	mode=atoi(bridgeMode);
+    syscfg_get(NULL,"bridge_mode",bridgeMode,sizeof(bridgeMode));
+    mode=atoi(bridgeMode);
     
     if ( ulInterfaceIndex == 0 )
     {
@@ -671,15 +674,35 @@ CosaDmlMocaIfSetCfg
 
 			/* Translate the data structures */
 			mocaCfg.InstanceNumber 					= pCfg->InstanceNumber;
-			strcpy(mocaCfg.Alias, 			  		  pCfg->Alias);
-			memcpy(mocaCfg.FreqCurrentMaskSetting,    pCfg->FreqCurrentMaskSetting, 128);
-			memcpy(mocaCfg.KeyPassphrase, 			  pCfg->KeyPassphrase, 18);
+			rc = strcpy_s(mocaCfg.Alias, sizeof(mocaCfg.Alias), pCfg->Alias);
+                        if(rc != EOK)
+                        {
+                             ERR_CHK(rc);
+                             return ANSC_STATUS_FAILURE;
+                        }
+			rc = memcpy_s(mocaCfg.FreqCurrentMaskSetting, sizeof(mocaCfg.FreqCurrentMaskSetting), pCfg->FreqCurrentMaskSetting, sizeof(mocaCfg.FreqCurrentMaskSetting));
+                        if(rc != EOK)
+                        {
+                           ERR_CHK(rc);
+                           return ANSC_STATUS_FAILURE;
+                        }
+			rc = memcpy_s(mocaCfg.KeyPassphrase, sizeof(mocaCfg.KeyPassphrase), pCfg->KeyPassphrase, sizeof(mocaCfg.KeyPassphrase));
+                        if(rc != EOK)
+                        {
+                           ERR_CHK(rc);
+                           return ANSC_STATUS_FAILURE;
+                        }
 			mocaCfg.MaxIngressBWThreshold 			= pCfg->MaxIngressBWThreshold;
 			mocaCfg.MaxEgressBWThreshold 			= pCfg->MaxEgressBWThreshold;
 			mocaCfg.Reset 							= pCfg->X_CISCO_COM_Reset;
 			mocaCfg.MixedMode 						= pCfg->X_CISCO_COM_MixedMode;
 			mocaCfg.ChannelScanning 				= pCfg->X_CISCO_COM_ChannelScanning;
-			memcpy(mocaCfg.NodeTabooMask, 			  pCfg->NodeTabooMask, 128);
+			rc = memcpy_s(mocaCfg.NodeTabooMask, sizeof(mocaCfg.NodeTabooMask), pCfg->NodeTabooMask, sizeof(mocaCfg.NodeTabooMask));
+                        if(rc != EOK)
+                        {
+                           ERR_CHK(rc);
+                           return ANSC_STATUS_FAILURE;
+                        }
 			/* Default Values Due to Reset Condition */
 			mocaCfg.ChannelScanning 				= TRUE;
 			mocaCfg.bPreferredNC 					= TRUE;
@@ -694,7 +717,12 @@ CosaDmlMocaIfSetCfg
          } else {
 			/* Translate the data structures */
 			mocaCfg.InstanceNumber 					= pCfg->InstanceNumber;
-			strcpy(mocaCfg.Alias, 					  pCfg->Alias);
+			rc = strcpy_s(mocaCfg.Alias, sizeof(mocaCfg.Alias), pCfg->Alias);
+                        if(rc != EOK)
+                        {
+                             ERR_CHK(rc);
+                             return ANSC_STATUS_FAILURE;
+                        }
 			/*RDKB-8493 Disable moca in bridge mode, not allow to enable back*/
 			if(mode==0)
 			{
@@ -708,8 +736,18 @@ CosaDmlMocaIfSetCfg
 			}
 			mocaCfg.bPreferredNC 					= pCfg->bPreferredNC;
 			mocaCfg.PrivacyEnabledSetting 			= pCfg->PrivacyEnabledSetting;
-			memcpy(mocaCfg.FreqCurrentMaskSetting, 	  pCfg->FreqCurrentMaskSetting, 128);
-			memcpy(mocaCfg.KeyPassphrase, 			  pCfg->KeyPassphrase, 18);
+			rc = memcpy_s(mocaCfg.FreqCurrentMaskSetting, sizeof(mocaCfg.FreqCurrentMaskSetting), pCfg->FreqCurrentMaskSetting, sizeof(mocaCfg.FreqCurrentMaskSetting));
+                        if(rc != EOK)
+                        {
+                             ERR_CHK(rc);
+                             return ANSC_STATUS_FAILURE;
+                        }
+			rc = memcpy_s(mocaCfg.KeyPassphrase, sizeof(mocaCfg.KeyPassphrase), pCfg->KeyPassphrase, sizeof(mocaCfg.KeyPassphrase));
+                        if(rc != EOK)
+                        {
+                            ERR_CHK(rc);
+                            return ANSC_STATUS_FAILURE;
+                        }
 			mocaCfg.TxPowerLimit 					= pCfg->TxPowerLimit;
 			mocaCfg.BeaconPowerLimit 				= pCfg->BeaconPowerLimit;
 			mocaCfg.MaxIngressBWThreshold 			= pCfg->MaxIngressBWThreshold;
@@ -719,9 +757,19 @@ CosaDmlMocaIfSetCfg
 			mocaCfg.ChannelScanning 				= pCfg->X_CISCO_COM_ChannelScanning;
 			mocaCfg.AutoPowerControlEnable 			= pCfg->X_CISCO_COM_AutoPowerControlEnable;
 			mocaCfg.EnableTabooBit 					= pCfg->X_CISCO_COM_EnableTabooBit;
-			memcpy(mocaCfg.NodeTabooMask, 			  pCfg->NodeTabooMask, 128);
+			rc = memcpy_s(mocaCfg.NodeTabooMask, sizeof(mocaCfg.NodeTabooMask), pCfg->NodeTabooMask, sizeof(mocaCfg.NodeTabooMask));
+                        if(rc != EOK)
+                        {
+                            ERR_CHK(rc);
+                            return ANSC_STATUS_FAILURE;
+                        }
 			mocaCfg.AutoPowerControlPhyRate 		= pCfg->AutoPowerControlPhyRate;
-			memcpy(mocaCfg.ChannelScanMask, 		  pCfg->X_CISCO_COM_ChannelScanMask, 128);
+			rc = memcpy_s(mocaCfg.ChannelScanMask, sizeof(mocaCfg.ChannelScanMask), pCfg->X_CISCO_COM_ChannelScanMask, sizeof(mocaCfg.ChannelScanMask));
+                        if(rc != EOK)
+                        {
+                            ERR_CHK(rc);
+                            return ANSC_STATUS_FAILURE;
+                        }
 		 }
 
          if ( moca_SetIfConfig(ulInterfaceIndex, &mocaCfg) != STATUS_SUCCESS)
@@ -997,13 +1045,24 @@ CosaDmlMocaIfSetCfg
              if(status > 0) {
 
 #ifdef SA_CUSTOM
-                 int ret1,ret2;
-                 ret1 = strcmp(str_value, "1150");
-                 ret2 = strcmp(str_value, "1175");
-                 if( ret1 != 0 && ret2 != 0 )
+                  errno_t rc = -1;
+                  int ind = -1;
+                 rc = strcmp_s("1150", strlen("1150"), str_value, &ind);
+                 ERR_CHK(rc);
+                 if((rc == EOK) && (ind != 0))
                  { 
-                     strcpy(str_value,"1175");
-                     write_log_console ("updating the current moca_freq_plan/str_value to 1175");
+                     rc = strcmp_s("1175", strlen("1175"), str_value, &ind);
+                     ERR_CHK(rc);
+                     if(( rc == EOK) && (ind != 0))
+                     {
+                          rc = strcpy_s(str_value, sizeof(str_value), "1175");
+                          if(rc != EOK)
+                          {
+                              ERR_CHK(rc);
+                              return ANSC_STATUS_FAILURE;
+                          }
+                          write_log_console ("updating the current moca_freq_plan/str_value to 1175");
+                     }
                  }    
 #endif
 
@@ -1045,6 +1104,7 @@ CosaDmlMocaIfGetCfg
 
     unsigned int moca_enable_db=0;
     char buf[10]={0};
+    errno_t rc = -1;
     if ( !pCfg )
     {
         return ANSC_STATUS_FAILURE;
@@ -1057,7 +1117,8 @@ CosaDmlMocaIfGetCfg
    }
     if ( uIndex == 0 )
     {
-		memset(&mocaCfg, 0, sizeof(moca_cfg_t));
+        rc = memset_s(&mocaCfg, sizeof(moca_cfg_t), 0, sizeof(moca_cfg_t));
+        ERR_CHK(rc);
         moca_GetIfConfig(uIndex, &mocaCfg);
 		
 
@@ -1067,7 +1128,12 @@ CosaDmlMocaIfGetCfg
          * Hence disabled it. 
          */
 // 		pCfg->InstanceNumber 						= mocaCfg.InstanceNumber;
-		strcpy(pCfg->Alias, 						  mocaCfg.Alias);
+		rc = STRCPY_S_NOCLOBBER(pCfg->Alias, sizeof(pCfg->Alias), mocaCfg.Alias);
+                if(rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return ANSC_STATUS_FAILURE;
+                }
 		pCfg->bEnabled 								= mocaCfg.bEnabled;
 
 		if ( ( 1 != pCfg->bSnmpUpdate ) && ( moca_enable_db != pCfg->bEnabled ) )
@@ -1108,8 +1174,18 @@ CosaDmlMocaIfGetCfg
 
 		pCfg->bPreferredNC 							= mocaCfg.bPreferredNC;
 		pCfg->PrivacyEnabledSetting 				= mocaCfg.PrivacyEnabledSetting;
-		memcpy(pCfg->FreqCurrentMaskSetting, 	  	  mocaCfg.FreqCurrentMaskSetting, 128);
-		memcpy(pCfg->KeyPassphrase, 			  	  mocaCfg.KeyPassphrase, 18);
+		rc = MEMCPY_S_NOCLOBBER(pCfg->FreqCurrentMaskSetting, sizeof(pCfg->FreqCurrentMaskSetting), mocaCfg.FreqCurrentMaskSetting, sizeof(mocaCfg.FreqCurrentMaskSetting));
+                if(rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return ANSC_STATUS_FAILURE;
+                }
+		rc = MEMCPY_S_NOCLOBBER(pCfg->KeyPassphrase, sizeof(pCfg->KeyPassphrase), mocaCfg.KeyPassphrase, sizeof(mocaCfg.KeyPassphrase));
+                if(rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return ANSC_STATUS_FAILURE;
+                }
 		pCfg->TxPowerLimit 							= mocaCfg.TxPowerLimit;
 		pCfg->PowerCntlPhyTarget 					= mocaCfg.AutoPowerControlPhyRate;
 		pCfg->BeaconPowerLimit 						= mocaCfg.BeaconPowerLimit;
@@ -1120,9 +1196,19 @@ CosaDmlMocaIfGetCfg
 		pCfg->X_CISCO_COM_ChannelScanning 			= mocaCfg.ChannelScanning;
 		pCfg->X_CISCO_COM_AutoPowerControlEnable 	= mocaCfg.AutoPowerControlEnable;
 		pCfg->X_CISCO_COM_EnableTabooBit 			= mocaCfg.EnableTabooBit;
-		memcpy(pCfg->NodeTabooMask, 				  mocaCfg.NodeTabooMask, 128);
+		rc = MEMCPY_S_NOCLOBBER(pCfg->NodeTabooMask, sizeof(pCfg->NodeTabooMask), mocaCfg.NodeTabooMask, sizeof(mocaCfg.NodeTabooMask));
+                if(rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return ANSC_STATUS_FAILURE;
+                }
 		pCfg->AutoPowerControlPhyRate 				= mocaCfg.AutoPowerControlPhyRate;
-		memcpy(pCfg->X_CISCO_COM_ChannelScanMask, 	  mocaCfg.ChannelScanMask, 128);
+		rc = MEMCPY_S_NOCLOBBER(pCfg->X_CISCO_COM_ChannelScanMask, sizeof(pCfg->X_CISCO_COM_ChannelScanMask), mocaCfg.ChannelScanMask, sizeof(mocaCfg.ChannelScanMask));
+                if(rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return ANSC_STATUS_FAILURE;
+                }
     }
     else
     {
@@ -1143,16 +1229,19 @@ CosaDmlMocaIfGetDinfo
     )
 {
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
-	moca_dynamic_info_t mocaDInfo;
+	errno_t rc = -1;
+        moca_dynamic_info_t mocaDInfo;
 
-	memset(&mocaDInfo, 0, sizeof(moca_dynamic_info_t));
+	rc = memset_s(&mocaDInfo, sizeof(moca_dynamic_info_t), 0, sizeof(moca_dynamic_info_t));
+        ERR_CHK(rc);
 
     if (!pInfo)
     {
         return ANSC_STATUS_FAILURE;
     }
 
-    _ansc_memset(pInfo, 0, sizeof(COSA_DML_MOCA_IF_DINFO));
+    rc = memset_s(pInfo, sizeof(COSA_DML_MOCA_IF_DINFO), 0, sizeof(COSA_DML_MOCA_IF_DINFO));
+    ERR_CHK(rc);
         
     if (ulInterfaceIndex == 0)
     {
@@ -1163,13 +1252,23 @@ CosaDmlMocaIfGetDinfo
 		pInfo->LastChange 										= mocaDInfo.LastChange;
 		pInfo->MaxIngressBW 									= mocaDInfo.MaxIngressBW;
 		pInfo->MaxEgressBW 										= mocaDInfo.MaxEgressBW;
-		memcpy(pInfo->CurrentVersion, 					  		  mocaDInfo.CurrentVersion, 64);
+		rc = memcpy_s(pInfo->CurrentVersion, sizeof(pInfo->CurrentVersion), mocaDInfo.CurrentVersion,  sizeof(pInfo->CurrentVersion));
+                if (rc != EOK)
+                {
+                     ERR_CHK(rc);
+                     return ANSC_STATUS_FAILURE;
+                }
 		pInfo->NetworkCoordinator 								= mocaDInfo.NetworkCoordinator;
 		pInfo->NodeID 											= mocaDInfo.NodeID;
 		pInfo->MaxNodes 										= 16;
 		pInfo->BackupNC 										= mocaDInfo.BackupNC;
 		pInfo->PrivacyEnabled 									= mocaDInfo.PrivacyEnabled;
-		memcpy(pInfo->FreqCurrentMask, 					  		  mocaDInfo.FreqCurrentMask, 8);
+		rc = memcpy_s(pInfo->FreqCurrentMask, sizeof(pInfo->FreqCurrentMask), mocaDInfo.FreqCurrentMask, sizeof(pInfo->FreqCurrentMask));
+                if (rc != EOK)
+                {
+                     ERR_CHK(rc);
+                     return ANSC_STATUS_FAILURE;
+                }
 		pInfo->CurrentOperFreq 									= mocaDInfo.CurrentOperFreq;
 		pInfo->LastOperFreq 									= mocaDInfo.LastOperFreq;
 		pInfo->TxBcastRate 										= mocaDInfo.TxBcastRate;
@@ -1179,7 +1278,12 @@ CosaDmlMocaIfGetDinfo
 #ifdef MOCA_DIAGONISTIC
 		pInfo->LinkUpTime 								= mocaDInfo.LinkUpTime;
 #endif
-		memcpy(pInfo->X_CISCO_NetworkCoordinatorMACAddress, 	  mocaDInfo.NetworkCoordinatorMACAddress, 18);
+		rc = memcpy_s(pInfo->X_CISCO_NetworkCoordinatorMACAddress, sizeof(pInfo->X_CISCO_NetworkCoordinatorMACAddress), mocaDInfo.NetworkCoordinatorMACAddress, sizeof(pInfo->X_CISCO_NetworkCoordinatorMACAddress));
+                if (rc != EOK)
+                {
+                     ERR_CHK(rc);
+                     return ANSC_STATUS_FAILURE;
+                }
 		pInfo->X_CISCO_COM_BestNetworkCoordinatorID 			= mocaDInfo.NetworkCoordinator;
     }
     else
@@ -1199,6 +1303,7 @@ CosaDmlMocaIfGetStaticInfo
     )
 {
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
+        errno_t rc = -1;
 	moca_static_info_t mocaStaticCfg;
 
     AnscTraceWarning(("CosaDmlMocaIfGetStaticInfo -- ulInterfaceIndex:%lu.\n", uIndex));
@@ -1210,25 +1315,66 @@ CosaDmlMocaIfGetStaticInfo
 
     if ( uIndex == 0 )
     {
-		memset(&mocaStaticCfg, 0, sizeof(moca_static_info_t));
+	rc = memset_s(&mocaStaticCfg, sizeof(moca_static_info_t), 0, sizeof(moca_static_info_t));
+        ERR_CHK(rc);
         moca_IfGetStaticInfo(uIndex, &mocaStaticCfg);
 		
 		/* Translate the data structures */
 #ifdef MULTILAN_FEATURE
 #if defined(INTEL_PUMA7)
-		AnscCopyString(pSInfo->Name, "nmoca0");
+                rc = STRCPY_S_NOCLOBBER(pSInfo->Name, sizeof(pSInfo->Name), "nmoca0");
+                if (rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return ANSC_STATUS_FAILURE;
+                }
 #else
-                AnscCopyString(pSInfo->Name, "sw_5");
+                rc = STRCPY_S_NOCLOBBER(pSInfo->Name, sizeof(pSInfo->Name), "sw_5");
+                if (rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return ANSC_STATUS_FAILURE;
+                }
 #endif
 #else
-		AnscCopyString(pSInfo->Name, "sw_5");
+                rc = STRCPY_S_NOCLOBBER(pSInfo->Name, sizeof(pSInfo->Name), "sw_5");
+                if (rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return ANSC_STATUS_FAILURE;
+                }
 #endif
-		memcpy(pSInfo->MacAddress, 	mocaStaticCfg.MacAddress, 18);
-		memcpy(pSInfo->FirmwareVersion, mocaStaticCfg.FirmwareVersion, 64);
+		rc = MEMCPY_S_NOCLOBBER(pSInfo->MacAddress, sizeof(pSInfo->MacAddress), mocaStaticCfg.MacAddress, sizeof(mocaStaticCfg.MacAddress));
+		if (rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return ANSC_STATUS_FAILURE;
+                }
+                rc = MEMCPY_S_NOCLOBBER(pSInfo->FirmwareVersion, sizeof(pSInfo->FirmwareVersion), mocaStaticCfg.FirmwareVersion, sizeof(mocaStaticCfg.FirmwareVersion));
+                if (rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return ANSC_STATUS_FAILURE;
+                }
 		pSInfo->MaxBitRate  = mocaStaticCfg.MaxBitRate;
-		memcpy(pSInfo->HighestVersion, mocaStaticCfg.HighestVersion, 64);
-		memcpy(pSInfo->FreqCapabilityMask, mocaStaticCfg.FreqCapabilityMask, 8);
-		memcpy(pSInfo->NetworkTabooMask, mocaStaticCfg.NetworkTabooMask, 128);
+		rc = MEMCPY_S_NOCLOBBER(pSInfo->HighestVersion, sizeof(pSInfo->HighestVersion), mocaStaticCfg.HighestVersion, sizeof(mocaStaticCfg.HighestVersion));
+                if (rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return ANSC_STATUS_FAILURE;
+                }
+		rc = MEMCPY_S_NOCLOBBER(pSInfo->FreqCapabilityMask, sizeof(pSInfo->FreqCapabilityMask), mocaStaticCfg.FreqCapabilityMask, sizeof(mocaStaticCfg.FreqCapabilityMask));
+                if (rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return ANSC_STATUS_FAILURE;
+                }
+		rc = MEMCPY_S_NOCLOBBER(pSInfo->NetworkTabooMask, sizeof(pSInfo->NetworkTabooMask), mocaStaticCfg.NetworkTabooMask, sizeof(mocaStaticCfg.NetworkTabooMask));
+                if (rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return ANSC_STATUS_FAILURE;
+                }
 		pSInfo->TxBcastPowerReduction = mocaStaticCfg.TxBcastPowerReduction;
 		pSInfo->QAM256Capable = mocaStaticCfg.QAM256Capable;
 		pSInfo->PacketAggregationCapability = mocaStaticCfg.PacketAggregationCapability;
@@ -1253,9 +1399,11 @@ CosaDmlMocaIfGetStats
     )
 {
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
+        errno_t rc = -1;
 	moca_stats_t mocaStats;
 
-	memset(&mocaStats, 0, sizeof(moca_stats_t));
+	rc = memset_s(&mocaStats, sizeof(moca_stats_t), 0, sizeof(moca_stats_t));
+        ERR_CHK(rc);
 
     AnscTraceWarning(("CosaDmlMocaIfGetStats -- ulInterfaceIndex:%lu.\n", ulInterfaceIndex));
 
@@ -1264,7 +1412,8 @@ CosaDmlMocaIfGetStats
         return ANSC_STATUS_FAILURE;
     }
 
-    _ansc_memset(pStats, 0, sizeof(COSA_DML_MOCA_STATS));
+    rc = memset_s(pStats, sizeof(COSA_DML_MOCA_STATS), 0, sizeof(COSA_DML_MOCA_STATS));
+    ERR_CHK(rc);
 
     if ( ulInterfaceIndex == 1 )
     { 
@@ -1358,11 +1507,13 @@ CosaDmlMocaIfExtCounterGetEntry
     )
 {
     ULONG ulCount = 0;
+    errno_t rc = -1;
 	moca_mac_counters_t mocaMacStats;
 
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
 
-	memset(&mocaMacStats, 0, sizeof(moca_mac_counters_t));
+    rc = memset_s(&mocaMacStats, sizeof(moca_mac_counters_t), 0, sizeof(moca_mac_counters_t));
+    ERR_CHK(rc);
 
     AnscTraceWarning(("CosaDmlMocaIfExtCounterGetEntry -- ulInterfaceIndex:%lu, ulIndex:%lu\n", ulInterfaceIndex, ulIndex));
 
@@ -1442,10 +1593,12 @@ CosaDmlMocaIfExtAggrCounterGetEntry
     )
 {
 	moca_aggregate_counters_t mocaCounters;
+        errno_t rc = -1;
 
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
 
-	memset(&mocaCounters, 0, sizeof(moca_aggregate_counters_t));
+    rc = memset_s(&mocaCounters, sizeof(moca_aggregate_counters_t), 0, sizeof(moca_aggregate_counters_t));
+    ERR_CHK(rc);
 
     AnscTraceWarning(("CosaDmlMocaIfExtAggrCounterGetEntry -- ulInterfaceIndex:%lu, ulIndex:%lu\n", ulInterfaceIndex, ulIndex));
 
@@ -1755,8 +1908,10 @@ CosaDmlMocaIfGetAssocDevices
             if ( *ppDeviceArray && pdevice_array )
             {
                 INT                 iReturnStatus   = STATUS_SUCCESS;
+                errno_t             rc              = -1;
                 PCOSA_DML_MOCA_ASSOC_DEVICE pDeviceArray = *ppDeviceArray;
-		memset(pdevice_array ,0 , sizeof(moca_associated_device_t) * (*pulCount + COSA_DML_MOCA_AssocDeviceSafeguard));
+		rc = memset_s(pdevice_array , sizeof(moca_associated_device_t) * (*pulCount + COSA_DML_MOCA_AssocDeviceSafeguard), 0 , sizeof(moca_associated_device_t) * (*pulCount + COSA_DML_MOCA_AssocDeviceSafeguard));
+                ERR_CHK(rc);
 
                 iReturnStatus = moca_GetAssociatedDevices(ulInterfaceIndex, &pdevice_array);
 
@@ -1765,10 +1920,20 @@ CosaDmlMocaIfGetAssocDevices
         			/* Translate the Data Structures */
     				for (i = 0; i < *pulCount; i++)
     				{
-    					memcpy(pDeviceArray->MACAddress, 		  		  pdevice_array[i].MACAddress, 18);
+                                        rc = memcpy_s(pDeviceArray->MACAddress, sizeof(pDeviceArray->MACAddress), pdevice_array[i].MACAddress, sizeof(pDeviceArray->MACAddress));
+                                        if(rc != EOK)
+                                        {
+                                              ERR_CHK(rc);
+                                              return ANSC_STATUS_FAILURE;
+                                        }
     					pDeviceArray->NodeID 							= pdevice_array[i].NodeID;
     					pDeviceArray->PreferredNC 						= pdevice_array[i].PreferredNC;
-    					memcpy(pDeviceArray->HighestVersion, 	  		  pdevice_array[i].HighestVersion, 64);
+                                        rc = memcpy_s(pDeviceArray->HighestVersion, sizeof(pDeviceArray->HighestVersion), pdevice_array[i].HighestVersion, sizeof(pDeviceArray->HighestVersion));
+                                        if(rc != EOK)
+                                        {
+                                              ERR_CHK(rc);
+                                              return ANSC_STATUS_FAILURE;
+                                        }
     					pDeviceArray->PHYTxRate 						= pdevice_array[i].PHYTxRate;
     					pDeviceArray->PHYRxRate 						= pdevice_array[i].PHYRxRate;
     					pDeviceArray->TxPowerControlReduction 			= pdevice_array[i].TxPowerControlReduction;
@@ -1836,6 +2001,8 @@ CosaDmlMocaGetLogStatus
 	)
 {
 	char buf[16]={0};
+        errno_t rc = -1;
+        int ind = -1;
 	
 	pMyObject->Log_Enable = FALSE;
 	pMyObject->Log_Period = 3600;
@@ -1844,10 +2011,16 @@ CosaDmlMocaGetLogStatus
 	{
 		if( buf != NULL )
 		{
-		    pMyObject->Log_Enable =  (strcmp(buf,"true") ? FALSE : TRUE);
+                    rc = strcmp_s(buf, sizeof(buf), "true", &ind);
+                    ERR_CHK(rc);
+                    if(rc == EOK)
+                    {
+		        pMyObject->Log_Enable =  (ind ? FALSE : TRUE);
+                    }
 		}
 	}
-	memset(buf,0,sizeof(buf));
+	rc = memset_s(buf, sizeof(buf), 0,sizeof(buf));
+        ERR_CHK(rc);
 	
 	if(syscfg_get( NULL, "moca_log_period", buf, sizeof(buf)) == 0)
 	{
@@ -1866,22 +2039,38 @@ ANSC_STATUS is_usg_in_bridge_mode(BOOL *pBridgeMode)
     char ucEntryNameValue[256] = {0};
     parameterValStruct_t varStruct;
     ulEntryNameLen   = sizeof(ucEntryNameValue);
+    errno_t rc = -1;
+    int ind = -1;
 
-    AnscCopyString(ucEntryParamName,"Device.X_CISCO_COM_DeviceControl.LanManagementEntry.1.LanMode");
+    rc = strcpy_s(ucEntryParamName, sizeof(ucEntryParamName), "Device.X_CISCO_COM_DeviceControl.LanManagementEntry.1.LanMode");
+    if(rc != EOK)
+    {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
     varStruct.parameterName = ucEntryParamName;
     varStruct.parameterValue = ucEntryNameValue;
 
     if (ANSC_STATUS_SUCCESS == COSAGetParamValueByPathName(bus_handle,&varStruct,&ulEntryNameLen))
     {
-        if((AnscEqualString(varStruct.parameterValue, "bridge-static", TRUE)) || \
-			(AnscEqualString(varStruct.parameterValue, "full-bridge-static", TRUE))
-		  )
-		{
+         rc = strcmp_s("bridge-static", strlen("bridge-static"), varStruct.parameterValue, &ind);
+         ERR_CHK(rc);
+         if((rc == EOK) && (!ind))
+         {
              *pBridgeMode = TRUE;
-        }
-        else{
-            *pBridgeMode = FALSE;
-        }
+         }
+         else
+         {
+            rc = strcmp_s("full-bridge-static", strlen("full-bridge-static"), varStruct.parameterValue, &ind);
+            if((rc == EOK) && (!ind))
+            {
+                 *pBridgeMode = TRUE;
+            }
+            else
+            {
+                 *pBridgeMode = FALSE;
+            }
+         }
 
         return ANSC_STATUS_SUCCESS;
     }
@@ -1895,13 +2084,20 @@ ANSC_STATUS CosaMoCAGetForceEnable(PCOSA_DML_MOCA_CFG pCfg)
 {
 	char buf[8] = {0};
 	pCfg->bForceEnabled = FALSE;
+        errno_t rc = -1;
+        int ind = -1;
 
 	if(syscfg_get( NULL, "X_RDKCENTRAL-COM_ForceEnable", buf, sizeof(buf)) == 0){
 		if( buf != NULL )
 		{
-			pCfg->bForceEnabled =  (strcmp(buf,"true") ? FALSE : TRUE);
-			AnscTraceInfo(("X_RDKCENTRAL-COM_ForceEnable is %d\n",pCfg->bForceEnabled));
-			return ANSC_STATUS_SUCCESS;                  
+                        rc = strcmp_s(buf, sizeof(buf), "true", &ind);
+                        ERR_CHK(rc);
+			if(rc == EOK)
+                        {
+			    pCfg->bForceEnabled =  (ind ? FALSE : TRUE);
+			    AnscTraceInfo(("X_RDKCENTRAL-COM_ForceEnable is %d\n",pCfg->bForceEnabled));
+			    return ANSC_STATUS_SUCCESS;
+                        }
 		}
 	}
 	return ANSC_STATUS_FAILURE;  
@@ -2028,6 +2224,7 @@ CosaDmlMocaIfGetEntry
 {
     UtopiaContext pCtx;
     int rc = -1;
+    errno_t safe_rc = -1;
 
     if (!Utopia_Init(&pCtx))
     {
@@ -2036,7 +2233,10 @@ CosaDmlMocaIfGetEntry
     }
 
     if (pEntry)
-        _ansc_memset(pEntry, 0, sizeof(COSA_DML_MOCA_IF_FULL));
+    {
+        safe_rc = memset_s(pEntry, sizeof(COSA_DML_MOCA_IF_FULL), 0, sizeof(COSA_DML_MOCA_IF_FULL));
+        ERR_CHK(safe_rc);
+    }
     else
     {
         Utopia_Free(&pCtx,0);
@@ -2085,12 +2285,15 @@ CosaDmlMocaIfGetStats
         PCOSA_DML_MOCA_STATS        pStats
     )
 {
+    errno_t rc = -1;
+
     if ( !pStats )
     {
         return ANSC_STATUS_FAILURE;
     }
 
-    _ansc_memset(pStats, 0, sizeof(COSA_DML_MOCA_STATS));
+    rc = memset_s(pStats, sizeof(COSA_DML_MOCA_STATS), 0, sizeof(COSA_DML_MOCA_STATS));
+    ERR_CHK(rc);
     
     if ( ulInstanceNumber == 1 )
     {
@@ -2452,15 +2655,17 @@ CosaDmlMocaIfGetStats
         PCOSA_DML_MOCA_STATS        pStats
     )
 {
+    errno_t rc = -1;
+
+    AnscTraceWarning(("CosaDmlMocaIfGetDinfo -- ulInterfaceIndex:%lu.\n", ulInterfaceIndex));
 
     if ( !pStats )
     {
         return ANSC_STATUS_FAILURE;
     }
 
-    _ansc_memset(pStats, 0, sizeof(COSA_DML_MOCA_STATS));
-
-
+    rc = memset_s(pStats, sizeof(COSA_DML_MOCA_STATS), 0, sizeof(COSA_DML_MOCA_STATS));
+    ERR_CHK(rc);
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -2687,3 +2892,5 @@ BOOL MoCA_SetForceEnable(PCOSA_DML_MOCA_IF_CFG pCfg, PCOSA_DML_MOCA_CFG  pFCfg)
 }
 
 #endif
+
+
