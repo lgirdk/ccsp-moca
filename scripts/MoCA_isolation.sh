@@ -35,7 +35,7 @@ fi
 
 # Waiting for brlan10 -MoCA bridge interface creation for 30 sec
 iter=0
-max_iter=2
+max_iter=12
 while [ ! -f /tmp/MoCABridge_up ] && [ "$iter" -le $max_iter ]
 do
     iter=$((iter+1))
@@ -49,8 +49,9 @@ else
     echo "brlan10 is created after interation $iter go ahead with the execution"
     killall igmpproxy
     killall MRD
+    ifconfig brlan0:0 down
     sleep 1
-    if [ "$BOX_TYPE" = "XF3" ]; then
+    if [ "$BOX_TYPE" = "XF3" ] || [ "$MODEL_NUM" = "TG4482A" ] || [ "$MODEL_NUM" = "TG3482G" ]; then
     	sh /etc/utopia/service.d/service_mcastproxy.sh mcastproxy-restart
     else 
         sysevent set mcastproxy-restart

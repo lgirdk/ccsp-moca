@@ -308,6 +308,7 @@ short mrdnode_lookup(long ipaddr, char MAC[], mrd_wlist_ss_t *stat)
 int main()
 {
     FILE *fp = NULL;
+    FILE *fp_dp = NULL;
     char buf[256]={0};
     char cmd[256] = {0};
     char cmd1[256] = {0};
@@ -345,63 +346,66 @@ int main()
        ERR_CHK(rc);
        rc = memset_s(cmd,sizeof(cmd), 0, sizeof(cmd));
        ERR_CHK(rc);
+       //snprintf(cmd, sizeof(cmd), "ip -s mroute |grep 'Iif: brlan0' | cut -d '(' -f 2 | cut -d ',' -f 1|awk '{print $1}'");
        snprintf(cmd, sizeof(cmd), "filter=`ip -s mroute |grep 'Iif: brlan0' | cut -d '(' -f 2 | cut -d ',' -f 1` ; for val in $filter; do ip -4 nei show |grep brlan0 |grep -v FAILED |cut -d '(' -f 2 | cut -d ',' -f 1|awk '{print $1}' | grep $val ; done");
+       //system(cmd); 
        if(!(fp = popen(cmd, "r")))
        {
+	  //printf("error\n");
 	       return -1;
        }
        while ( fgets(buf, sizeof(buf), fp)!= NULL )
        {
-          char *pos;
-          if ((pos=strchr(buf, '\n')) != NULL)
-          *pos = '\0';
+        char *pos;
+        if ((pos=strchr(buf, '\n')) != NULL)
+        *pos = '\0';
                 
-	  if (FirstTime)
-	  {
+	      if (FirstTime)
+	      {
              rc = strcpy_s(LanMCastTable[LanMCcount],sizeof(LanMCastTable[LanMCcount]),buf);
              if(rc != EOK)
              {
                   ERR_CHK(rc);
                   return -1;
              }
-	     FirstTime = 0;
+	           FirstTime = 0;
              if (!strncmp(buf, "169.", 4)) 
              {
-	        v_secure_system("ip route add %s dev brlan0", buf);
+	              v_secure_system("ip route add %s dev brlan0", buf);
              } 
-	     v_secure_system("arp -i brlan10 -Ds %s brlan0 pub", buf);
-	     LanMCcount++;
-	  }
-	  else
-	  {
-	     for(i = 0;i<LanMCcount;i++)
-	     {
+	           v_secure_system("arp -i brlan10 -Ds %s brlan0 pub", buf);
+	           LanMCcount++;
+	      }
+	      else
+	      {
+	         for(i = 0;i<LanMCcount;i++)
+	         {
                  
-	        rc = strcmp_s(LanMCastTable[i],sizeof(LanMCastTable[i]),buf,&ind);
+	             rc = strcmp_s(LanMCastTable[i],sizeof(LanMCastTable[i]),buf,&ind);
                 ERR_CHK(rc);
                 if((!ind) && (rc == EOK))
-	        {
-	           i = 0;
-		   break;
-	        }
+	              {
+	                 i = 0;
+		               break;
+	              }
 			     	
-	     }
-	     if(i)
-	     {
-                rc = strcpy_s(LanMCastTable[LanMCcount],sizeof(LanMCastTable[LanMCcount]),buf);
-                if(rc != EOK)
-                {
-                   ERR_CHK(rc);
-                   return -1;
-                }
-                if (!strncmp(buf, "169.", 4)) 
-                {
-		    v_secure_system("ip route add %s dev brlan0", buf);
-                }
-		v_secure_system("arp -i brlan10 -Ds %s brlan0 pub", buf);
-		LanMCcount++;
-	     }
-          }
+	          }
+	         if(i)
+	          {
+                  rc = strcpy_s(LanMCastTable[LanMCcount],sizeof(LanMCastTable[LanMCcount]),buf);
+                  if(rc != EOK)
+                   {
+                       ERR_CHK(rc);
+                       return -1;
+                   }
+                   if (!strncmp(buf, "169.", 4)) 
+                   {
+		                   v_secure_system("ip route add %s dev brlan0", buf);
+                   }
+		               v_secure_system("arp -i brlan10 -Ds %s brlan0 pub", buf);
+		               LanMCcount++;
+	           }
+        }
           rc = memset_s(buf,sizeof(buf), 0, sizeof(buf));
           ERR_CHK(rc);
        }
@@ -520,15 +524,15 @@ int main()
                }
 	     }
 	  }
-          rc = memset_s(buf,sizeof(buf), 0, sizeof(buf));
-          ERR_CHK(rc);
-       }
-       pclose(fp);
-       sleep(30);
-       if (wlist_stat != 0) 
-       { 
-          wlist_stat = mrd_wlistInit();
-       }
-    } //while
+     rc = memset_s(buf,sizeof(buf), 0, sizeof(buf));
+     ERR_CHK(rc);
+     }
+     pclose(fp);
+     sleep(30);
+     if (wlist_stat != 0) { 
+        wlist_stat = mrd_wlistInit();
+     }
+  } //while
 
 }
+
