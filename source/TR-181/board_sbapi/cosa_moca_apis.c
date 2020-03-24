@@ -88,6 +88,15 @@
 #endif
 #endif
 
+extern ANSC_HANDLE g_MoCAObject ;
+
+/* MoCA Reset US - RDKB-22615 use this MOCA_RESET_DELAY_IN_SECS macro */
+#define MOCA_RESET_DELAY_IN_SECS		5
+
+/* This Marco to check return status of moca_SetIfConfig HAL function */
+#define  STATUS_SUCCESS     0
+#define  STATUS_FAILURE     0xFFFFFFFF
+
 #define MOCA_INTEFACE_NUMBER    1
 extern  ANSC_HANDLE                        bus_handle;
 #if 0
@@ -505,6 +514,125 @@ CosaDmlMocaIfGetEntry
 #define kMax_AutoPowerControlPhyRate    4
 #define kMax_FreqCurrentMaskSetting     5
 #define kMax_StringValue                20
+
+ANSC_STATUS
+CosaDmlMocaIfReset
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                       ulInterfaceIndex,
+	PCOSA_DML_MOCA_CFG	    MCfg,
+        PCOSA_DML_MOCA_IF_CFG       pCfg,
+	PCOSA_DML_MOCA_IF_DINFO     pInfo
+    )
+{
+    JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
+    moca_cfg_t mocaCfg;
+    memset(&mocaCfg, 0, sizeof(moca_cfg_t));
+
+    moca_dynamic_info_t mocaDInfo;
+    memset(&mocaDInfo, 0, sizeof(moca_dynamic_info_t));
+
+    int return_status = STATUS_FAILURE;
+
+    if ( !pCfg )
+    {
+        return ANSC_STATUS_FAILURE;
+    }
+
+    if (!pInfo)
+    {
+        return ANSC_STATUS_FAILURE;
+    }
+
+    if ( ulInterfaceIndex != 0 )
+    {
+	return ANSC_STATUS_FAILURE;
+    }
+
+    if (pCfg->bEnabled == FALSE)
+    {
+	CcspTraceWarning(("No need to reset MoCA if MoCA is already disabled\n"));
+	return ANSC_STATUS_FAILURE;
+    }
+
+		/* To obtain Operational Status info from moca_IfGetDynamicInfo HAL function */
+		moca_IfGetDynamicInfo(ulInterfaceIndex, &mocaDInfo);
+		pInfo->Status = mocaDInfo.Status;
+
+		/* To check for Operational state of MoCA Before Reset */
+		CcspTraceWarning(("Operational state of MoCA before Reset : %s\n", (pInfo->Status==1)?"Up":(pInfo->Status==2)?"Down":(pInfo->Status==3)?"Unknown":(pInfo->Status==4)?"Dormant":(pInfo->Status==5)?"NotPresent":(pInfo->Status==6)?"LowerLayerDown":"Error"));
+
+		/* To Check for Provisioning state of MOCA Before Reset */
+		CcspTraceWarning(("Provisioning state of MoCA before Reset. CosaDmlMocaIfReset -- ProvisioningFilename:%s, ProvisioningServerAddress:%s, ProvisioningServer ddressType:%s\n", MCfg->X_CISCO_COM_ProvisioningFilename, MCfg->X_CISCO_COM_ProvisioningServerAddress, (MCfg->X_CISCO_COM_ProvisioningServerAddressType==1)?"IPv4":"IPv6"));
+
+	        /* Get default value of MoCA Interface*/
+		moca_GetIfConfig(ulInterfaceIndex, &mocaCfg);
+
+		/* MoCA Interface Setting to FALSE and syscfg commit it. That mean, we are disabled the MoCA interface here */
+		CcspTraceWarning(("%s > Disabling MoCA Interface...\n", __func__));
+		pCfg->bEnabled = FALSE;
+		mocaCfg.bEnabled = pCfg->bEnabled;
+		return_status = moca_SetIfConfig(ulInterfaceIndex, &mocaCfg);
+
+		if(return_status == STATUS_SUCCESS)
+		{
+			if (syscfg_set(NULL, "moca_enabled", "0") != 0)
+			{
+				AnscTraceWarning(("syscfg_set failed\n"));
+			}
+			else
+			{
+				if (syscfg_commit() != 0)
+				{
+					AnscTraceWarning(("syscfg_commit failed\n"));
+				}
+			}
+		}
+		else
+		{
+			CcspTraceWarning(("MoCA Interface not set to FALSE\n"));
+			return ANSC_STATUS_FAILURE;
+		}
+
+		/* 5 second delay given for MoCA Reset */
+		CcspTraceWarning(("5s Delay starts\n"));
+		sleep(MOCA_RESET_DELAY_IN_SECS);
+		CcspTraceWarning(("5s Delay ends\n"));
+
+		/* MoCA Interface Setting to TRUE and syscfg commit it. That mean, we are Enabled the MoCA interface here */
+		CcspTraceWarning(("%s > Enabling MoCA Interface...\n", __func__));
+		pCfg->bEnabled = TRUE;
+		mocaCfg.bEnabled = pCfg->bEnabled;
+		return_status = moca_SetIfConfig(ulInterfaceIndex, &mocaCfg);
+
+		if(return_status == STATUS_SUCCESS)
+		{
+			if (syscfg_set(NULL, "moca_enabled", "1") != 0)
+			{
+				AnscTraceWarning(("syscfg_set failed\n"));
+			}
+			else
+			{
+				if (syscfg_commit() != 0)
+				{
+					AnscTraceWarning(("syscfg_commit failed\n"));
+				}
+			}
+		}
+		else
+		{
+			CcspTraceWarning(("MoCA Interface not set to TRUE\n"));
+			return ANSC_STATUS_FAILURE;
+		}
+
+	        /* To check for Operational state of MoCA After Reset */
+		CcspTraceWarning(("Operational state of MoCA After Reset : %s\n", (pInfo->Status==1)?"Up":(pInfo->Status==2)?"Down":(pInfo->Status==3)?"Unknown":(pInfo->Status==4)?"Dormant":(pInfo->Status==5)?"NotPresent":(pInfo->Status==6)?"LowerLayerDown":"Error"));
+
+		/* To Check for Provisioning state of MOCA After Reset */
+		CcspTraceWarning(("Provisioning state of MoCA After Reset. CosaDmlMocaIfReset -- ProvisioningFilename:%s, ProvisioningServerAddress:%s, ProvisioningServerAddressType:%s\n", MCfg->X_CISCO_COM_ProvisioningFilename, MCfg->X_CISCO_COM_ProvisioningServerAddress, (MCfg->X_CISCO_COM_ProvisioningServerAddressType==1)?"IPv4":"IPv6"));
+    
+return ANSC_STATUS_SUCCESS;
+}
 
 ANSC_STATUS
 CosaDmlMocaIfSetCfg
@@ -1782,6 +1910,29 @@ ANSC_STATUS CosaMoCAGetForceEnable(PCOSA_DML_MOCA_CFG pCfg)
 	return ANSC_STATUS_FAILURE;  
 }
 
+void* MoCA_Interface_Reset(void *arg)
+{
+	pthread_detach(pthread_self());
+	ANSC_HANDLE                 hContext;
+	PCOSA_DML_MOCA_IF_FULL          pMoCAIfFull   = &((PCOSA_DML_MOCA_IF_FULL_TABLE)hContext)->MoCAIfFull;
+	PCOSA_DATAMODEL_MOCA            pMyObject     = (PCOSA_DATAMODEL_MOCA    )g_MoCAObject;
+	PCOSA_DML_MOCA_CFG              pCfg          = &pMyObject->MoCACfg;
+	PCOSA_DML_MOCA_IF_CFG		pFCfg	      =	&pMyObject->MoCAIfFullTable[0].MoCAIfFull.Cfg;
+	PCOSA_DML_MOCA_IF_DINFO		pDCfg	      = &pMyObject->MoCAIfFullTable[0].MoCAIfFull.DynamicInfo;
+	ANSC_STATUS         ReturnStatus  = ANSC_STATUS_FAILURE;
+
+                CcspTraceWarning(("MoCA Interface going to Reset\n"));
+                ReturnStatus = CosaDmlMocaIfReset((ANSC_HANDLE)NULL, pFCfg->InstanceNumber-1, pCfg, pFCfg, pDCfg);
+                if(ReturnStatus == ANSC_STATUS_SUCCESS)
+                {
+                        CcspTraceWarning(("Enabling MoCA Reset succesful\n"));
+                }
+                else
+                {
+                        CcspTraceWarning(("Enabling MoCA Reset Failed\n"));
+                }
+}
+
 BOOL MoCA_SetForceEnable(PCOSA_DML_MOCA_IF_CFG pCfg, PCOSA_DML_MOCA_CFG  pFCfg, BOOL bValue)
 {
 	ANSC_STATUS         ReturnStatus  = ANSC_STATUS_FAILURE;
@@ -2132,6 +2283,12 @@ ANSC_STATUS is_usg_in_bridge_mode(BOOL *pBridgeMode)
 ANSC_STATUS CosaMoCAGetForceEnable(PCOSA_DML_MOCA_CFG pCfg)
 {
 	AnscTraceWarning(("CosaMoCAForceEnable_FUNCTION-- \n"));
+	return 0;
+}
+
+void* MoCA_Interface_Reset(void *arg)
+{
+	CcspTraceWarning(("MoCARest_SetEnable_FUNCTION\n"));
 	return 0;
 }
 
@@ -2520,6 +2677,12 @@ ANSC_STATUS is_usg_in_bridge_mode(BOOL *pBridgeMode)
 ANSC_STATUS CosaMoCAGetForceEnable(PCOSA_DML_MOCA_CFG pCfg)
 {
 	AnscTraceWarning(("CosaMoCAForceEnable_FUNCTION-- \n"));
+	return 0;
+}
+
+void* MoCA_Interface_Reset(void *arg)
+{
+	CcspTraceWarning(("MoCARest_SetEnable_FUNCTION\n"));
 	return 0;
 }
 

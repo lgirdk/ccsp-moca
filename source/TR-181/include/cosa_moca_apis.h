@@ -369,6 +369,16 @@ CosaDmlMocaIfSetValues
 );
 
 ANSC_STATUS
+CosaDmlMocaIfReset
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                       uIndex,
+        PCOSA_DML_MOCA_CFG          MCfg,
+        PCOSA_DML_MOCA_IF_CFG       pCfg,
+	PCOSA_DML_MOCA_IF_DINFO     pInfo
+    );
+
+ANSC_STATUS
 CosaDmlMocaIfSetCfg
     (
         ANSC_HANDLE                 hContext,
@@ -525,5 +535,6 @@ CosaDmlMocaIfFlowTableGetTable
 
 ANSC_STATUS is_usg_in_bridge_mode(BOOL *pBridgeMode);
 ANSC_STATUS CosaMoCAGetForceEnable(PCOSA_DML_MOCA_CFG pCfg);
+void* MoCA_Interface_Reset(void *arg);
 BOOL MoCA_SetForceEnable(PCOSA_DML_MOCA_IF_CFG pCfg, PCOSA_DML_MOCA_CFG pFCfg, BOOL bValue);
 #endif
