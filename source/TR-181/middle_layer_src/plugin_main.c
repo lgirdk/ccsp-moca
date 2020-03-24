@@ -93,6 +93,8 @@ COSA_Init
     pPlugInfo->RegisterFunction(pPlugInfo->hContext, "MoCA_Commit",  MoCA_Commit);
     pPlugInfo->RegisterFunction(pPlugInfo->hContext, "MoCA_Rollback",  MoCA_Rollback);
 
+    pPlugInfo->RegisterFunction(pPlugInfo->hContext, "MoCAReset_GetParamBoolValue",  MoCAReset_GetParamBoolValue);
+    pPlugInfo->RegisterFunction(pPlugInfo->hContext, "MoCAReset_SetParamBoolValue",  MoCAReset_SetParamBoolValue);
 
     pPlugInfo->RegisterFunction(pPlugInfo->hContext, "Interface1_GetEntryCount",  Interface1_GetEntryCount);
     pPlugInfo->RegisterFunction(pPlugInfo->hContext, "Interface1_GetEntry",  Interface1_GetEntry);

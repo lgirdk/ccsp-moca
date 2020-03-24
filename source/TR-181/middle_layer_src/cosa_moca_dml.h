@@ -167,6 +167,27 @@ MoCA_Rollback
     );
 
 /***********************************************************************
+ APIs for Object:
+    MoCA.
+    *  MoCAReset_GetParamBoolValue
+    *  MoCAReset_GetParamBoolValue
+***********************************************************************/
+BOOL
+MoCAReset_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+BOOL
+MoCAReset_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+
+/***********************************************************************
 
  APIs for Object:
 

@@ -751,6 +751,94 @@ MoCA_Rollback
     return 0;
 }
 
+/**********************************************************************
+    caller:     owner of this object
+    prototype:
+        BOOL
+        MoCAReset_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+    description:
+        This function is called to retrieve Boolean parameter value;
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+                char*                       ParamName,
+                The parameter name;
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+    return:     TRUE if succeeded.
+**********************************************************************/
+BOOL
+MoCAReset_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    CcspTraceWarning(("ParamName: %s pBool: %d\n", ParamName, pBool));
+    if (AnscEqualString(ParamName, "Reset", TRUE))
+    {
+        *pBool = FALSE;
+        return TRUE;
+    }
+    return FALSE;
+}
+
+
+
+/**********************************************************************
+    caller:     owner of this object
+    prototype:
+        BOOL
+        MoCAReset_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+    description:
+        This function is called to set BOOL parameter value;
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+                char*                       ParamName,
+                The parameter name;
+                BOOL                        bValue
+                The updated BOOL value;
+    return:     TRUE if succeeded.
+**********************************************************************/
+BOOL
+MoCAReset_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    pthread_t tid ;
+    int res;
+    CcspTraceWarning(("MoCAReset_SetParamBoolValue () ParamName: %s bValue: %d\n", ParamName, bValue));
+
+	if (AnscEqualString(ParamName, "Reset", TRUE))
+	{
+		CcspTraceWarning(("Starts MoCA_Interface_Reset -- CosaDmlMocaIfReset() call\n"));
+		res = pthread_create ( &tid, NULL, &MoCA_Interface_Reset, NULL );
+		if(res != 0)
+		{
+			CcspTraceWarning(("Creating MoCA_Interface_Reset Thread error %d\n", res));
+		}
+		else
+		{
+			CcspTraceWarning(("MoCA Interface Reset Thread Created\n"));
+		}
+		return TRUE;
+	}
+    return FALSE;
+}
+
 /***********************************************************************
 
  APIs for Object:
