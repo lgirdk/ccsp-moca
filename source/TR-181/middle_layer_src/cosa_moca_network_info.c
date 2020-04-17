@@ -294,14 +294,14 @@ MocaIf_GetAssocDevices
                    iReturnStatus = STATUS_SUCCESS;
 
         iReturnStatus =  moca_GetMocaCPEs(ulInterfaceIndex, cpes, &pnum_cpes);
-        AnscTraceWarning(("MocaIf_GetAssocDevices -- pnum_cpes:%d\n", pnum_cpes));
         if(( iReturnStatus == STATUS_SUCCESS ) && ( 0 < pnum_cpes ))
         {
+            AnscTraceWarning(("MocaIf_GetAssocDevices -- pnum_cpes:%d\n", pnum_cpes));
             iReturnStatus = moca_GetNumAssociatedDevices(ulInterfaceIndex, pulCount);
-            AnscTraceWarning(("MocaIf_GetAssocDevices -- ulInterfaceIndex:%lu, pulCount:%lu\n", ulInterfaceIndex, *pulCount));
 
             if(( iReturnStatus == STATUS_SUCCESS ) && ( 0 < *pulCount ))
             {
+                AnscTraceWarning(("MocaIf_GetAssocDevices -- ulInterfaceIndex:%lu, pulCount:%lu\n", ulInterfaceIndex, *pulCount));
                 moca_associated_device_t*       pdevice_array  = NULL;
                 int                             i;
 

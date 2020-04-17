@@ -1043,7 +1043,6 @@ CosaDmlMocaIfGetCfg
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
 	moca_cfg_t mocaCfg;
 
-    AnscTraceWarning(("CosaDmlMocaIfGetCfg -- ulInterfaceIndex:%lu.\n", uIndex));
     unsigned int moca_enable_db=0;
     char buf[10]={0};
     if ( !pCfg )
@@ -1147,8 +1146,6 @@ CosaDmlMocaIfGetDinfo
 	moca_dynamic_info_t mocaDInfo;
 
 	memset(&mocaDInfo, 0, sizeof(moca_dynamic_info_t));
-
-    AnscTraceWarning(("CosaDmlMocaIfGetDinfo -- ulInterfaceIndex:%lu.\n", ulInterfaceIndex));
 
     if (!pInfo)
     {
@@ -2415,8 +2412,7 @@ CosaDmlMocaIfGetCfg
         PCOSA_DML_MOCA_IF_CFG       pCfg
     )
 {
-    AnscTraceWarning(("CosaDmlMocaIfGetCfg -- ulInterfaceIndex:%lu.\n", ulInterfaceIndex));
-    
+
     if ( !pCfg )
     {
         return ANSC_STATUS_FAILURE;
@@ -2436,7 +2432,6 @@ CosaDmlMocaIfGetDinfo
         PCOSA_DML_MOCA_IF_DINFO     pInfo
     )
 {
-    AnscTraceWarning(("CosaDmlMocaIfGetDinfo -- ulInterfaceIndex:%lu.\n", ulInterfaceIndex));
 
     if (!pInfo)
     {
@@ -2457,7 +2452,6 @@ CosaDmlMocaIfGetStats
         PCOSA_DML_MOCA_STATS        pStats
     )
 {
-    AnscTraceWarning(("CosaDmlMocaIfGetDinfo -- ulInterfaceIndex:%lu.\n", ulInterfaceIndex));
 
     if ( !pStats )
     {
