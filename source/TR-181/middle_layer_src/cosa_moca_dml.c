@@ -2017,6 +2017,8 @@ Interface1_SetParamUlongValue
     int                             ind      = -1;
     
     AnscTraceWarning(("ParamName: %s uValue: %d\n", ParamName, uValue));
+    #define LIMIT 15
+    #define MIN 3
 
     /* check the parameter name and set the corresponding value */
     rc = strcmp_s("PowerCntlPhyTarget", strlen("PowerCntlPhyTarget"), ParamName, &ind );
@@ -2032,10 +2034,12 @@ Interface1_SetParamUlongValue
     ERR_CHK(rc);
     if((!ind) && (rc == EOK))
     {
-
-        /* save update to backup */
-        pMoCAIfFull->Cfg.BeaconPowerLimit = uValue;
-        return TRUE;
+        if(((uValue%MIN)==0) && (uValue<=LIMIT))
+        {
+            /* save update to backup */
+            pMoCAIfFull->Cfg.BeaconPowerLimit = uValue;
+            return TRUE;
+        }
     }
 
     rc = strcmp_s("AutoPowerControlPhyRate", strlen("AutoPowerControlPhyRate"), ParamName, &ind );
