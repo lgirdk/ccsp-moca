@@ -263,6 +263,10 @@ int main(int argc, char* argv[])
     RDK_LOGGER_INIT();
 #endif
 
+    // Buffer characters till newline for stdout and stderr
+    setlinebuf(stdout);
+    setlinebuf(stderr);
+
     for (idx = 1; idx < argc; idx++)
     {
         rc = strcmp_s("-subsys",strlen("-subsys"),argv[idx],&ind);
