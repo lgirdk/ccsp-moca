@@ -233,6 +233,10 @@ int main(int argc, char* argv[])
     DmErr_t    err;
     debugLogFile = stderr;
 
+    // Buffer characters till newline for stdout and stderr
+    setlinebuf(stdout);
+    setlinebuf(stderr);
+
     for (idx = 1; idx < argc; idx++)
     {
         rc = strcmp_s("-subsys",strlen("-subsys"),argv[idx],&ind);
