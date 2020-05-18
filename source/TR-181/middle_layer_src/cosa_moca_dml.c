@@ -1584,8 +1584,7 @@ Interface1_GetParamStringValue
     ERR_CHK(rc);
     if((!ind) && (rc == EOK))
     {
-        /* collect value */
-        *pUlSize = AnscSizeOfString(pValue);
+       // Not using "LowerLayers" parameter
         return 0;
     }
 
