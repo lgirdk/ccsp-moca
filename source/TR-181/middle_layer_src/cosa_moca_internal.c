@@ -664,7 +664,9 @@ CosaMoCAInitialize
         //If bridge mode enabled then Disable MoCA.
         if (0 != mode) 
         {
-            CosaDmlMocaIfSetCfg( NULL, 0, &pMyObject->MoCAIfFullTable[0].MoCAIfFull.Cfg);
+            /*Coverity Fix CID:65666 CHECKED_RETURN */
+            if( CosaDmlMocaIfSetCfg( NULL, 0, &pMyObject->MoCAIfFullTable[0].MoCAIfFull.Cfg) == ANSC_STATUS_FAILURE )
+                  CcspTraceError(("RDK_LOG_ERROR, CcspMoCA %s : CosaDmlMocaIfSetCfg  create Error!!!\n", __FUNCTION__));
         }
     }
     CosaMoCAGetForceEnable(&pMyObject->MoCACfg);
