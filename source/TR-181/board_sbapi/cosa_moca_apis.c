@@ -2029,6 +2029,8 @@ CosaDmlMocaGetLogStatus
 		    pMyObject->Log_Period =  atoi(buf);
 		}
 	}
+       /*Coverity Fix CID :60622 MISSING_RETURN */
+       return ANSC_STATUS_SUCCESS;
 
 }
 
@@ -2124,6 +2126,9 @@ void* MoCA_Interface_Reset(void *arg)
                 {
                         CcspTraceWarning(("Enabling MoCA Reset Failed\n"));
                 }
+   /*Coverity Fix CID: 140394 MISSING_RETURN */
+  return NULL;
+ 
 }
 
 BOOL MoCA_SetForceEnable(PCOSA_DML_MOCA_IF_CFG pCfg, PCOSA_DML_MOCA_CFG  pFCfg, BOOL bValue)
@@ -2137,7 +2142,8 @@ BOOL MoCA_SetForceEnable(PCOSA_DML_MOCA_IF_CFG pCfg, PCOSA_DML_MOCA_CFG  pFCfg, 
 	}
 	else
 	{
-		sprintf(buff,"%s",( bValue ) ? "true" :"false" );
+                 /*Coverity  Fix CID:58757 DC.STRING_BUFFER */
+		snprintf(buff,sizeof(buff),"%s",( bValue ) ? "true" :"false" );
 		if(syscfg_set(NULL, "X_RDKCENTRAL-COM_ForceEnable", buff) != 0)
 		{
 			AnscTraceWarning(("syscfg_set failed\n"));
