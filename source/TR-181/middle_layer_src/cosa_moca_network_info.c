@@ -574,7 +574,7 @@ void Set_MoCADevices_Status_Offline()
                         free(cur->ssidType);
                         cur->ssidType = NULL;
                     }
-                    cur->ssidType = strdup(" ");
+                    cur->ssidType = strdup("Device.MoCA.Interface.1.");
                     cur->Updated = 1;
                     cur->StatusChange = 1;
                 }
