@@ -537,4 +537,5 @@ ANSC_STATUS is_usg_in_bridge_mode(BOOL *pBridgeMode);
 ANSC_STATUS CosaMoCAGetForceEnable(PCOSA_DML_MOCA_CFG pCfg);
 void* MoCA_Interface_Reset(void *arg);
 BOOL MoCA_SetForceEnable(PCOSA_DML_MOCA_IF_CFG pCfg, PCOSA_DML_MOCA_CFG pFCfg, BOOL bValue);
+BOOL CosaDmlmocaUnpack(char* blob);
 #endif

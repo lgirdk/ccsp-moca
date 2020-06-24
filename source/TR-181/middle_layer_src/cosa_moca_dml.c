@@ -432,6 +432,13 @@ MoCA_GetParamStringValue
         return 0;
     }
 
+    if( AnscEqualString(ParamName, "Data", TRUE))
+    {
+        // To Do
+        /* collect value */
+       CcspTraceWarning(("Data Get Not supported\n"));
+        return 0;
+    }
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
 }
@@ -674,7 +681,18 @@ MoCA_SetParamStringValue
         }
         return TRUE;
     }
-
+	if( AnscEqualString(ParamName, "Data", TRUE))
+    {
+ 		CcspTraceWarning(("Data received from webconfig\n"));
+        if( CosaDmlmocaUnpack( pString))
+        {
+            return TRUE;
+        }
+        else
+        {
+            return FALSE;
+        }  
+    }
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
