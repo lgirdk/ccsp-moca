@@ -72,6 +72,11 @@
 #include "cosa_moca_internal.h"
 #include "safec_lib_common.h"
 #include "syscfg/syscfg.h"
+#include "msgpack.h"
+#include "cosa_moca_param.h"
+#include "cosa_moca_helpers.h"
+#include "cosa_moca_webconfig_api.h"
+#include "ccsp_trace.h"
 
 #ifndef CONFIG_SYSTEM_MOCA
 #define _COSA_SIM_ 1 
@@ -2187,6 +2192,125 @@ BOOL MoCA_SetForceEnable(PCOSA_DML_MOCA_IF_CFG pCfg, PCOSA_DML_MOCA_CFG  pFCfg, 
 	return TRUE;
 }
 
+BOOL CosaDmlmocaUnpack(char* blob)
+{
+    AnscTraceWarning(("CosaDmlmocaUnpack_FUNCTION\n"))
+    mocadoc_t *md = NULL;
+	int err;
+
+	if(blob != NULL)	{
+
+		CcspTraceWarning(("---------------start of b64 decode--------------\n"));
+
+		char * decodeMsg =NULL;
+		int decodeMsgSize =0;
+		int size =0;
+
+		msgpack_zone mempool;
+		msgpack_object deserialized;
+		msgpack_unpack_return unpack_ret;
+
+		decodeMsgSize = b64_get_decoded_buffer_size(strlen(blob));
+		decodeMsgSize = decodeMsgSize +1;
+		CcspTraceWarning(("Bob decodeMsgSize is %d\n", decodeMsgSize ));
+		decodeMsg = (char *) malloc(sizeof(char) * decodeMsgSize);
+		if( NULL == decodeMsg)
+		{
+			CcspTraceWarning(("decodeMsg allocation failed\n"));
+			return FALSE;
+		}
+		size = b64_decode((uint8_t *) blob, strlen(blob),(uint8_t *) decodeMsg );
+		CcspTraceWarning(("base64 decoded data contains %d bytes\n",size));
+	
+		msgpack_zone_init(&mempool, 2048);
+		unpack_ret = msgpack_unpack(decodeMsg, size, NULL, &mempool, &deserialized);
+		switch(unpack_ret)
+		{
+			case MSGPACK_UNPACK_SUCCESS:
+			    CcspTraceWarning(("MSGPACK_UNPACK_SUCCESS :%d\n",unpack_ret));
+			break;
+			case MSGPACK_UNPACK_EXTRA_BYTES:
+			    CcspTraceWarning(("MSGPACK_UNPACK_EXTRA_BYTES :%d\n",unpack_ret));
+			break;
+			case MSGPACK_UNPACK_CONTINUE:
+				CcspTraceWarning(("MSGPACK_UNPACK_CONTINUE :%d\n",unpack_ret));
+			break;
+			case MSGPACK_UNPACK_PARSE_ERROR:
+				CcspTraceWarning(("MSGPACK_UNPACK_PARSE_ERROR :%d\n",unpack_ret));
+			break;
+			case MSGPACK_UNPACK_NOMEM_ERROR:
+				CcspTraceWarning(("MSGPACK_UNPACK_NOMEM_ERROR :%d\n",unpack_ret));
+			break;
+			default:
+				CcspTraceWarning(("Message Pack decode failed with error: %d\n", unpack_ret));
+		}
+		msgpack_zone_destroy(&mempool);
+
+		CcspTraceWarning(("---------------End of b64 decode--------------\n"));
+
+		if(unpack_ret == MSGPACK_UNPACK_SUCCESS)
+		{
+			md = mocadoc_convert(decodeMsg, size);//used to process the incoming msgobject
+			err = errno;
+			CcspTraceWarning(( "errno: %s\n", mocadoc_strerror(err) ));
+			if( decodeMsg )
+			{
+				free(decodeMsg);
+				decodeMsg = NULL;
+			}
+
+			if(md != NULL)
+			{
+				CcspTraceWarning(("md->subdoc_name is %s\n", md->subdoc_name));
+				CcspTraceWarning(("md->version is %lu\n", (long)md->version));
+				CcspTraceWarning(("md->transaction_id %lu\n",(long) md->transaction_id));
+				CcspTraceWarning(("md->enable %s\n", (1 == md->param->enable)?"true":"false"));
+
+				execData *execDataPf = NULL ;
+				execDataPf = (execData*) malloc (sizeof(execData));
+				if ( execDataPf != NULL )
+				{
+					memset(execDataPf, 0, sizeof(execData));
+					execDataPf->txid = md->transaction_id; 
+					execDataPf->version = md->version; 
+					execDataPf->numOfEntries = 0; 
+
+					strncpy(execDataPf->subdoc_name,"moca",sizeof(execDataPf->subdoc_name)-1);
+
+					execDataPf->user_data = (void*) md ;
+					execDataPf->calcTimeout = NULL ;
+					execDataPf->executeBlobRequest = Process_Moca_WebConfigRequest;
+					execDataPf->rollbackFunc = rollback_moca_conf ;
+					execDataPf->freeResources = freeResources_moca ;
+					PushBlobRequest(execDataPf);
+					CcspTraceWarning(("PushBlobRequest complete\n"));
+					return TRUE;
+				}
+				else 
+				{
+					CcspTraceWarning(("execData memory allocation failed\n"));
+					mocadoc_destroy(md);
+					return FALSE;
+				}
+
+			}
+			return TRUE;                    
+		}
+		else
+		{
+			if ( decodeMsg )
+			{
+				free(decodeMsg);
+				decodeMsg = NULL;
+			}
+			CcspTraceWarning(("Corrupted moca enable msgpack value\n"));
+			return FALSE;
+		}
+			return TRUE;	
+	}
+	return TRUE;
+}
+
 #elif (_COSA_DRG_TPG_)
 
 #include <utctx.h>
@@ -2504,6 +2628,11 @@ BOOL MoCA_SetForceEnable(PCOSA_DML_MOCA_IF_CFG pCfg, PCOSA_DML_MOCA_CFG  pFCfg)
 	return 0;
 }
 
+BOOL CosaDmlmocaUnpack(char* blob)
+{
+    AnscTraceWarning(("CosaDmlmocaUnpack_FUNCTION\n"))
+    return 0;
+}
 
 #elif ( _COSA_SIM_ )
 
@@ -2895,6 +3024,12 @@ BOOL MoCA_SetForceEnable(PCOSA_DML_MOCA_IF_CFG pCfg, PCOSA_DML_MOCA_CFG  pFCfg)
 {
 	AnscTraceWarning(("MoCA_SetForceEnable_FUNCTION\n"));
 	return 0;
+}
+
+BOOL CosaDmlmocaUnpack(char* blob)
+{
+    AnscTraceWarning(("CosaDmlmocaUnpack_FUNCTION\n"))
+    return 0;
 }
 
 #endif

@@ -19,6 +19,9 @@
 AM_CFLAGS = -D_ANSC_LINUX
 AM_CFLAGS += -D_ANSC_USER
 AM_LDFLAGS = -lccsp_common
+AM_LDFLAGS = -lwebconfig_framework
+AM_LDFLAGS = -lmsgpackc
+
 
 AM_CPPFLAGS = -Wall -Werror
 ACLOCAL_AMFLAGS = -I m4
@@ -33,5 +36,5 @@ CcspMoCA_DEPENDENCIES= \
 
 CcspMoCA_CFLAGS = $(SYSTEMD_CFLAGS)
 CcspMoCA_SOURCES = ssp_messagebus_interface.c ssp_main.c ssp_action.c dm_pack_datamodel.c
-CcspMoCA_LDFLAGS = -lsyscfg -lsysevent -lccsp_common -ldl -pthread -rdynamic $(SYSTEMD_LDFLAGS)
+CcspMoCA_LDFLAGS = -lsyscfg -lsysevent -lccsp_common -ldl -pthread -rdynamic -lmsgpackc -lwebconfig_framework $(SYSTEMD_LDFLAGS)
 CcspMoCA_LDADD =  $(CcspMoCA_DEPENDENCIES)

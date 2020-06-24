@@ -76,6 +76,7 @@
 #include <sys/inotify.h>
 #include <sys/stat.h>
 #include "safec_lib_common.h"
+#include "webconfig_framework.h"
 
 extern void * g_pDslhDmlAgent;
 extern ANSC_HANDLE g_MoCAObject ;
@@ -134,6 +135,10 @@ CosaMoCACreate
     pMyObject->Initialize        = CosaMoCAInitialize;
 
     pMyObject->Initialize   ((ANSC_HANDLE)pMyObject);
+
+    AnscTraceWarning(("  Initializing WebConfig Framework!\n")); 
+    webConfigFrameworkInit();
+    AnscTraceWarning(("  Initializing WebConfig Framework done!\n"));
 
     return  (ANSC_HANDLE)pMyObject;
 }
@@ -405,7 +410,7 @@ static void read_updated_log_interval()
     
     rc = memset_s(tmp, sizeof(tmp), 0, sizeof(tmp));
     ERR_CHK(rc);
-    get_formatted_time(tmp);
+    get_formatted_time(tmp);  
     snprintf(buff, 256, "%s MOCA_TELEMETRY_LOG_ENABLED:%s\n", tmp, gMoCALogEnable);
     write_to_file(moca_telemetry_log, buff);
 }
