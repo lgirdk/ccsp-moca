@@ -106,7 +106,7 @@ void CosaMocaTelemetryxOpsLogSettingsSync();
     ANSC_HANDLE                             pSlapMoCADm;                    \
     COSA_DML_MOCA_CFG                       MoCACfg;                        \
     COSA_DML_MOCA_IF_FULL_TABLE             MoCAIfFullTable[MOCA_INTEFACE_NUMBER];   \
-    COSA_DML_MOCA_LOG_STATUS				LogStatus						\
+    COSA_DML_MOCA_LOG_STATUS	            LogStatus;      			\
 
 typedef  struct
 _COSA_DATAMODEL_MOCA_CLASS_CONTENT

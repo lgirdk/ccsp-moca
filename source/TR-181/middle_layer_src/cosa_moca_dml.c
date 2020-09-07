@@ -70,6 +70,8 @@
 #include "dml_tr181_custom_cfg.h"
 #include "cosa_moca_network_info.h"
 #include "safec_lib_common.h"
+#include "syscfg/syscfg.h"
+#include "cosa_moca_apis.h"
 
 #ifdef CONFIG_SYSTEM_MOCA
 
@@ -123,7 +125,6 @@ CosaSListPushEntryByInsNum
         PCOSA_CONTEXT_LINK_OBJECT   pCosaContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContextEntry = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry       = (PSINGLE_LINK_ENTRY       )NULL;
     ULONG                           ulIndex           = 0;
@@ -209,6 +210,7 @@ MoCA_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_MOCA            pMyObject     = (PCOSA_DATAMODEL_MOCA    )g_MoCAObject;
     PCOSA_DML_MOCA_CFG              pCfg          = &pMyObject->MoCACfg;
     errno_t                         rc       = -1;
@@ -279,6 +281,9 @@ MoCA_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     return FALSE;
 }
 
@@ -320,6 +325,7 @@ MoCA_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_MOCA            pMyObject     = (PCOSA_DATAMODEL_MOCA    )g_MoCAObject;
     PCOSA_DML_MOCA_CFG              pCfg          = &pMyObject->MoCACfg;
     errno_t                         rc       = -1;
@@ -396,6 +402,7 @@ MoCA_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_MOCA            pMyObject     = (PCOSA_DATAMODEL_MOCA    )g_MoCAObject;
     PCOSA_DML_MOCA_CFG              pCfg          = &pMyObject->MoCACfg;
     errno_t                         rc       = -1;
@@ -482,9 +489,8 @@ MoCA_SetParamBoolValue
         BOOL                        bValue
     )
 {
-    PCOSA_DML_MOCA_IF_FULL          pMoCAIfFull = &((PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext)->MoCAIfFull;
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_MOCA            pMyObject     = (PCOSA_DATAMODEL_MOCA    )g_MoCAObject;
-    PCOSA_DML_MOCA_CFG              pCfg          = &pMyObject->MoCACfg;
     errno_t                         rc       = -1;
     int                             ind      = -1;
 
@@ -550,6 +556,9 @@ MoCA_SetParamIntValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     return FALSE;
 }
 
@@ -591,6 +600,7 @@ MoCA_SetParamUlongValue
         ULONG                       uValue
     )
 {    
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_MOCA            pMyObject     = (PCOSA_DATAMODEL_MOCA    )g_MoCAObject;
     PCOSA_DML_MOCA_CFG              pCfg          = &pMyObject->MoCACfg;
     errno_t                         rc       = -1;
@@ -648,6 +658,7 @@ MoCA_SetParamStringValue
         char*                       pString
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_MOCA            pMyObject     = (PCOSA_DATAMODEL_MOCA    )g_MoCAObject;
     PCOSA_DML_MOCA_CFG              pCfg          = &pMyObject->MoCACfg;
     errno_t                         rc       = -1;
@@ -735,7 +746,9 @@ MoCA_Validate
         ULONG*                      puLength
     )
 {
-    PCOSA_DATAMODEL_MOCA            pMyObject               = (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
 
     /* We should add some validation code here*/
 
@@ -770,11 +783,11 @@ MoCA_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_MOCA            pMyObject     = (PCOSA_DATAMODEL_MOCA    )g_MoCAObject;
     PCOSA_DML_MOCA_CFG              pCfg          = &pMyObject->MoCACfg;
-    ANSC_STATUS                     ReturnStatus  = ANSC_STATUS_SUCCESS;
-
-    ReturnStatus = CosaDmlMocaSetCfg((ANSC_HANDLE)NULL, pCfg);
+    
+    CosaDmlMocaSetCfg((ANSC_HANDLE)NULL, pCfg);
     
     return 0;
 }
@@ -808,6 +821,7 @@ MoCA_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_MOCA            pMyObject     = (PCOSA_DATAMODEL_MOCA    )g_MoCAObject;
     PCOSA_DML_MOCA_CFG              pCfg          = &pMyObject->MoCACfg;
 
@@ -844,6 +858,7 @@ MoCAReset_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     errno_t                         rc       = -1;
     int                             ind      = -1;
     
@@ -888,6 +903,7 @@ MoCAReset_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     pthread_t tid ;
     int res;
     errno_t                         rc       = -1;
@@ -963,7 +979,7 @@ Interface1_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
-    PCOSA_DATAMODEL_MOCA            pMyObject     = (PCOSA_DATAMODEL_MOCA    )g_MoCAObject;
+    UNREFERENCED_PARAMETER(hInsContext);
     
     return CosaDmlMocaGetNumberOfIfs((ANSC_HANDLE)NULL);
 }
@@ -1006,6 +1022,7 @@ Interface1_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_MOCA            pMyObject     = (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
 
     *pInsNumber  = pMyObject->MoCAIfFullTable[nIndex].MoCAIfFull.Cfg.InstanceNumber;
@@ -1054,8 +1071,7 @@ Interface1_GetParamBoolValue
     errno_t                         rc       = -1;
     int                             ind      = -1;
     PCOSA_DML_MOCA_IF_FULL          pMoCAIfFull = &((PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext)->MoCAIfFull;
-    PCOSA_DATAMODEL_MOCA            pMyObject   = (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
-
+    
 #if defined (_XB6_PRODUCT_REQ_)
     //ARRISXB6-3829: RDKB DB Not Syncing if set through SNMP
     CosaDmlMocaIfGetCfg(NULL, pMoCAIfFull->Cfg.InstanceNumber-1, &pMoCAIfFull->Cfg);
@@ -1286,8 +1302,7 @@ Interface1_GetParamUlongValue
     errno_t                         rc       = -1;
     int                             ind      = -1;
     PCOSA_DML_MOCA_IF_FULL          pMoCAIfFull = &((PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext)->MoCAIfFull;
-    PCOSA_DATAMODEL_MOCA            pMyObject   = (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
-
+    
     AnscTraceWarning(("ParamName: %s\n", ParamName));
 #if defined (_XB6_PRODUCT_REQ_)
     //ARRISXB6-3829: RDKB DB Not Syncing if set through SNMP
@@ -1538,8 +1553,7 @@ Interface1_GetParamStringValue
     errno_t                         rc       = -1;
     int                             ind      = -1;
     PCOSA_DML_MOCA_IF_FULL          pMoCAIfFull = &((PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext)->MoCAIfFull;
-    PCOSA_DATAMODEL_MOCA            pMyObject   = (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
-    
+        
     AnscTraceWarning(("ParamName: %s\n", ParamName));
 #if defined (_XB6_PRODUCT_REQ_)
     //ARRISXB6-3829: RDKB DB Not Syncing if set through SNMP
@@ -2296,19 +2310,15 @@ Interface1_Validate
         ULONG*                      puLength
     )
 {
-    PCOSA_DATAMODEL_MOCA            pMyObject               = (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
     PCOSA_DML_MOCA_IF_FULL_TABLE    pMoCAIfFullTable        = (PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext;
-    ULONG                           ulEntryCount            = 0;
-    ULONG                           ulIndex                 = 0;
     ULONG                           keyPassLen              = 0;
     PCHAR                           tempKeyPassphrase       = NULL;
 
     AnscTraceWarning(("\n"));
 
-    ulEntryCount = CosaDmlMocaGetNumberOfIfs((ANSC_HANDLE)NULL/*pPoamMoCADm*/);
+    CosaDmlMocaGetNumberOfIfs((ANSC_HANDLE)NULL/*pPoamMoCADm*/);
     errno_t                         rc       = -1;
-    int                             ind      = -1;
-        
+            
     keyPassLen = AnscSizeOfString(pMoCAIfFullTable->MoCAIfFull.Cfg.KeyPassphrase);
     if( (keyPassLen < 12) || (keyPassLen > 17) )
     {
@@ -2386,7 +2396,6 @@ Interface1_Commit
     )
 {
     PCOSA_DML_MOCA_IF_FULL          pMoCAIfFull = &((PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext)->MoCAIfFull;
-    PCOSA_DATAMODEL_MOCA            pMyObject   = (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
     ANSC_STATUS                     ReturnStatus  = ANSC_STATUS_SUCCESS;
 
     AnscTraceWarning(("\n"));
@@ -2431,9 +2440,7 @@ Interface1_Rollback
     )
 {
     PCOSA_DML_MOCA_IF_FULL          pMoCAIfFull = &((PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext)->MoCAIfFull;
-    PCOSA_DATAMODEL_MOCA            pMyObject   = (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
-
-
+    
     CosaDmlMocaIfGetCfg((ANSC_HANDLE)NULL, pMoCAIfFull->Cfg.InstanceNumber-1, &pMoCAIfFull->Cfg);
 
     return 0;
@@ -2568,6 +2575,7 @@ X_CISCO_COM_PeerTable_IsUpdated
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     static ULONG last_tick = 0;
     
     if ( !last_tick ) 
@@ -2684,6 +2692,9 @@ X_CISCO_COM_PeerTable_GetParamBoolValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
     return FALSE;
 }
 
@@ -2728,6 +2739,9 @@ X_CISCO_COM_PeerTable_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     return FALSE;
 }
 
@@ -2838,6 +2852,10 @@ X_CISCO_COM_PeerTable_GetParamStringValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
     return -1;
 }
 
@@ -3592,6 +3610,7 @@ MeshTable_IsUpdated
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     static ULONG last_tick = 0;
 
     if ( !last_tick )
@@ -3797,6 +3816,7 @@ Stats2_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     errno_t                         rc       = -1;
     int                             ind      = -1;
 
@@ -3856,6 +3876,9 @@ Stats2_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     return FALSE;
 }
 
@@ -3898,7 +3921,6 @@ Stats2_GetParamUlongValue
     )
 {
     PCOSA_DML_MOCA_IF_FULL          pMoCAIfFull = &((PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext)->MoCAIfFull;
-    PCOSA_DATAMODEL_MOCA            pMyObject   = (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
     /*PPOAM_COSAMOCADM_OBJECT         pPoamMoCADm = (PPOAM_COSAMOCADM_OBJECT )pMyObject->pPoamMoCADm;*/
     COSA_DML_MOCA_STATS             Stats;
 
@@ -4114,6 +4136,10 @@ Stats2_GetParamStringValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
     return -1;
 }
 
@@ -4218,6 +4244,9 @@ Stats2_SetParamIntValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     return FALSE;
 }
 
@@ -4259,8 +4288,9 @@ Stats2_SetParamUlongValue
         ULONG                       uValue
     )
 {    
-    PCOSA_DML_MOCA_IF_FULL          pMoCAIfFull = &((PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext)->MoCAIfFull;
-    
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(uValue);   
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -4305,7 +4335,9 @@ Stats2_SetParamStringValue
         char*                       pString
     )
 {
-    PCOSA_DML_MOCA_IF_FULL          pMoCAIfFull = &((PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext)->MoCAIfFull;
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pString);
     
     /* check the parameter name and set the corresponding value */
 
@@ -4352,6 +4384,9 @@ Stats2_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -4383,6 +4418,7 @@ Stats2_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     return 0;
 }
 
@@ -4415,6 +4451,7 @@ Stats2_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     return 0;
 }
 
@@ -4460,7 +4497,6 @@ X_CISCO_COM_ExtCounterTable_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
-    PCOSA_DATAMODEL_MOCA            pMyObject       = (PCOSA_DATAMODEL_MOCA    )g_MoCAObject;
     PCOSA_DML_MOCA_IF_FULL          pIf             = (PCOSA_DML_MOCA_IF_FULL)hInsContext;
     ULONG                           InterfaceIndex  = pIf->Cfg.InstanceNumber - 1;
 
@@ -4589,6 +4625,9 @@ X_CISCO_COM_ExtCounterTable_GetParamBoolValue
 {
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
     return FALSE;
 }
 
@@ -4631,6 +4670,9 @@ X_CISCO_COM_ExtCounterTable_GetParamIntValue
     )
 {
 
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     return FALSE;
 }
 
@@ -4799,6 +4841,10 @@ X_CISCO_COM_ExtCounterTable_GetParamStringValue
 {    
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
     return -1;
 }
 
@@ -4844,7 +4890,6 @@ X_CISCO_COM_ExtAggrCounterTable_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
-    PCOSA_DATAMODEL_MOCA            pMyObject       = (PCOSA_DATAMODEL_MOCA    )g_MoCAObject;
     PCOSA_DML_MOCA_IF_FULL          pIf             = (PCOSA_DML_MOCA_IF_FULL)hInsContext;
     ULONG                           InterfaceIndex  = pIf->Cfg.InstanceNumber - 1;
     
@@ -4972,6 +5017,9 @@ X_CISCO_COM_ExtAggrCounterTable_GetParamBoolValue
 {
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
     return FALSE;
 }
 
@@ -5014,6 +5062,9 @@ X_CISCO_COM_ExtAggrCounterTable_GetParamIntValue
     )
 {
 
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     return FALSE;
 }
 
@@ -5135,6 +5186,10 @@ X_CISCO_COM_ExtAggrCounterTable_GetParamStringValue
 {    
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
     return -1;
 }
 
@@ -5254,6 +5309,9 @@ QoS_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     return FALSE;
 }
 
@@ -5295,6 +5353,8 @@ QoS_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(puLong);
     errno_t                         rc       = -1;
     int                             ind      = -1;
 
@@ -5370,6 +5430,10 @@ QoS_GetParamStringValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
     return -1;
 }
 
@@ -5471,6 +5535,9 @@ Qos_SetParamIntValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     return FALSE;
 }
 
@@ -5512,7 +5579,9 @@ Qos_SetParamUlongValue
         ULONG                       uValue
     )
 {    
-    PCOSA_DML_MOCA_IF_FULL          pMoCAIfFull = &((PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext)->MoCAIfFull;
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(uValue);
     
     /* check the parameter name and set the corresponding value */
 
@@ -5558,9 +5627,10 @@ Qos_SetParamStringValue
         char*                       pString
     )
 {
-    PCOSA_DML_MOCA_IF_FULL          pMoCAIfFull = &((PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext)->MoCAIfFull;
-    
-    /* check the parameter name and set the corresponding value */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pString);
+ /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
@@ -5604,6 +5674,9 @@ Qos_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -5676,6 +5749,7 @@ Qos_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     return 0;
 }
 
@@ -5806,6 +5880,7 @@ FlowStats_IsUpdated
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     static ULONG last_tick = 0;
     
     if ( !last_tick ) 
@@ -6136,7 +6211,6 @@ AssociatedDevice_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
-    PCOSA_DATAMODEL_MOCA            pMyObject           = (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
     PCOSA_DML_MOCA_IF_FULL_TABLE    pMoCAIfFullTable    = (PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext;
     
     return pMoCAIfFullTable->ulMoCAAssocDeviceCount;
@@ -6180,7 +6254,6 @@ AssociatedDevice_GetEntry
         ULONG*                      pInsNumber
     )
 {    
-    PCOSA_DATAMODEL_MOCA            pMyObject           = (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
     PCOSA_DML_MOCA_IF_FULL_TABLE    pMoCAIfFullTable    = (PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext;
 
     if (nIndex < pMoCAIfFullTable->ulMoCAAssocDeviceCount)
@@ -6225,6 +6298,7 @@ AssociatedDevice_IsUpdated
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     if ( !last_tick ) 
     {
         last_tick = AnscGetTickInSeconds();
@@ -6272,7 +6346,6 @@ AssociatedDevice_Synchronize
         ANSC_HANDLE                 hInsContext
     )
 {    
-    PCOSA_DATAMODEL_MOCA            pMyObject           = (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
     /*PPOAM_COSAMOCADM_OBJECT         pPoamMoCADm         = (PPOAM_COSAMOCADM_OBJECT )pMyObject->pPoamMoCADm;*/
     PCOSA_DML_MOCA_IF_FULL_TABLE    pMoCAIfFullTable    = (PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext;
 
@@ -6736,6 +6809,7 @@ Logging_GetParamBoolValue
     )
 {
     /* check the parameter name and return the corresponding value */
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_MOCA            pMyObject           = (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
     errno_t                         rc       = -1;
     int                             ind      = -1;
@@ -6791,7 +6865,8 @@ Logging_GetParamUlongValue
     )
 {    
     /* check the parameter name and return the corresponding value */
-	PCOSA_DATAMODEL_MOCA			pMyObject			= (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
+	UNREFERENCED_PARAMETER(hInsContext);
+        PCOSA_DATAMODEL_MOCA			pMyObject			= (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
         errno_t                         rc       = -1;
         int                             ind      = -1;
 
@@ -6849,6 +6924,7 @@ Logging_SetParamBoolValue
     )
 {
     /* check the parameter name and return the corresponding value */
+    UNREFERENCED_PARAMETER(hInsContext);
     char buf[8]={0};
 	PCOSA_DATAMODEL_MOCA			pMyObject			= (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
         errno_t                         rc       = -1;
@@ -6942,6 +7018,7 @@ Logging_SetParamUlongValue
     )
 {    
     /* check the parameter name and return the corresponding value */    
+    UNREFERENCED_PARAMETER(hInsContext);
     char buf[16]={0};
 	PCOSA_DATAMODEL_MOCA			pMyObject			= (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
         errno_t                         rc       = -1;
@@ -6953,7 +7030,7 @@ Logging_SetParamUlongValue
     {
         /* collect value */
 
-	sprintf(buf,"%d",uValue);
+	sprintf(buf,"%lu",uValue);
 		
 	if (syscfg_set(NULL, "moca_log_period", buf) != 0) 
 	{
@@ -7016,6 +7093,9 @@ Logging_Validate
         ULONG*                      puLength
     )
 {
+   UNREFERENCED_PARAMETER(hInsContext);
+   UNREFERENCED_PARAMETER(pReturnParamName);
+   UNREFERENCED_PARAMETER(puLength);
    return TRUE;
 }
 
@@ -7047,6 +7127,7 @@ Logging_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     return 0;
 }
 
@@ -7079,7 +7160,8 @@ Logging_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
-	return 0;
+	UNREFERENCED_PARAMETER(hInsContext);
+        return 0;
 }
 #endif
 

@@ -21,7 +21,7 @@
 #include "moca_hal.h"
 #include "cosa_moca_internal.h"
 #include "ccsp_trace.h"
-
+#include "syscfg/syscfg.h"
 
 extern ANSC_HANDLE g_MoCAObject ;
 

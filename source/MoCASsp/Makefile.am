@@ -19,8 +19,8 @@
 AM_CFLAGS = -D_ANSC_LINUX
 AM_CFLAGS += -D_ANSC_USER
 AM_LDFLAGS = -lccsp_common
-AM_LDFLAGS = -lwebconfig_framework
-AM_LDFLAGS = -lmsgpackc
+AM_LDFLAGS += -lwebconfig_framework
+AM_LDFLAGS += -lmsgpackc
 
 
 AM_CPPFLAGS = -Wall -Werror

@@ -289,8 +289,8 @@ MocaIf_GetAssocDevices
     )
 {
    int ulSize = 0;
-   int allocNum = 0;
-   int DeviceArrayCount = 0;
+   unsigned int allocNum = 0;
+   unsigned int DeviceArrayCount = 0;
    errno_t rc = -1;
     
     if ( !pulCount || !ppDeviceArray )
@@ -304,10 +304,10 @@ MocaIf_GetAssocDevices
     if ( ulInterfaceIndex == 0 )
     {
         moca_cpe_t cpes[kMoca_MaxCpeList];
-        int        pnum_cpes     = 0,
-                   iReturnStatus = STATUS_SUCCESS;
+        unsigned int pnum_cpes     = 0,
+        iReturnStatus = STATUS_SUCCESS;
 
-        iReturnStatus =  moca_GetMocaCPEs(ulInterfaceIndex, cpes, &pnum_cpes);
+        iReturnStatus =  moca_GetMocaCPEs(ulInterfaceIndex, cpes, (int*)&pnum_cpes);
         if(( iReturnStatus == STATUS_SUCCESS ) && ( 0 < pnum_cpes ))
         {
             AnscTraceWarning(("MocaIf_GetAssocDevices -- pnum_cpes:%d\n", pnum_cpes));
@@ -317,7 +317,7 @@ MocaIf_GetAssocDevices
             {
                 AnscTraceWarning(("MocaIf_GetAssocDevices -- ulInterfaceIndex:%lu, pulCount:%lu\n", ulInterfaceIndex, *pulCount));
                 moca_associated_device_t*       pdevice_array  = NULL;
-                int                             i;
+                unsigned int                    i;
 
                 /* Allocate the larger of pnum_cpes or pulCount since the */
                 /* allocated array will be appended. */
@@ -408,7 +408,7 @@ MocaIf_GetAssocDevices
                         {
                            char mac[18] = {0};
                            char mac1[18]= {0};
-                           int j = 0,k = 0;
+                           unsigned int j = 0,k = 0;
                            int appendEntry = FALSE;
 			   errno_t rc = -1;
 
@@ -453,7 +453,7 @@ MocaIf_GetAssocDevices
 					if(rc != EOK)
 					{
 						ERR_CHK(rc);
-						ANSC_STATUS_FAILURE;
+						return ANSC_STATUS_FAILURE;
 					}
                                         ++pDeviceArray;
                                         ++DeviceArrayCount;
@@ -630,7 +630,7 @@ void Send_Update_to_LMLite(BOOL defaultSend)
 
     if(mocaList)
     {
-        CcspMoCAConsoleTrace(("RDK_LOG_DEBUG, CcspMoCA %s mocaList->deviceList %x \n", __FUNCTION__ , mocaList->deviceList));
+        CcspMoCAConsoleTrace(("RDK_LOG_DEBUG, CcspMoCA %s mocaList->deviceList %p \n", __FUNCTION__ , mocaList->deviceList));
         MoCADeviceInfo* cur = mocaList->deviceList;
         while(cur != NULL)
         {
@@ -792,13 +792,14 @@ void CleanupMoCAList()
 
 void* SynchronizeMoCADevices(void *arg)
 {
+    UNREFERENCED_PARAMETER(arg);
     ANSC_STATUS ret;
     ULONG ulCount = 0;
     int ulInterfaceIndex = 0;
     PCOSA_DML_MOCA_ASSOC_DEVICE ppDeviceArray = NULL;
     PCOSA_DML_MOCA_ASSOC_DEVICE ps = NULL;
     char CpeMacHoldingBuf[ 20 ] = {0};
-    int i = 0;
+    unsigned int i = 0;
     errno_t rc = -1;
     int ind = -1;
 
@@ -808,7 +809,7 @@ void* SynchronizeMoCADevices(void *arg)
         ret = MocaIf_GetAssocDevices(ulInterfaceIndex, &ulCount, &ppDeviceArray);
         if(ret == ANSC_STATUS_SUCCESS && ppDeviceArray && ulCount > 0)
         {
-            CcspMoCAConsoleTrace(("RDK_LOG_DEBUG, SynchronizeMoCADevices  ulCount [%d] \n", ulCount));
+            CcspMoCAConsoleTrace(("RDK_LOG_DEBUG, SynchronizeMoCADevices  ulCount [%lu] \n", ulCount));
 
             for(i = 0, ps = ppDeviceArray;  i < ulCount; i++, ps++)
             {
@@ -855,7 +856,7 @@ void* SynchronizeMoCADevices(void *arg)
             ppDeviceArray = NULL;            
         }
         
-        CcspMoCAConsoleTrace(("RDK_LOG_DEBUG, SynchronizeMoCADevices  Sleeping MOCA_POLLINGINTERVAL secs: ulCount [%d] ret[%d] \n", ulCount, ret));
+        CcspMoCAConsoleTrace(("RDK_LOG_DEBUG, SynchronizeMoCADevices  Sleeping MOCA_POLLINGINTERVAL secs: ulCount [%lu] ret[%lu] \n", ulCount, ret));
 
         sleep(MOCA_POLLINGINTERVAL);
     }
