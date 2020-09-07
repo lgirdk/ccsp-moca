@@ -219,6 +219,7 @@ COSA_IsObjectSupported
     )
 {
     
+    UNREFERENCED_PARAMETER(pObjName);
     return TRUE;
 }
 

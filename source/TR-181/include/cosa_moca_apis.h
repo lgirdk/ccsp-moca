@@ -302,7 +302,7 @@ typedef struct _COSA_DML_MOCA_FLOW COSA_DML_MOCA_FLOW, *PCOSA_DML_MOCA_FLOW;
 
 struct _COSA_DML_MOCA_ASSOC_DEVICE
 {
-    UCHAR                           MACAddress[6];
+    UCHAR                           MACAddress[18];
     ULONG                           NodeID;
     BOOLEAN                         PreferredNC;
     char                            HighestVersion[64];
@@ -531,6 +531,27 @@ CosaDmlMocaIfFlowTableGetTable
         ULONG                            ulInterfaceIndex,
         PCOSA_DML_MOCA_FLOW             *ppConf,
         PULONG                           pCount
+    );
+
+ANSC_STATUS
+CosaDmlMocaGetResetCount
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                       *pValue
+    );
+
+ANSC_STATUS
+CosaDmlMocaGetLogStatus
+        (
+                PCOSA_DML_MOCA_LOG_STATUS  pMyObject
+        );
+
+ANSC_STATUS
+COSAGetParamValueByPathName
+    (
+        void*                       bus_handle,
+        parameterValStruct_t        *val,
+        ULONG                       *parameterValueLength
     );
 
 ANSC_STATUS is_usg_in_bridge_mode(BOOL *pBridgeMode);

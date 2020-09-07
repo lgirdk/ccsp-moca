@@ -36,7 +36,6 @@
 #include "ansc_platform.h"
 
 
-
 #define PNAME "/tmp/icebergwedge_t"
 #define PID 21699
 #define MAX_MCAST_ENTRIES 20
@@ -400,6 +399,7 @@ static int mrd_wlistInit()
 
 short mrdnode_lookup(long ipaddr, char MAC[], mrd_wlist_ss_t *stat)
 {
+    UNREFERENCED_PARAMETER(MAC);
     short index;
 #ifdef MRD_DEBUG
     char buf[MRD_LOG_BUFSIZE];
@@ -475,6 +475,7 @@ int main()
     snprintf(logbuf, MRD_LOG_BUFSIZE, "wlist_stat %d\n", wlist_stat);
     mrd_log(logbuf);
     v_secure_system("brctl stp brlan10 on");
+    char* pBuf = buf;
     while(1)
     {
        rc = memset_s(buf,sizeof(buf), 0, sizeof(buf));
@@ -505,7 +506,7 @@ int main()
 	  }
 	  if ((i>=LanMCcount) && (LanMCcount < MAX_MCAST_ENTRIES))
 	  {
-             rc = strcpy_s(LanMCastTable[LanMCcount].ipAddr,sizeof(LanMCastTable[LanMCcount].ipAddr),buf);
+             rc = strcpy_s(LanMCastTable[LanMCcount].ipAddr,sizeof(LanMCastTable[LanMCcount].ipAddr),pBuf);
              if (rc != EOK)
              {
                 ERR_CHK(rc);
@@ -580,7 +581,7 @@ int main()
 	  }
 	  if ((i>=WanMCcount) && (WanMCcount < MAX_MCAST_ENTRIES))
 	  {
-             rc = strcpy_s(WanMCastTable[WanMCcount].ipAddr,sizeof(WanMCastTable[WanMCcount].ipAddr),buf);
+             rc = strcpy_s(WanMCastTable[WanMCcount].ipAddr,sizeof(WanMCastTable[WanMCcount].ipAddr),pBuf);
              if (rc != EOK)
              {
                 ERR_CHK(rc);

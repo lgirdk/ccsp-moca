@@ -19,7 +19,7 @@
 AM_CFLAGS = -D_ANSC_LINUX
 AM_CFLAGS += -D_ANSC_USER
 AM_LDFLAGS = -lccsp_common
-AM_LDFLAGS = -lmsgpackc -lwebconfig_framework
+AM_LDFLAGS += -lmsgpackc -lwebconfig_framework
 
 AM_CPPFLAGS = -Wall -Werror
 ACLOCAL_AMFLAGS = -I m4

@@ -77,6 +77,7 @@
 #include "cosa_moca_helpers.h"
 #include "cosa_moca_webconfig_api.h"
 #include "ccsp_trace.h"
+#include "base64.h"
 
 #ifndef CONFIG_SYSTEM_MOCA
 #define _COSA_SIM_ 1 
@@ -101,7 +102,11 @@ extern ANSC_HANDLE g_MoCAObject ;
 
 /* This Marco to check return status of moca_SetIfConfig HAL function */
 #define  STATUS_SUCCESS     0
-#define  STATUS_FAILURE     0xFFFFFFFF
+
+#ifdef STATUS_FAILURE
+ #undef STATUS_FAILURE
+ #define STATUS_FAILURE     0xFFFFFFFF
+#endif
 
 #define MOCA_INTEFACE_NUMBER    1
 extern  ANSC_HANDLE                        bus_handle;
@@ -176,7 +181,8 @@ static void write_log_console(char* msg)
 COSA_DML_MOCA_CFG     g_MoCACfg = 
     { 
         "X_CISCO_COM_ProvisioningFilename",
-        "2031:0000:1F1F:0000:0000:0100:11A0:ADDF", 
+        "2031:0000:1F1F:0000:0000:0100:11A0:ADDF",
+        false, 
         MOCA_PROVISIONING_SERVADDR_TYPE_IPV6
     };
 
@@ -364,8 +370,6 @@ void CosaMocaTelemetryxOpsLogSettingsSync()
     if (fp != NULL) {
         char log_period[32] = {0};
         char log_enable[32] = {0};
-        errno_t rc = -1;
-
         if((syscfg_get( NULL, "moca_log_enabled", log_enable, sizeof(log_enable)) != 0) || (log_enable[0] == '\0'))
         {
                 CcspTraceWarning(("moca_log_enabled syscfg failed\n"));
@@ -390,7 +394,7 @@ CosaDmlGetMocaHardwareStatus
         ANSC_HANDLE                 hContext
     )
 {
-    char out[256] = {0};
+    UNREFERENCED_PARAMETER(hContext);
     static int ret = 0;
 
     if (ret) {
@@ -413,7 +417,8 @@ CosaDmlMocaInit
         PANSC_HANDLE                phContext
 )
 {
-    PCOSA_DATAMODEL_MOCA  pMyObject    = (PCOSA_DATAMODEL_MOCA)phContext;
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
 
     syscfg_init();
 
@@ -437,6 +442,7 @@ CosaDmlMocaGetCfg
         PCOSA_DML_MOCA_CFG          pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
 
     AnscTraceWarning(("CosaDmlMocaGetCfg -- .\n"));
@@ -453,6 +459,7 @@ CosaDmlMocaSetCfg
         PCOSA_DML_MOCA_CFG          pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
 
     AnscTraceWarning(("CosaDmlMocaSetCfg -- %s %s %s.\n", 
@@ -470,6 +477,7 @@ CosaDmlMocaGetNumberOfIfs
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     JUDGE_MOCA_HARDWARE_AVAILABLE(0)
 
     AnscTraceWarning(("CosaDmlMocaGetNumberOfIfs -- Number:%d.\n", MOCA_INTEFACE_NUMBER));
@@ -532,6 +540,7 @@ CosaDmlMocaIfReset
 	PCOSA_DML_MOCA_IF_DINFO     pInfo
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
     moca_cfg_t mocaCfg;
     memset(&mocaCfg, 0, sizeof(moca_cfg_t));
@@ -649,9 +658,9 @@ CosaDmlMocaIfSetCfg
         PCOSA_DML_MOCA_IF_CFG       pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     char str_value[kMax_StringValue];
     int status,mode=0;
-    int mask;
     int freq;
     char bridgeMode[64] = {0};
     errno_t rc = -1;
@@ -816,7 +825,7 @@ CosaDmlMocaIfSetCfg
                      AnscTraceWarning(("syscfg_set failed\n"));
              } else {
 
-             	if (syscfg_set(NULL, "moca_node_taboo_mask", pCfg->NodeTabooMask) != 0) {
+             	if (syscfg_set(NULL, "moca_node_taboo_mask", (const char*)pCfg->NodeTabooMask) != 0) {
                      AnscTraceWarning(("syscfg_set failed\n"));
              	} else {
 
@@ -954,7 +963,7 @@ CosaDmlMocaIfSetCfg
          }     
 
          AnscTraceWarning(("pCfg->BeaconPowerLimit: %d\n", pCfg->BeaconPowerLimit));
-         status = snprintf(str_value, kMax_beaconPwrLen, "%d", pCfg->BeaconPowerLimit);
+         status = snprintf(str_value, kMax_beaconPwrLen, "%lu", pCfg->BeaconPowerLimit);
 
          if(status > 0) {
     
@@ -992,7 +1001,7 @@ CosaDmlMocaIfSetCfg
          }
 
          AnscTraceWarning(("pCfg->AutoPowerControlPhyRate: %d\n", pCfg->AutoPowerControlPhyRate));
-         status = snprintf(str_value, kMax_AutoPowerControlPhyRate, "%d", pCfg->AutoPowerControlPhyRate);
+         status = snprintf(str_value, kMax_AutoPowerControlPhyRate, "%lu", pCfg->AutoPowerControlPhyRate);
          
          if(status > 0) {
     
@@ -1104,6 +1113,7 @@ CosaDmlMocaIfGetCfg
         PCOSA_DML_MOCA_IF_CFG       pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
 	moca_cfg_t mocaCfg;
 
@@ -1233,6 +1243,7 @@ CosaDmlMocaIfGetDinfo
         PCOSA_DML_MOCA_IF_DINFO     pInfo
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
 	errno_t rc = -1;
         moca_dynamic_info_t mocaDInfo;
@@ -1307,6 +1318,7 @@ CosaDmlMocaIfGetStaticInfo
         PCOSA_DML_MOCA_IF_SINFO       pSInfo
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
         errno_t rc = -1;
 	moca_static_info_t mocaStaticCfg;
@@ -1403,6 +1415,7 @@ CosaDmlMocaIfGetStats
         PCOSA_DML_MOCA_STATS        pStats
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
         errno_t rc = -1;
 	moca_stats_t mocaStats;
@@ -1458,6 +1471,7 @@ CosaDmlMocaIfResetStats
         ULONG                       ulInterfaceIndex
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
 
     AnscTraceWarning(("CosaDmlMocaIfResetStats -- ulInterfaceIndex:%lu\n", ulInterfaceIndex));
@@ -1474,6 +1488,7 @@ CosaDmlMocaIfExtCounterGetNumber
         ULONG                            ulInterfaceIndex
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG ulCount = 0;
 
     JUDGE_MOCA_HARDWARE_AVAILABLE(0)
@@ -1511,6 +1526,7 @@ CosaDmlMocaIfExtCounterGetEntry
         PCOSA_DML_MOCA_EXTCOUNTER        pConf
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG ulCount = 0;
     errno_t rc = -1;
 	moca_mac_counters_t mocaMacStats;
@@ -1561,6 +1577,7 @@ CosaDmlMocaIfExtAggrCounterGetNumber
         ULONG                            ulInterfaceIndex
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
 
     AnscTraceWarning(("CosaDmlMocaIfExtAggrCounterGetNumber -- ulInterfaceIndex:%lu.\n", ulInterfaceIndex));
@@ -1597,8 +1614,9 @@ CosaDmlMocaIfExtAggrCounterGetEntry
         PCOSA_DML_MOCA_EXTAGGRCOUNTER    pConf
     )
 {
-	moca_aggregate_counters_t mocaCounters;
-        errno_t rc = -1;
+    UNREFERENCED_PARAMETER(hContext);
+    moca_aggregate_counters_t mocaCounters;
+    errno_t rc = -1;
 
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
 
@@ -1644,6 +1662,7 @@ CosaDmlMocaIfPeerTableGetTable
         PULONG                           pCount
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
 
     AnscTraceWarning(("CosaDmlMocaIfPeerTableGetTable -- ulInterfaceIndex:%lu, ppConf:%x\n", ulInterfaceIndex, (UINT)ppConf));
@@ -1721,6 +1740,7 @@ CosaDmlMocaIfMeshTableGetTable
         PULONG                           pCount
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
 
     AnscTraceWarning(("CosaDmlMocaIfMeshTableGetTable -- ulInterfaceIndex:%lu, ppMeshTable:%x\n", ulInterfaceIndex, (UINT)ppMeshTable));
@@ -1752,7 +1772,7 @@ CosaDmlMocaIfMeshTableGetTable
 
     if ( *pCount )
     {
-	int i;
+	unsigned int i;
 	PCOSA_DML_MOCA_MESH pMeshTable;
 
 	*ppMeshTable = (PCOSA_DML_MOCA_MESH)AnscAllocateMemory(sizeof(COSA_DML_MOCA_MESH) * (*pCount) );
@@ -1794,6 +1814,7 @@ CosaDmlMocaIfFlowTableGetTable
         PULONG                           pCount
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
 
     AnscTraceWarning(("CosaDmlMocaIfFlowTableGetTable -- ulInterfaceIndex:%lu, ppConf:%x\n", ulInterfaceIndex, (UINT)ppConf));
@@ -1812,7 +1833,7 @@ CosaDmlMocaIfFlowTableGetTable
         return ANSC_STATUS_FAILURE;
     }
     
-    if (moca_GetFlowStatistics(ulInterfaceIndex, *ppConf, pCount) != STATUS_SUCCESS)
+    if (moca_GetFlowStatistics(ulInterfaceIndex, (moca_flow_table_t*)*ppConf, pCount) != STATUS_SUCCESS)
     {
         AnscFreeMemory(*ppConf);
         *ppConf = NULL;
@@ -1832,6 +1853,7 @@ CosaDmlMocaIfGetQos
         PCOSA_DML_MOCA_QOS          pConf
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
 
     pConf->Enabled = FALSE;
@@ -1849,6 +1871,7 @@ CosaDmlMocaIfSetQos
         PCOSA_DML_MOCA_QOS          pConf
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
 
     AnscTraceWarning(("CosaDmlMocaIfSetQos -- ulInterfaceIndex:%lu, Enabled:%s\n", ulInterfaceIndex, (pConf->Enabled==TRUE)?"TRUE":"FALSE" ));
@@ -1868,6 +1891,8 @@ CosaDmlMocaIfGetAssocDevices
         PULONG                      *ppMeshRateArray    /* Not used now */
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ppMeshRateArray);
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
 
     ULONG ulSize = 0;
@@ -1898,7 +1923,7 @@ CosaDmlMocaIfGetAssocDevices
         if ( *pulCount )
         {
 			moca_associated_device_t*       pdevice_array  = NULL;
-			int                             i;
+			unsigned int                    i;
 
             ulSize = sizeof(COSA_DML_MOCA_ASSOC_DEVICE) * (*pulCount);
                 
@@ -1995,7 +2020,8 @@ CosaDmlMocaGetResetCount
         ULONG                       *pValue
     )
 {
-	moca_GetResetCount(pValue);	
+    UNREFERENCED_PARAMETER(hContext);
+    moca_GetResetCount(pValue);	
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -2112,9 +2138,8 @@ ANSC_STATUS CosaMoCAGetForceEnable(PCOSA_DML_MOCA_CFG pCfg)
 
 void* MoCA_Interface_Reset(void *arg)
 {
-	pthread_detach(pthread_self());
-	ANSC_HANDLE                 hContext;
-	PCOSA_DML_MOCA_IF_FULL          pMoCAIfFull   = &((PCOSA_DML_MOCA_IF_FULL_TABLE)hContext)->MoCAIfFull;
+	UNREFERENCED_PARAMETER(arg);
+        pthread_detach(pthread_self());
 	PCOSA_DATAMODEL_MOCA            pMyObject     = (PCOSA_DATAMODEL_MOCA    )g_MoCAObject;
 	PCOSA_DML_MOCA_CFG              pCfg          = &pMyObject->MoCACfg;
 	PCOSA_DML_MOCA_IF_CFG		pFCfg	      =	&pMyObject->MoCAIfFullTable[0].MoCAIfFull.Cfg;

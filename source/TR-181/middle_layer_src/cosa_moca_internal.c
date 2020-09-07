@@ -76,6 +76,7 @@
 #include <sys/inotify.h>
 #include <sys/stat.h>
 #include "safec_lib_common.h"
+#include "syscfg/syscfg.h"
 #include "webconfig_framework.h"
 
 extern void * g_pDslhDmlAgent;
@@ -85,6 +86,7 @@ extern ANSC_HANDLE g_MoCAObject ;
 #define MAX_GETFORMAT_TIME_SIZE 128
 
 void* SynchronizeMoCADevices(void *arg);
+void webConfigFrameworkInit();
 
 /**********************************************************************
 
@@ -113,7 +115,6 @@ CosaMoCACreate
         VOID
     )
 {
-    ANSC_STATUS           returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_MOCA  pMyObject    = (PCOSA_DATAMODEL_MOCA)NULL;
 
     /*
@@ -148,7 +149,8 @@ static token_t sysevent_token;
 static pthread_t sysevent_tid;
 static void *Moca_sysevent_handler (void *data)
 {
-	async_id_t moca_update;
+	UNREFERENCED_PARAMETER(data);
+        async_id_t moca_update;
 	sysevent_setnotification(sysevent_fd, sysevent_token, "moca_updated", &moca_update);
 	time_t time_now = { 0 }, time_before = { 0 };
 
@@ -163,8 +165,7 @@ static void *Moca_sysevent_handler (void *data)
     {
         char name[25]={0};
 		char val[42]={0};
-		char buf[10]={0};
-        int namelen = sizeof(name);
+	int namelen = sizeof(name);
         int vallen  = sizeof(val);
         int err;
 	errno_t rc = -1;
@@ -274,8 +275,8 @@ void MoCA_Log()
 		                pMoCAAssocDevice[ulIndex1].MACAddress[4],
 		                pMoCAAssocDevice[ulIndex1].MACAddress[5]
 		            );
-
-				rc = strcat_s(mac_buff1, sizeof(mac_buff1), mac_buff);
+                                char *pMacBuf = mac_buff;
+				rc = strcat_s(mac_buff1, sizeof(mac_buff1), pMacBuf);
 				ERR_CHK(rc);
 				if(ulIndex1 < (AssocDeviceCount-1))
 				{
@@ -298,7 +299,7 @@ void MoCA_Log()
 void * Logger_Thread(void *data)
 {
 
-	COSA_DML_MOCA_LOG_STATUS Log_Status={3600,FALSE};
+	UNREFERENCED_PARAMETER(data);
 	LONG timeleft;
 	ULONG Log_Period_old;
 	pthread_detach(pthread_self());
@@ -368,7 +369,7 @@ static char *get_formatted_time(char *time)
 
     strftime(tmp, 128, "%y%m%d-%T", tm_info);
 
-    snprintf(time, 128, "%s.%06d", tmp, tv_now.tv_usec);
+    snprintf(time, 128, "%s.%06lu", tmp, tv_now.tv_usec);
     return time;
 }
 
@@ -401,7 +402,11 @@ static void read_updated_log_interval()
         CcspTraceError(("%s  %s file open error!!!\n", __func__, MOCA_LOG_FILE));
 	return;
     }
-    fscanf(fp, "%d,%s", &gMoCALogInterval, gMoCALogEnable);
+    if (fscanf(fp, "%d,%s", &gMoCALogInterval, gMoCALogEnable) == EOF) {
+        CcspTraceError(("%s Failed to read from file %s!!!\n", __func__, MOCA_LOG_FILE));
+        fclose(fp);
+        return;
+    }
     fclose(fp);
 
     get_formatted_time(tmp);
@@ -456,8 +461,8 @@ static void MocaTelemetryPush()
 		 pMoCAAssocDevice[ulIndex1].MACAddress[4],
 		 pMoCAAssocDevice[ulIndex1].MACAddress[5]
 		);
-
-	    rc = strcat_s(mac_buff1, sizeof(mac_buff1), mac_buff);
+            char *pMacBuf = mac_buff;
+	    rc = strcat_s(mac_buff1, sizeof(mac_buff1), pMacBuf);
 	    ERR_CHK(rc);
 	    if(ulIndex1 < (AssocDeviceCount-1))
             {
@@ -471,12 +476,12 @@ static void MocaTelemetryPush()
 	get_formatted_time(tmp);
 	rc = memset_s(buff, sizeof(buff), 0, sizeof(buff));
 	ERR_CHK(rc);
-	snprintf(buff, 2048, "%s MOCA_MAC_%d_TOTAL_COUNT:%d\n", tmp, ulIndex+1 , AssocDeviceCount);
+	snprintf(buff, 2048, "%s MOCA_MAC_%lu_TOTAL_COUNT:%lu\n", tmp, ulIndex+1 , AssocDeviceCount);
 	write_to_file(moca_telemetry_log, buff);
 	rc = memset_s(tmp, sizeof(tmp), 0, sizeof(tmp));
 	ERR_CHK(rc);
 	get_formatted_time(tmp);
-	snprintf(buff, 2048, "%s MOCA_MAC_%d:%s\n", tmp, ulIndex+1 , mac_buff1);
+	snprintf(buff, 2048, "%s MOCA_MAC_%lu:%s\n", tmp, ulIndex+1 , mac_buff1);
 	write_to_file(moca_telemetry_log, buff);
 	if (pMoCAAssocDevice)
 	{
@@ -489,7 +494,7 @@ static void MocaTelemetryPush()
 void*  MocaTelemetryxOpsLogSettingsEventThread()
 {
     struct inotify_event *event;
-    int inotifyFd, inotifywd, numRead;
+    int inotifyFd, numRead;
     char moca_log_buf[BUF_LEN] __attribute__ ((aligned(8))) = {0}, *ptr = NULL;
 
     while (!(IsFileExists(MOCA_LOG_FILE) == 0)) {
@@ -500,7 +505,7 @@ void*  MocaTelemetryxOpsLogSettingsEventThread()
     read_updated_log_interval();
 
     inotifyFd = inotify_init();
-    inotifywd = inotify_add_watch(inotifyFd, MOCA_LOG_FILE, IN_MODIFY);
+    inotify_add_watch(inotifyFd, MOCA_LOG_FILE, IN_MODIFY);
 
     for (;;)
     {
@@ -604,14 +609,11 @@ CosaMoCAInitialize
 {
     ANSC_STATUS               returnStatus   = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_MOCA      pMyObject      = (PCOSA_DATAMODEL_MOCA    )hThisObject;
-    COSAGetHandleProc         pProc          = (COSAGetHandleProc       )NULL;
     //PCOSA_PLUGIN_INFO         pPlugInfo      = (PCOSA_PLUGIN_INFO       )g_pCosaBEManager->hCosaPluginInfo;
-    PSLAP_OBJECT_DESCRIPTOR   pObjDescriptor = (PSLAP_OBJECT_DESCRIPTOR )NULL;
     ANSC_HANDLE               pPoamMoCADm    = (ANSC_HANDLE )NULL;
     ANSC_HANDLE               pSlapMoCADm    = (ANSC_HANDLE )NULL;
     ULONG                     ulCount        = 0;
     ULONG                     ulIndex        = 0;
-    ULONG                     ulRole         = 0;
     ULONG                     ulNextInsNum   = 0;
     pthread_t tid;
     errno_t rc = -1;
@@ -727,12 +729,8 @@ CosaMoCARemove
 {
     ANSC_STATUS               returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_MOCA      pMyObject         = (PCOSA_DATAMODEL_MOCA)hThisObject;
-    /*PPOAM_COSAMOCADM_OBJECT*/ANSC_HANDLE   pSlapMoCADm       = (/*PPOAM_COSAMOCADM_OBJECT*/ANSC_HANDLE )pMyObject->pSlapMoCADm;
-    /*PSLAP_COSAMOCADM_OBJECT*/ANSC_HANDLE   pPoamMoCADm       = (/*PSLAP_COSAMOCADM_OBJECT*/ANSC_HANDLE )pMyObject->pPoamMoCADm;
-    COSAGetHandleProc         pProc             = (COSAGetHandleProc       )NULL;
+    
     //PCOSA_PLUGIN_INFO         pPlugInfo         = (PCOSA_PLUGIN_INFO       )g_pCosaBEManager->hCosaPluginInfo;
-    PSLAP_OBJECT_DESCRIPTOR   pObjDescriptor    = (PSLAP_OBJECT_DESCRIPTOR )NULL;
-    ULONG                     i                 = 0;    
 #if 0
     /* Remove Poam or Slap resounce */
     if ( pSlapMoCADm )
