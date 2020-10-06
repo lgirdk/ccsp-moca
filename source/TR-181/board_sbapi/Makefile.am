@@ -30,5 +30,5 @@ libCcspMoCA_board_sbapi_la_CPPFLAGS = -I$(top_srcdir)/source/TR-181/include -I$(
 
 libCcspMoCA_board_sbapi_la_SOURCES = cosa_moca_apis.c cosa_moca_param.c cosa_moca_helpers.c cosa_moca_webconfig_api.c
 libCcspMoCA_board_sbapi_la_LDFLAGS = -lccsp_common
-libCcspMoCA_board_sbapi_la_LDFLAGS += -lhal_moca -lccsp_common -lmsgpackc -lcurl -lwebconfig_framework
+libCcspMoCA_board_sbapi_la_LDFLAGS += -lhal_moca -lccsp_common -lmsgpackc -lcurl -lwebconfig_framework -ltrower-base64
 
