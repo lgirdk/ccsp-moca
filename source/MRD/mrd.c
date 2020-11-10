@@ -32,11 +32,14 @@
 #include "syscfg/syscfg.h"
 #include "safec_lib_common.h"
 #include "secure_wrapper.h"
+#include <unistd.h>
+#include "ansc_platform.h"
+
 
 
 #define PNAME "/tmp/icebergwedge_t"
 #define PID 21699
-#define WAN_MCAST_ENTRIES 20
+#define MAX_MCAST_ENTRIES 20
 #define MAX_BUF_SIZE 2048
 #define MAC_ADDRESS_SIZE 20
 #define MRD_ARP_CACHE       "/proc/net/arp"
@@ -50,12 +53,23 @@
 #define MRD_LOG_FILE "/rdklogs/logs/mrdtrace.log"
 #define MRD_LOG_BUFSIZE 200
 #define MAX_SUBNET_SIZE 25
+#define MAX_MLIFE 10
+#define MAX_SHMRCOUNT 6
 
-char LanMCastTable[WAN_MCAST_ENTRIES][20];
-char WanMCastTable[WAN_MCAST_ENTRIES][20];
-unsigned int WanMCastStatus[WAN_MCAST_ENTRIES]={0, };
-char LanMCcount = 0;
-char WanMCcount = 0;
+typedef struct lan_mcast_table {
+   char ipAddr[20];
+   unsigned int mcastAliveCount;
+}lan_mcast_table_t; 
+lan_mcast_table_t LanMCastTable[MAX_MCAST_ENTRIES];
+
+typedef struct wan_mcast_table {
+   char ipAddr[20];
+   unsigned int mcastStatus;
+   unsigned int mcastAliveCount;
+}wan_mcast_table_t;
+wan_mcast_table_t WanMCastTable[MAX_MCAST_ENTRIES]; 
+int LanMCcount = 0;
+int WanMCcount = 0;
 
 typedef enum { DP_SUCCESS=0, DP_INVALID_MAC, DP_COLLISION} mrd_wlist_ss_t;
 
@@ -66,9 +80,10 @@ typedef struct mrd_wlist {
      short ofb_index;
 }mrd_wlist_t;
 
-mrd_wlist_t *mrd_wlist;
+volatile mrd_wlist_t *mrd_wlist;
 int shmid;
 
+#if 0
 static void GetSubnet(char *ip, char *subnet)
 {
 	int token = 0;
@@ -92,9 +107,11 @@ static void GetSubnet(char *ip, char *subnet)
 	printf("IP = %s\n", ip);
 	printf("Subnet = %s\n", subnet);
 }
+#endif
 
 static void mrd_signal_handlr(int sig)
 {
+     UNREFERENCED_PARAMETER(sig);
      if (mrd_wlist && (shmid > 0)) 
      {
         shmdt((void *) mrd_wlist);
@@ -106,7 +123,6 @@ static int mrd_getMACAddress(char *ipaddress, char *mac)
 {
     FILE *arpCache;
     char header[MRD_ARP_BUFFER_LEN];
-    int count = 0;
     char ipAddr[MAC_ADDRESS_SIZE];
     errno_t rc = -1;
     int ind = -1;
@@ -160,7 +176,15 @@ static void mrd_log(char* msg)
       tm_info = localtime(&timer);
       strftime(timestring, 100, "%Y-%m-%d %H:%M:%S", tm_info);
       pFile = fopen(MRD_LOG_FILE,"a+");
-      if(pFile)
+      if (!pFile) 
+      {
+        // file open in append mode is failing
+        // open file in the write mode and try
+        pFile = fopen(MRD_LOG_FILE,"w");
+        rcount = 0;
+      }
+      
+      if (pFile) 
       {
          if (rcount >= MRD_MAX_LOG) {
             fclose(pFile);
@@ -192,15 +216,155 @@ static unsigned short mrd_hashindex (long ipaddr)
     return(ret);
 }
 
+static void mrd_initTables()
+{
+   errno_t rc = -1;
+   int i=0;
+   for (i=0; i<MAX_MCAST_ENTRIES; i++)
+   {
+      rc = memset_s(WanMCastTable[i].ipAddr, sizeof(WanMCastTable[i].ipAddr),0, sizeof(WanMCastTable[i].ipAddr));
+      ERR_CHK(rc);
+      WanMCastTable[i].mcastStatus=0;
+      WanMCastTable[i].mcastAliveCount=0;
+      rc = memset_s(LanMCastTable[i].ipAddr, sizeof(LanMCastTable[i].ipAddr),0, sizeof(LanMCastTable[i].ipAddr));
+      ERR_CHK(rc);
+      LanMCastTable[i].mcastAliveCount=0;
+   }
+}
+
+static void  mrd_updateMcastlistlifetime()
+{
+   int i;
+   errno_t rc = -1;
+   char cmd[200]={0};
+
+   // Go through wantable and reduce life time of table entries 
+   // Delete stale entries
+   for (i=0; i<WanMCcount; i++) 
+   {
+      if (WanMCastTable[i].mcastAliveCount > 0)
+      {
+         WanMCastTable[i].mcastAliveCount--;
+         if (WanMCastTable[i].mcastAliveCount == 0) 
+         {
+	    v_secure_system("ip route delete %s table moca", WanMCastTable[i].ipAddr);
+            rc =  memset_s(cmd,sizeof(cmd),0, sizeof(cmd));
+            ERR_CHK(rc);
+	    snprintf(cmd, sizeof(cmd), "deleting stale wan route %s", WanMCastTable[i].ipAddr);
+            mrd_log(cmd);
+            rc =  memset_s(cmd,sizeof(cmd),0, sizeof(cmd));
+            ERR_CHK(rc);
+	    v_secure_system("arp -d  %s", WanMCastTable[i].ipAddr);
+	    snprintf(cmd, sizeof(cmd), "deleting stale arp %s", WanMCastTable[i].ipAddr);
+            mrd_log(cmd);
+            if ((WanMCcount > 1) && (i != (WanMCcount-1))) 
+            {
+               rc = strcpy_s(WanMCastTable[i].ipAddr,sizeof(WanMCastTable[WanMCcount-1].ipAddr),
+                                                             WanMCastTable[WanMCcount-1].ipAddr);
+               if (rc != EOK)
+               {
+                  ERR_CHK(rc);
+                  return;
+               }
+               WanMCastTable[i].mcastStatus = WanMCastTable[WanMCcount-1].mcastStatus;
+               WanMCastTable[i].mcastAliveCount = WanMCastTable[WanMCcount-1].mcastAliveCount;
+            }
+            rc = memset_s(WanMCastTable[WanMCcount-1].ipAddr, 
+                                              sizeof(WanMCastTable[WanMCcount-1].ipAddr),0, 
+                                              sizeof(WanMCastTable[WanMCcount-1].ipAddr));
+            ERR_CHK(rc);
+            WanMCastTable[WanMCcount-1].mcastStatus=0;
+            WanMCastTable[WanMCcount-1].mcastAliveCount=0;
+            WanMCcount--;
+         }
+      }
+   } // for loop
+
+   // Go through Lantable and reduce life time of table entries 
+   // Delete stale entries
+   for (i=0; i<LanMCcount; i++) 
+   {
+      if (LanMCastTable[i].mcastAliveCount > 0)
+      {
+         LanMCastTable[i].mcastAliveCount--;
+         if (LanMCastTable[i].mcastAliveCount == 0) 
+         {
+            v_secure_system("ip route delete %s dev brlan0", LanMCastTable[i].ipAddr);
+            rc =  memset_s(cmd,sizeof(cmd),0, sizeof(cmd));
+            ERR_CHK(rc);
+	    snprintf(cmd, sizeof(cmd), "deleting stale lan route %s", LanMCastTable[i].ipAddr);
+            mrd_log(cmd);
+	    v_secure_system("arp -d %s",LanMCastTable[i].ipAddr);
+            rc =  memset_s(cmd,sizeof(cmd),0, sizeof(cmd));
+            ERR_CHK(rc);
+	    snprintf(cmd, sizeof(cmd), "deleting stale arp %s", LanMCastTable[i].ipAddr);
+            mrd_log(cmd);
+            if ((LanMCcount > 1) && (i != (LanMCcount-1))) 
+            {
+               rc = strcpy_s(LanMCastTable[i].ipAddr,sizeof(LanMCastTable[LanMCcount-1].ipAddr),
+                                                          LanMCastTable[LanMCcount-1].ipAddr);
+               if (rc != EOK)
+               {
+                  ERR_CHK(rc);
+                  return;
+               }
+               LanMCastTable[i].mcastAliveCount = LanMCastTable[LanMCcount-1].mcastAliveCount;
+            }
+            rc = memset_s(LanMCastTable[LanMCcount-1].ipAddr, 
+                                          sizeof(LanMCastTable[LanMCcount-1].ipAddr),0, 
+                                          sizeof(LanMCastTable[LanMCcount-1].ipAddr));
+            ERR_CHK(rc);
+            LanMCastTable[LanMCcount-1].mcastAliveCount=0;
+            LanMCcount--;
+         }
+     }
+  } // for loop
+}
+
+static int mrd_shmattach()
+{
+   key_t key;
+   int ret=-1;
+   static int errcount=0;
+   char buf[MRD_LOG_BUFSIZE];
+
+   if ((key =  ftok(PNAME, PID)) != (key_t) -1) 
+   { 
+      //Allocate shared memory    
+      shmid = shmget(key, MAX_BUF_SIZE*sizeof(mrd_wlist_t), S_IRUSR|S_IRGRP|S_IROTH);
+      if (shmid >= 0) 
+      {
+         mrd_wlist = (mrd_wlist_t *) shmat(shmid, 0, 0);
+         if (mrd_wlist != (void *) -1)
+         {
+            ret = 0;
+         }
+         else
+         {
+             errcount++;
+             if (errcount < 100) {
+                snprintf(buf, MRD_LOG_BUFSIZE,"shmat failed %d %s\n", errno, strerror(errno));
+                mrd_log(buf);
+             }
+         }
+      }
+      else 
+      {
+         errcount++;
+         if (errcount < 100) {
+            snprintf(buf, MRD_LOG_BUFSIZE, "shmget  failed %d %s \n",errno, strerror(errno));
+            mrd_log(buf);
+         }
+      }
+   }
+   return(ret);
+}
 
 static int mrd_wlistInit()
 {
    int ret=0;
-   key_t key;
    int i;
    char buf[MRD_LOG_BUFSIZE];
-   static errcount=0;
-   char cmd[200] = {0};
    errno_t rc = -1;
 
    signal(SIGHUP,mrd_signal_handlr);
@@ -210,54 +374,25 @@ static int mrd_wlistInit()
    signal(SIGTSTP,mrd_signal_handlr);
    signal(SIGKILL,mrd_signal_handlr);
 
-
-   if ((key =  ftok(PNAME, PID)) != (key_t) -1) { 
-      //Allocate shared memory    
-      shmid = shmget(key, MAX_BUF_SIZE*sizeof(mrd_wlist_t), S_IRUSR|S_IRGRP|S_IROTH);
-      if (shmid < 0) 
+   ret = mrd_shmattach();
+   if (ret == 0)
+   {
+      snprintf(buf, MRD_LOG_BUFSIZE,"dp_wlistInit:attaching to an existing shared memory \n");
+      mrd_log(buf);
+      // Clean up all routes and arp entries 
+      for (i=0; i<WanMCcount; i++) 
       {
-         errcount++;
-         if (errcount < 100) {
-            snprintf(buf, MRD_LOG_BUFSIZE, "shmget  failed %d %s \n",errno, strerror(errno));
-            mrd_log(buf);
-         }
-         ret = -1;
+	 v_secure_system("ip route delete %s table moca", WanMCastTable[i].ipAddr);
+	 v_secure_system("arp -d  %s", WanMCastTable[i].ipAddr);
+         rc = memset_s(WanMCastTable[i].ipAddr, sizeof(WanMCastTable[i].ipAddr),0, sizeof(WanMCastTable[i].ipAddr));
+         ERR_CHK(rc);
+         WanMCastTable[i].mcastStatus=0;
+         WanMCastTable[i].mcastAliveCount=0;
       }
-      else {
-         mrd_wlist = (mrd_wlist_t *) shmat(shmid, 0, 0);
-         if (mrd_wlist == (void *) -1)
-         {
-             errcount++;
-             if (errcount < 100) {
-                snprintf(buf, MRD_LOG_BUFSIZE,"shmat failed %d %s\n", errno, strerror(errno));
-                mrd_log(buf);
-             }
-             ret = -1;
-         }
-         else {
-            snprintf(buf, MRD_LOG_BUFSIZE,"dp_wlistInit:attaching to an existing shared memory \n");
-            mrd_log(buf);
-            // Clean up all routes and arp entries 
-            for (i=0; i<WanMCcount; i++) {
-	      snprintf(cmd, sizeof(cmd), "ip route delete %s table moca", WanMCastTable[i]);
-	      system(cmd);
-              mrd_log(cmd);
-              rc =  memset_s(cmd,sizeof(cmd),0, sizeof(cmd));
-              ERR_CHK(rc);
-	      snprintf(cmd, sizeof(cmd), "arp -d  %s", WanMCastTable[i]);
-	      system(cmd);
-              mrd_log(cmd);
-              rc = memset_s(cmd, sizeof(cmd),0, sizeof(cmd));
-              ERR_CHK(rc);
-              rc = memset_s(WanMCastTable[i], sizeof(WanMCastTable[i]), 0, sizeof(WanMCastTable[i]));
-              ERR_CHK(rc);
-              WanMCastStatus[i]=0;
-            }
-            WanMCcount = 0;
-        }
-     }
+      WanMCcount = 0;
    }
-   else {  
+   else 
+   {
       ret = -1;
    }
    return (ret);
@@ -266,12 +401,17 @@ static int mrd_wlistInit()
 short mrdnode_lookup(long ipaddr, char MAC[], mrd_wlist_ss_t *stat)
 {
     short index;
+#ifdef MRD_DEBUG
     char buf[MRD_LOG_BUFSIZE];
-
+#endif
+  
+    UNREFERENCED_PARAMETER(MAC);
     if (mrd_wlist == (void *) -1) return -1;
     index = mrd_hashindex(ipaddr); 
-    //snprintf(buf, sizeof(buf), "mrdnode_lookup ip %d : index %d\n", ipaddr, index);
-    //mrd_log(buf);
+#ifdef MRD_DEBUG
+    snprintf(buf, sizeof(buf), "mrdnode_lookup ip %d : index %d\n", ipaddr, index);
+    mrd_log(buf);
+#endif
     //check if the ip address is already existing in the white list
     if (mrd_wlist[index].ofb_index == (short) -1) return -1; 
     else 
@@ -284,17 +424,21 @@ short mrdnode_lookup(long ipaddr, char MAC[], mrd_wlist_ss_t *stat)
        }
        else 
        {
-           //snprintf(buf, sizeof(buf), "searching overflow table \n");
-           //mrd_log(buf);
-          //search overflow table
+#ifdef MRD_DEBUG
+           snprintf(buf, sizeof(buf), "searching overflow table \n");
+           mrd_log(buf);
+#endif
+           //search overflow table
           while (mrd_wlist[index].ofb_index > 0) 
           {
              index = mrd_wlist[index].ofb_index;
              if (mrd_wlist[index].ipaddr == ipaddr) 
              {
                 *stat = DP_COLLISION;
+#ifdef MRD_DEBUG
                 snprintf(buf, sizeof(buf), "Found in overflow table %d \n", index);
                 mrd_log(buf);
+#endif
                 return (index);
              }
           }
@@ -308,13 +452,9 @@ short mrdnode_lookup(long ipaddr, char MAC[], mrd_wlist_ss_t *stat)
 int main()
 {
     FILE *fp = NULL;
-    FILE *fp_dp = NULL;
     char buf[256]={0};
     char cmd[256] = {0};
-    char cmd1[256] = {0};
     char mac[MAC_ADDRESS_SIZE] = {0};
-    char FirstTime = 1;
-    char wFirstTime = 1;
     int i = 0;
     unsigned long ipaddr;
     short index;
@@ -326,19 +466,14 @@ int main()
     int ret;
     errno_t rc = -1;
     int ind = -1;
+    int shmrefreshCount=MAX_SHMRCOUNT;
 
-    rc = memset_s(LanMCastTable,sizeof(LanMCastTable[0][0]) * 20 * 20, 0, sizeof(LanMCastTable[0][0]) * 20 * 20);
-    ERR_CHK(rc);
-    rc = memset_s(WanMCastTable,sizeof(WanMCastTable[0][0]) * 20 * 20 , 0, sizeof(WanMCastTable[0][0]) * 20 * 20);
-    ERR_CHK(rc);
-
+    mrd_initTables();
     // whilte list is populated by xupnp device protection service
     // mrd service access the white list
     wlist_stat = mrd_wlistInit();
     snprintf(logbuf, MRD_LOG_BUFSIZE, "wlist_stat %d\n", wlist_stat);
     mrd_log(logbuf);
-    //v_secure_system("ip route del 169.254.0.0/16 dev brlan10");
-    //v_secure_system("ip route add 169.254.0.0/16 dev brlan0");
     v_secure_system("brctl stp brlan10 on");
     while(1)
     {
@@ -346,66 +481,46 @@ int main()
        ERR_CHK(rc);
        rc = memset_s(cmd,sizeof(cmd), 0, sizeof(cmd));
        ERR_CHK(rc);
-       //snprintf(cmd, sizeof(cmd), "ip -s mroute |grep 'Iif: brlan0' | cut -d '(' -f 2 | cut -d ',' -f 1|awk '{print $1}'");
        snprintf(cmd, sizeof(cmd), "filter=`ip -s mroute |grep 'Iif: brlan0' | cut -d '(' -f 2 | cut -d ',' -f 1` ; for val in $filter; do ip -4 nei show |grep brlan0 |grep -v FAILED |cut -d '(' -f 2 | cut -d ',' -f 1|awk '{print $1}' | grep $val ; done");
-       //system(cmd); 
-       if(!(fp = popen(cmd, "r")))
+       if (!(fp = popen(cmd, "r")))
        {
-	  //printf("error\n");
-	       return -1;
+	  return -1;
        }
        while ( fgets(buf, sizeof(buf), fp)!= NULL )
        {
-        char *pos;
-        if ((pos=strchr(buf, '\n')) != NULL)
-        *pos = '\0';
+          char *pos;
+          if ((pos=strchr(buf, '\n')) != NULL)
+          *pos = '\0';
                 
-	      if (FirstTime)
-	      {
-             rc = strcpy_s(LanMCastTable[LanMCcount],sizeof(LanMCastTable[LanMCcount]),buf);
-             if(rc != EOK)
+	  for (i = 0;i<LanMCcount;i++)
+	  {
+	     rc = strcmp_s(LanMCastTable[i].ipAddr,sizeof(LanMCastTable[i].ipAddr),buf,&ind);
+             ERR_CHK(rc);
+             if ( (!ind) && (rc == EOK))
+	     {
+                LanMCastTable[i].mcastAliveCount = MAX_MLIFE;
+	        i = 0;
+	        break;
+	     }
+	  }
+	  if ((i>=LanMCcount) && (LanMCcount < MAX_MCAST_ENTRIES))
+	  {
+             rc = strcpy_s(LanMCastTable[LanMCcount].ipAddr,sizeof(LanMCastTable[LanMCcount].ipAddr),buf);
+             if (rc != EOK)
              {
-                  ERR_CHK(rc);
-                  return -1;
+                ERR_CHK(rc);
+                return -1;
              }
-	           FirstTime = 0;
+             LanMCastTable[LanMCcount].mcastAliveCount = MAX_MLIFE;
+	     LanMCcount++;
              if (!strncmp(buf, "169.", 4)) 
              {
-	              v_secure_system("ip route add %s dev brlan0", buf);
-             } 
-	           v_secure_system("arp -i brlan10 -Ds %s brlan0 pub", buf);
-	           LanMCcount++;
-	      }
-	      else
-	      {
-	         for(i = 0;i<LanMCcount;i++)
-	         {
-                 
-	             rc = strcmp_s(LanMCastTable[i],sizeof(LanMCastTable[i]),buf,&ind);
-                ERR_CHK(rc);
-                if((!ind) && (rc == EOK))
-	              {
-	                 i = 0;
-		               break;
-	              }
-			     	
-	          }
-	         if(i)
-	          {
-                  rc = strcpy_s(LanMCastTable[LanMCcount],sizeof(LanMCastTable[LanMCcount]),buf);
-                  if(rc != EOK)
-                   {
-                       ERR_CHK(rc);
-                       return -1;
-                   }
-                   if (!strncmp(buf, "169.", 4)) 
-                   {
-		                   v_secure_system("ip route add %s dev brlan0", buf);
-                   }
-		               v_secure_system("arp -i brlan10 -Ds %s brlan0 pub", buf);
-		               LanMCcount++;
-	           }
-        }
+                v_secure_system("ip route add %s dev brlan0", buf);
+             }
+	     v_secure_system("arp -i brlan10 -Ds %s brlan0 pub", buf);
+             snprintf(logbuf, MRD_LOG_BUFSIZE, "route and arp added for ip address %s \n", buf);
+             mrd_log(logbuf);
+	  }
           rc = memset_s(buf,sizeof(buf), 0, sizeof(buf));
           ERR_CHK(rc);
        }
@@ -440,6 +555,10 @@ int main()
                    if ((stat == DP_COLLISION) || (stat == DP_SUCCESS)) 
                    {
                       mrd_flag = 1;    
+#ifdef MRD_DEBUG
+                snprintf(logbuf, MRD_LOG_BUFSIZE, "ip address is in whitelist \n", buf);
+                mrd_log(logbuf);
+#endif
                    }
                 }
              }
@@ -448,91 +567,89 @@ int main()
              mrd_flag = 1;
           }
                   
-	  if (wFirstTime)
+          wan_stat = 0;
+	  for(i = 0;i<WanMCcount;i++)
 	  {
-             rc = strcpy_s(WanMCastTable[WanMCcount],sizeof(WanMCastTable[WanMCcount]),buf);
+             rc = strcmp_s(WanMCastTable[i].ipAddr,sizeof(WanMCastTable[i].ipAddr),buf,&ind);
+             ERR_CHK(rc);
+             if ((!ind) && (rc == EOK))
+	     {
+                wan_stat = WanMCastTable[i].mcastStatus;
+                WanMCastTable[i].mcastStatus = mrd_flag;
+                WanMCastTable[i].mcastAliveCount = MAX_MLIFE;
+		i = 0;
+		break;
+	     }
+	  }
+	  if ((i>=WanMCcount) && (WanMCcount < MAX_MCAST_ENTRIES))
+	  {
+             rc = strcpy_s(WanMCastTable[WanMCcount].ipAddr,sizeof(WanMCastTable[WanMCcount].ipAddr),buf);
              if (rc != EOK)
              {
                 ERR_CHK(rc);
                 return -1;
-             } 
-	     wFirstTime = 0;
-             if (mrd_flag) {
+             }
+             WanMCastTable[WanMCcount].mcastStatus = mrd_flag;
+             WanMCastTable[WanMCcount].mcastAliveCount = MAX_MLIFE;
+	     WanMCcount++;
+             i++;
+          }
+          if ((i) || (wan_stat != mrd_flag)) 
+          {
+             if (mrd_flag==1)
+             {
                 if (!strncmp(buf, "169.", 4)) 
                 {
 	           v_secure_system("ip route add %s dev brlan10 table moca", buf);
                 }
 	        v_secure_system("arp -i brlan0 -Ds %s brlan10 pub", buf);
-                snprintf(logbuf, MRD_LOG_BUFSIZE, "wFirstTime: ip address %s added to mcast list %d \n", buf, mrd_flag);
+                snprintf(logbuf, MRD_LOG_BUFSIZE, "ip address %s added to mcast list \n", buf);
                 mrd_log(logbuf);
              }
-             else  {
-                if (!strncmp(buf, "169.", 4)) {
+             else  
+             {
+                if (!strncmp(buf, "169.", 4)) 
+                {
 	           v_secure_system("ip route delete %s table moca", buf);
                 }
 	        v_secure_system("arp -d %s", buf);
                 snprintf(logbuf, MRD_LOG_BUFSIZE, "ip address %s deleted from mcast list \n", buf);
                 mrd_log(logbuf);
-             }
-             WanMCastStatus[WanMCcount] = mrd_flag;
-	     WanMCcount++;
-	  }
-	  else
-	  {
-	     for(i = 0;i<WanMCcount;i++)
-	     {
-                rc = strcmp_s(WanMCastTable[i],sizeof(WanMCastTable[i]),buf,&ind);
-                ERR_CHK(rc);
-                if ((!ind) && (rc == EOK))
+	        for(i = 0;i<WanMCcount;i++)
 	        {
-                   wan_stat = WanMCastStatus[i];
-                   WanMCastStatus[i] = mrd_flag;;
-		   i = 0;
-		   break;
-	        }
-	     }
-	     if(i)
-	     {
-                rc = strcpy_s(WanMCastTable[WanMCcount],sizeof(WanMCastTable[WanMCcount]),buf);
-                if(rc != EOK)
-                {
+                   rc = strcmp_s(WanMCastTable[i].ipAddr,sizeof(WanMCastTable[i].ipAddr),buf,&ind);
                    ERR_CHK(rc);
-                   return -1;
-                }
-                WanMCastStatus[WanMCcount] = mrd_flag;
-	        WanMCcount++;
-             }
-             if ((i) || (wan_stat != mrd_flag)) 
-             {
-                if (mrd_flag==1)
-                {
-                   if (!strncmp(buf, "169.", 4)) 
+                   if ((!ind) && (rc == EOK))
                    {
-	              v_secure_system("ip route add %s dev brlan10 table moca", buf);
+                      WanMCastTable[i].mcastStatus = 0;
                    }
-	           v_secure_system("arp -i brlan0 -Ds %s brlan10 pub", buf);
-                   snprintf(logbuf, MRD_LOG_BUFSIZE, "ip address %s added to mcast list \n", buf);
-                   mrd_log(logbuf);
                 }
-                else  {
-                   if (!strncmp(buf, "169.", 4)) {
-	              v_secure_system("ip route delete %s table moca", buf);
-                   }
-	           v_secure_system("arp -d %s", buf);
-                   snprintf(logbuf, MRD_LOG_BUFSIZE, "ip address %s deleted from mcast list \n", buf);
-                   mrd_log(logbuf);
-               }
-	     }
-	  }
-     rc = memset_s(buf,sizeof(buf), 0, sizeof(buf));
-     ERR_CHK(rc);
+            }
+	 }
+         rc = memset_s(buf,sizeof(buf), 0, sizeof(buf));
+         ERR_CHK(rc);
      }
      pclose(fp);
+     mrd_updateMcastlistlifetime();
      sleep(30);
+     shmrefreshCount--;
+     if (shmrefreshCount== 0)
+     {
+        shmrefreshCount=MAX_SHMRCOUNT;
+        if (mrd_wlist && (shmid > 0)) 
+        {
+           shmdt((void *) mrd_wlist);
+           sleep(5);
+           shmid = 0;
+        }
+        if (wlist_stat == 0)  
+        {
+           mrd_shmattach();
+        }
+     }
      if (wlist_stat != 0) { 
         wlist_stat = mrd_wlistInit();
      }
   } //while
-
 }
 
