@@ -51,6 +51,13 @@
 #include "breakpad_wrapper.h"
 #endif
 #define DEBUG_INI_NAME "/etc/debug.ini"
+
+#if defined (INTEL_PUMA7)
+#include "syscfg/syscfg.h"
+#include "cap.h"
+static cap_user appcaps;
+#endif
+
 extern char*                                pComponentName;
 char                                        g_Subsystem[32]         = {0};
 int consoleDebugEnable = 0;
@@ -218,6 +225,34 @@ void sig_handler(int sig)
 
 #endif
 
+#if defined (INTEL_PUMA7)
+int drop_root(void)
+{
+  char buf[8] = {'\0'};
+  int retval = 0;
+  syscfg_init();
+  syscfg_get( NULL, "NonRootSupport", buf, sizeof(buf));
+  if(!syscfg_get( NULL, "NonRootSupport", buf, sizeof(buf)))  {
+      if (strncmp(buf, "true", strlen("true")) == 0) {
+         CcspTraceInfo(("Dropping root privileges for CcspMoCA process\n"));
+         if(init_capability() != NULL) {
+            if(drop_root_caps(&appcaps) != -1) {
+               if(update_process_caps(&appcaps) != -1) {
+                   read_capability(&appcaps);
+                   retval = 1;
+               }
+            }
+         }
+      }
+      else
+      {
+        CcspTraceInfo(("NonRootSupport false, run CcspMoCA process as root\n"));
+      }
+  }
+  return retval;
+}
+#endif
+
 int main(int argc, char* argv[])
 {
     BOOL                            bRunAsDaemon       = TRUE;
@@ -227,9 +262,13 @@ int main(int argc, char* argv[])
     int     ind      = -1;
 
     extern ANSC_HANDLE bus_handle;
-    char *subSys            = NULL;  
+    char *subSys            = NULL;
     DmErr_t    err;
     debugLogFile = stderr;
+
+#ifdef FEATURE_SUPPORT_RDKLOG
+    RDK_LOGGER_INIT();
+#endif
 
     for (idx = 1; idx < argc; idx++)
     {
@@ -303,7 +342,12 @@ int main(int argc, char* argv[])
         cmd_dispatch(cmdChar);
     }
 #elif defined(_ANSC_LINUX)
-    if ( bRunAsDaemon ) 
+  #if defined (INTEL_PUMA7)
+    if(!drop_root()) {
+          CcspTraceInfo(("drop_root method failed!\n"));
+    }
+  #endif
+    if ( bRunAsDaemon )
         daemonize();
 #ifdef INCLUDE_BREAKPAD
     breakpad_ExceptionHandler();
@@ -334,9 +378,7 @@ int main(int argc, char* argv[])
         fprintf(stderr, "Cdm_Init: %s\n", Cdm_StrError(err));
         exit(1);
     }
-#ifdef FEATURE_SUPPORT_RDKLOG
-    RDK_LOGGER_INIT();
-#endif
+
     check_component_crash(MOCA_INIT_FILE_BOOTUP);
     system("touch /tmp/moca_initialized ; sysevent set moca_init completed");
     char init_files[128] = {0};
