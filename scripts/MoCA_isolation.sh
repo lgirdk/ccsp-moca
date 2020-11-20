@@ -62,3 +62,15 @@ else
 
 fi
 fi
+# restart xupnp services at this stage 
+# ie for enable/disable of homenetwork isolation.
+if [ "$BOX_TYPE" = "XB3" ]; then
+   # for XB3 this would restart_upnp.sh
+   # which stop/start and monitor xupnp services 
+   sleep 5
+   sh /lib/rdk/start-upnp-service restart > /dev/null  2>&1 &
+else
+   # for other devices killing the process is enough, services would restart.
+   killall xcal-device
+   killall xdiscovery
+fi
