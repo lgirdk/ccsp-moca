@@ -26,3 +26,4 @@ hardware_platform = i686-linux-gnu
 bin_PROGRAMS = MRD
 
 MRD_SOURCES = mrd.c
+MRD_LDFLAGS = -lccsp_common -lsecure_wrapper
