@@ -185,9 +185,14 @@ int set_moca_conf( mocadoc_t* mocadoc )
     syscfg_get(NULL,"bridge_mode",bridgeMode,sizeof(bridgeMode));
     int mode=atoi(bridgeMode);
     bool bBridge = false;
-    /*RDKB-8493 Disable moca in bridge mode, not allow to enable back*/
+
     if(mode==0)
     {
+        if( pCfg->bEnabled  == mocadoc->param->enable )
+        {
+            CcspTraceWarning(("%s: doc value : %d and pCfg->bEnabled :%d are same, no update needed\n", __FUNCTION__, mocadoc->param->enable, pCfg->bEnabled));
+            return 0;
+        }
         pCfg->bEnabled = mocadoc->param->enable;
         mocaCfg.bEnabled = pCfg->bEnabled;
         CcspTraceWarning(("%s: set_moca_confg doc value : %d and pCfg->bEnabled :%d\n", __FUNCTION__, mocadoc->param->enable, pCfg->bEnabled));
