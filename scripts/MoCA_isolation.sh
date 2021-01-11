@@ -71,6 +71,12 @@ if [ "$BOX_TYPE" = "XB3" ]; then
    sh /lib/rdk/start-upnp-service restart > /dev/null  2>&1 &
 else
    # for other devices killing the process is enough, services would restart.
-   killall xcal-device
-   killall xdiscovery
+   pid_xcal_device=`pidof xcal-device`
+   if [ "x$pid_xcal_device" != "x" ];then
+   	killall xcal-device
+   fi
+   pid_xdiscovery=`pidof xdiscovery`
+   if [ "x$pid_xdiscovery" != "x" ];then
+   	killall xdiscovery
+   fi
 fi
