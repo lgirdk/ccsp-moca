@@ -563,9 +563,6 @@ int main()
                 }
              }
           }
-          else  {
-             mrd_flag = 1;
-          }
                   
           wan_stat = 0;
 	  for(i = 0;i<WanMCcount;i++)
@@ -631,7 +628,7 @@ int main()
      }
      pclose(fp);
      mrd_updateMcastlistlifetime();
-     sleep(30);
+     sleep(10);
      shmrefreshCount--;
      if (shmrefreshCount== 0)
      {
