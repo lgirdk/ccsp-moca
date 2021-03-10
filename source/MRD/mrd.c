@@ -59,16 +59,19 @@ typedef struct lan_mcast_table {
    char ipAddr[20];
    unsigned int mcastAliveCount;
 }lan_mcast_table_t; 
-lan_mcast_table_t LanMCastTable[MAX_MCAST_ENTRIES];
+
+static lan_mcast_table_t LanMCastTable[MAX_MCAST_ENTRIES];
 
 typedef struct wan_mcast_table {
    char ipAddr[20];
    unsigned int mcastStatus;
    unsigned int mcastAliveCount;
 }wan_mcast_table_t;
-wan_mcast_table_t WanMCastTable[MAX_MCAST_ENTRIES]; 
-int LanMCcount = 0;
-int WanMCcount = 0;
+
+static wan_mcast_table_t WanMCastTable[MAX_MCAST_ENTRIES]; 
+
+static int LanMCcount = 0;
+static int WanMCcount = 0;
 
 typedef enum { DP_SUCCESS=0, DP_INVALID_MAC, DP_COLLISION} mrd_wlist_ss_t;
 
@@ -79,8 +82,9 @@ typedef struct mrd_wlist {
      short ofb_index;
 }mrd_wlist_t;
 
-volatile mrd_wlist_t *mrd_wlist;
-int shmid;
+static mrd_wlist_t *mrd_wlist;
+
+static int shmid;
 
 #if 0
 static void GetSubnet(char *ip, char *subnet)
@@ -397,7 +401,7 @@ static int mrd_wlistInit()
    return (ret);
 }
 
-short mrdnode_lookup(long ipaddr, char MAC[], mrd_wlist_ss_t *stat)
+static short mrdnode_lookup(long ipaddr, char MAC[], mrd_wlist_ss_t *stat)
 {
     UNREFERENCED_PARAMETER(MAC);
     short index;
