@@ -208,7 +208,7 @@ static unsigned short mrd_hashindex (long ipaddr)
     // Fold the ip address to get a 9 bit hansh index
     ret =(ipaddr & 0x3FF) + ((ipaddr >> 10)&0x3FF) + ((ipaddr >> 20)&0x3FF) 
                                                    + ((ipaddr >> 30) & 0x3FF);
-    ret = ((ret & 0x3FF) + ((ret >> 10) && 0x3FF)) &0x3FF;
+    ret = ((ret & 0x3FF) + ((ret >> 10) & 0x3FF)) &0x3FF;
     if (ret) { 
        ret = ret-1;
     }
