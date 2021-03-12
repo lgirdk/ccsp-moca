@@ -17,3 +17,7 @@
 # limitations under the License.
 ##########################################################################
 SUBDIRS = TR-181 MoCASsp MRD
+
+if WITH_GTEST_SUPPORT
+SUBDIRS += test
+endif
