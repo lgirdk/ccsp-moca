@@ -49,6 +49,7 @@ else
     echo "brlan10 is created after interation $iter go ahead with the execution"
     killall igmpproxy
     killall MRD
+    killall mcsender
     ifconfig brlan0:0 down
     sleep 1
     if [ "$BOX_TYPE" = "XF3" ] || [ "$MODEL_NUM" = "TG4482A" ] || [ "$MODEL_NUM" = "TG3482G" ]; then
@@ -58,6 +59,7 @@ else
     fi
     #smcroute -f /usr/ccsp/moca/smcroute.conf -d
     MRD &
+    mcsender -ibrlan0 -t3 239.255.255.250:1900 &
     sysevent set firewall-restart
 
 fi
