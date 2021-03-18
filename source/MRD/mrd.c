@@ -448,7 +448,93 @@ short mrdnode_lookup(long ipaddr, char MAC[], mrd_wlist_ss_t *stat)
     return -1;
 }
 
+void send_pings()
+{
+    FILE *fp0 = NULL;
+    char Tbuf[256]={0};
+    char Tcmd[256] = {0};
+    int i = 0;
+    errno_t rc = -1;
+    int ind = -1;
+    rc = memset_s(Tbuf,sizeof(Tbuf), 0, sizeof(Tbuf));
+    ERR_CHK(rc);
+    rc = memset_s(Tcmd,sizeof(Tcmd), 0, sizeof(Tcmd));
+    ERR_CHK(rc);
+    snprintf(Tcmd, sizeof(Tcmd), "ip -s mroute |grep 'Iif: brlan0' |grep 169| cut -d '(' -f 2 | cut -d ',' -f 1|awk '{print $1}'");
+    if(!(fp0 = popen(Tcmd, "r")))
+      {
+        printf("error\n");
+        return;
+      }
+    while ( fgets(Tbuf, sizeof(Tbuf), fp0)!= NULL )
+      {
+        char *pos;
+        if ((pos=strchr(Tbuf, '\n')) != NULL)
+        *pos = '\0';
+        for(i = 0;i<LanMCcount;i++)
+           {
+                 
+               rc = strcmp_s(LanMCastTable[i].ipAddr,sizeof(LanMCastTable[i].ipAddr),Tbuf,&ind);
+                ERR_CHK(rc);
+                if((!ind) && (rc == EOK))
+                {
+                   i = 0;
+                   break;
+                }
+            
+            }
+            if(i)
+            {
+              //rc = memset_s(Tcmd,sizeof(Tcmd), 0, sizeof(Tcmd));
+              //ERR_CHK(rc);
+              //snprintf(Tcmd, sizeof(Tcmd), "ping -c1 -I brlan0 %s",Tbuf);
+              //v_secure_system("%s\n",Tcmd);
+              v_secure_system("ping -c1 -I brlan0 %s",Tbuf);
 
+            }
+      }
+      pclose(fp0);
+
+    i = 0;
+    rc = memset_s(Tbuf,sizeof(Tbuf), 0, sizeof(Tbuf));
+    ERR_CHK(rc);
+    rc = memset_s(Tcmd,sizeof(Tcmd), 0, sizeof(Tcmd));
+    ERR_CHK(rc);
+    snprintf(Tcmd, sizeof(Tcmd), "ip -s mroute |grep 'Iif: brlan10' |grep 169| cut -d '(' -f 2 | cut -d ',' -f 1|awk '{print $1}'");
+    if(!(fp0 = popen(Tcmd, "r")))
+      {
+        printf("error\n");
+        return;
+      }
+    while ( fgets(Tbuf, sizeof(Tbuf), fp0)!= NULL )
+      {
+        char *pos;
+        if ((pos=strchr(Tbuf, '\n')) != NULL)
+        *pos = '\0';
+        for(i = 0;i<WanMCcount;i++)
+           {
+                 
+               rc = strcmp_s(WanMCastTable[i].ipAddr,sizeof(WanMCastTable[i].ipAddr),Tbuf,&ind);
+                ERR_CHK(rc);
+                if((!ind) && (rc == EOK))
+                {
+                   i = 0;
+                   break;
+                }
+            
+            }
+            if(i)
+            {
+              //rc = memset_s(Tcmd,sizeof(Tcmd), 0, sizeof(Tcmd));
+              //ERR_CHK(rc);
+              //snprintf(Tcmd, sizeof(Tcmd), "ping -c1 -I brlan10 %s",Tbuf);
+              //v_secure_system("%s\n",Tcmd);
+              v_secure_system("ping -c1 -I brlan10 %s",Tbuf);
+
+            }
+      }
+      pclose(fp0);
+}
 int main()
 {
     FILE *fp = NULL;
@@ -464,6 +550,7 @@ int main()
     char logbuf[MRD_LOG_BUFSIZE] = {0};
     struct in_addr x_r;
     int ret;
+    int cnt = 0;
     errno_t rc = -1;
     int ind = -1;
     int shmrefreshCount=MAX_SHMRCOUNT;
@@ -630,6 +717,12 @@ int main()
      pclose(fp);
      mrd_updateMcastlistlifetime();
      sleep(10);
+     if((cnt == 0)||(cnt ==3))
+     {
+     	send_pings();
+        cnt = 0;
+     }
+     cnt++;
      shmrefreshCount--;
      if (shmrefreshCount== 0)
      {
