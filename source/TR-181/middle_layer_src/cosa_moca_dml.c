@@ -439,7 +439,7 @@ MoCA_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Data", TRUE))
+    if (strcmp(ParamName, "Data") == 0)
     {
         // To Do
         /* collect value */
@@ -692,7 +692,7 @@ MoCA_SetParamStringValue
         }
         return TRUE;
     }
-	if( AnscEqualString(ParamName, "Data", TRUE))
+	if (strcmp(ParamName, "Data") == 0)
     {
  		CcspTraceWarning(("Data received from webconfig\n"));
         if( CosaDmlmocaUnpack( pString))
