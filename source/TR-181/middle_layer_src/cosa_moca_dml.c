@@ -439,7 +439,9 @@ MoCA_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Data", TRUE))
+    rc = strcmp_s("Data", strlen("Data"), ParamName, &ind );
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
         // To Do
         /* collect value */
@@ -692,9 +694,11 @@ MoCA_SetParamStringValue
         }
         return TRUE;
     }
-	if( AnscEqualString(ParamName, "Data", TRUE))
+    rc = strcmp_s("Data", strlen("Data"), ParamName, &ind );
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
- 		CcspTraceWarning(("Data received from webconfig\n"));
+ 	CcspTraceWarning(("Data received from webconfig\n"));
         if( CosaDmlmocaUnpack( pString))
         {
             return TRUE;
