@@ -500,7 +500,7 @@ void send_pings()
     ERR_CHK(rc);
     rc = memset_s(Tcmd,sizeof(Tcmd), 0, sizeof(Tcmd));
     ERR_CHK(rc);
-    snprintf(Tcmd, sizeof(Tcmd), "ip -s mroute |grep 'Iif: brlan10' |grep 169| cut -d '(' -f 2 | cut -d ',' -f 1|awk '{print $1}'");
+    snprintf(Tcmd, sizeof(Tcmd), "ip -s mroute |grep 'Iif: brlan10' |grep 169|grep -v '169.254.30.1' | cut -d '(' -f 2 | cut -d ',' -f 1|awk '{print $1}'");
     if(!(fp0 = popen(Tcmd, "r")))
       {
         printf("error\n");
