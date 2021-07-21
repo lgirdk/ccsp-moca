@@ -160,6 +160,17 @@ int set_moca_conf( mocadoc_t* mocadoc )
     PCOSA_DML_MOCA_CFG      pCFG      = &pMyObject->MoCACfg;
     PCOSA_DML_MOCA_IF_CFG   pCfg	  = &pMyObject->MoCAIfFullTable[0].MoCAIfFull.Cfg;
     char buf[5] = {0};
+#if defined (_CM_HIGHSPLIT_SUPPORTED_)
+    unsigned char IsHighSplitEnabled = CosaMoCAIsCMHighSplitDiplexerMode();
+
+    //MoCA Enable not supported when CM HighSplit Mode
+    if( ( TRUE == IsHighSplitEnabled ) && ( mocadoc->param->enable == true ) )
+    {
+        CcspTraceWarning(("Enabling MOCA is not supported when CM HighSplit Mode\n"));
+        return VALIDATION_FALIED;
+    }
+#endif /* * _CM_HIGHSPLIT_SUPPORTED_ */
+
     syscfg_get( NULL, "X_RDKCENTRAL-COM_VIDEOSERVICE", buf, sizeof(buf));
     if(  buf[0] != '\0' )
     {

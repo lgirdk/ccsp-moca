@@ -151,4 +151,8 @@ CosaMoCARemove
         ANSC_HANDLE                 hThisObject
     );
 
+#if defined (_CM_HIGHSPLIT_SUPPORTED_)
+unsigned char CosaMoCAIsCMHighSplitDiplexerMode( void );
+#endif /* * _CM_HIGHSPLIT_SUPPORTED_ */
+
 #endif

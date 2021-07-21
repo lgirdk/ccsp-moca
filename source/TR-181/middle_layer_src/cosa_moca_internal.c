@@ -85,6 +85,11 @@ extern ANSC_HANDLE g_MoCAObject ;
  /* Coverity Issue Fix - CID:56550 : Buffer Over Run*/
 #define MAX_GETFORMAT_TIME_SIZE 128
 
+#if defined (_CM_HIGHSPLIT_SUPPORTED_)
+static int sysevent_fd_cm;
+static token_t sysevent_token_cm;
+#endif /* * _CM_HIGHSPLIT_SUPPORTED_ */
+
 void* SynchronizeMoCADevices(void *arg);
 void webConfigFrameworkInit();
 
@@ -553,6 +558,23 @@ void* MocaTelemetryLoggingThread()
     }
 }
 
+#if defined (_CM_HIGHSPLIT_SUPPORTED_)
+/* * CosaMoCAIsCMHighSplitDiplexerMode() */
+unsigned char CosaMoCAIsCMHighSplitDiplexerMode( void )
+{
+    char acDiplexerMode[16] = {0}; 
+
+    if( ( 0 == sysevent_get( sysevent_fd_cm, sysevent_token_cm, "cm_diplexer_mode", acDiplexerMode,sizeof(acDiplexerMode) ) ) &&
+        ( acDiplexerMode[0] != '\0' ) &&
+        ( 0 == strcmp( acDiplexerMode, "high_split" ) ) )
+    {
+        return TRUE;
+    } 
+
+    return FALSE;
+}
+#endif /* * _CM_HIGHSPLIT_SUPPORTED_ */
+
 int CosaMoCATelemetryInit()
 {
     int i = 0;
@@ -630,6 +652,11 @@ CosaMoCAInitialize
     pMyObject->pSlapMoCADm = (ANSC_HANDLE)pSlapMoCADm;
     pMyObject->pPoamMoCADm = (ANSC_HANDLE)pPoamMoCADm;
 
+#if defined (_CM_HIGHSPLIT_SUPPORTED_)
+    //Placed sysevent initialization here for common usage 
+    sysevent_fd_cm = sysevent_open("127.0.0.1", SE_SERVER_WELL_KNOWN_PORT, SE_VERSION, "moca_cm_event", &sysevent_token_cm);
+#endif /* * _CM_HIGHSPLIT_SUPPORTED_ */
+
     CosaDmlMocaInit(NULL, (ANSC_HANDLE)&pMyObject);
 
     CosaDmlMocaGetCfg(NULL, &pMyObject->MoCACfg);
@@ -659,7 +686,7 @@ CosaMoCAInitialize
         pMyObject->MoCAIfFullTable[ulIndex].MoCAIfFull.Cfg.InstanceNumber = ulNextInsNum++;    
     }
         
-    //If MoCA enabled check the bridge mode.
+    //If MoCA enabled check the bridge mode and cm diplexer mode.
     if  (TRUE == pMyObject->MoCAIfFullTable[0].MoCAIfFull.Cfg.bEnabled) 
     {
         char bridgeMode[16] = {0};
@@ -668,8 +695,12 @@ CosaMoCAInitialize
         syscfg_get(NULL, "bridge_mode", bridgeMode, sizeof(bridgeMode));
         mode = atoi(bridgeMode);
 
-        //If bridge mode enabled then Disable MoCA.
-        if (0 != mode) 
+        //If bridge mode enabled or high split mode enabled then Disable MoCA.
+        if ( ( 0 != mode ) 
+#if defined (_CM_HIGHSPLIT_SUPPORTED_)
+             || ( TRUE == CosaMoCAIsCMHighSplitDiplexerMode() )
+#endif /* * _CM_HIGHSPLIT_SUPPORTED_ */
+           ) 
         {
             /*Coverity Fix CID:65666 CHECKED_RETURN */
             if( CosaDmlMocaIfSetCfg( NULL, 0, &pMyObject->MoCAIfFullTable[0].MoCAIfFull.Cfg) == ANSC_STATUS_FAILURE )

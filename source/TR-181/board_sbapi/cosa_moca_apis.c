@@ -682,6 +682,10 @@ CosaDmlMocaIfSetCfg
     
     if ( ulInterfaceIndex == 0 )
     {
+#if defined (_CM_HIGHSPLIT_SUPPORTED_)
+         unsigned char IsHighSplitEnabled = CosaMoCAIsCMHighSplitDiplexerMode();
+#endif /* * _CM_HIGHSPLIT_SUPPORTED_ */
+
          if(pCfg->X_CISCO_COM_Reset == TRUE) {
 
              AnscTraceWarning(("Resetting MoCA to factory default settings\n"));
@@ -738,7 +742,11 @@ CosaDmlMocaIfSetCfg
                              return ANSC_STATUS_FAILURE;
                         }
 			/*RDKB-8493 Disable moca in bridge mode, not allow to enable back*/
-			if(mode==0)
+			if( ( mode == 0 ) 
+#if defined (_CM_HIGHSPLIT_SUPPORTED_)
+                  && ( FALSE == IsHighSplitEnabled ) 
+#endif /* * _CM_HIGHSPLIT_SUPPORTED_ */
+              )
 			{
 				mocaCfg.bEnabled 						= pCfg->bEnabled;
 			}

@@ -1858,19 +1858,37 @@ Interface1_SetParamBoolValue
     {
         /* save update to backup */
         char buf[5] = {0};
+#if defined (_CM_HIGHSPLIT_SUPPORTED_)
+        unsigned char IsHighSplitEnabled = CosaMoCAIsCMHighSplitDiplexerMode();
+
+        if( ( bValue == TRUE ) && ( TRUE == IsHighSplitEnabled ) )
+        {
+            CcspTraceWarning(("Enabling MOCA is not supported when CM HighSplit mode\n"));
+            return FALSE;
+        }
+#endif /* * _CM_HIGHSPLIT_SUPPORTED_ */
+
         syscfg_get( NULL, "X_RDKCENTRAL-COM_VIDEOSERVICE", buf, sizeof(buf));
         if( buf != NULL )
         {
                 if (strcmp(buf,"1") == 0)
                 {
-                    if(bValue == FALSE)
+                    if( ( bValue == FALSE)
+#if defined (_CM_HIGHSPLIT_SUPPORTED_) 
+                        && ( FALSE == IsHighSplitEnabled ) 
+#endif /* * _CM_HIGHSPLIT_SUPPORTED_ */
+                      )
                     {
                         CcspTraceWarning(("Disabling MOCA is not supported when VideoService is ENABLED\n"));
                         return FALSE;
                     }
                 }
         }
-		if((bValue == FALSE) && (pCfg->bForceEnabled == TRUE) && ((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeId)) && (FALSE == bridgeId))){
+		if((bValue == FALSE) && (pCfg->bForceEnabled == TRUE) && ((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeId)) && (FALSE == bridgeId)) 
+#if defined (_CM_HIGHSPLIT_SUPPORTED_)
+                && ( FALSE == IsHighSplitEnabled )
+#endif /* * _CM_HIGHSPLIT_SUPPORTED_ */
+                ){
 			CcspTraceWarning(("MOCA cannot Disabled due to X_RDKCENTRAL-COM_ForceEnable flag\n"));
 			return FALSE;
 	   }
