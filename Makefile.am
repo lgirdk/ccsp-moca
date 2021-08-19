@@ -18,14 +18,4 @@
 ##########################################################################
 SUBDIRS = source
 
-if CCSP_ARCH_ARM
 AM_CFLAGS = -D_ANSC_LITTLE_ENDIAN_
-endif
-
-if CCSP_ARCH_ATOM
-AM_CFLAGS = -D_ANSC_LITTLE_ENDIAN_
-endif
-
-if CCSP_ARCH_PC
-AM_CFLAGS = -D_ANSC_LITTLE_ENDIAN_
-endif
