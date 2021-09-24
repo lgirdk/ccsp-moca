@@ -72,7 +72,7 @@
 
 #include "autoconf.h"
 #include "dml_tr181_custom_cfg_custom.h"            /* include customer specific configurations */
-
+#include "secure_wrapper.h"
 #define  CFG_TR181_BRIDGE_ETH4_SYSCFG               1
 #define  CFG_TR181_DHCPv4_CLIENT_IfName             "erouter0"
 #define  CFG_TR181_DHCPv6_CLIENT_IfName             "erouter0"
@@ -94,21 +94,13 @@
 #define  TR181_Mlan_Sysevent_ResyncAll()                                    \
             if ( TRUE )         /* Trigger sysevent */                      \
             {                                                               \
-                char                        scriptCmd[48];                  \
-                                                                            \
-                _ansc_sprintf(scriptCmd, "sysevent set ipv4-resyncAll");    \
-                                                                            \
-                system(scriptCmd);                                          \
+                 v_secure_system("sysevent set ipv4-resyncAll");            \
             }
 
 #define  TR181_Mlan_Sysevent_Resync(IfIndex)                                \
             if ( TRUE )         /* Trigger sysevent */                      \
             {                                                               \
-                char                        scriptCmd[48];                  \
-                                                                            \
-                _ansc_sprintf(scriptCmd, "sysevent set ipv4-resync %d", IfIndex);  \
-                                                                            \
-                system(scriptCmd);                                          \
+                 v_secure_system("sysevent set ipv4-resync %d", IfIndex);   \                                       \
             }
 
 #define  CFG_TR181_ETH_BORROW_MAC                   1

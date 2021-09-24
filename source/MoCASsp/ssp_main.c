@@ -43,7 +43,8 @@
 #include "ccsp_dm_api.h"
 #include "safec_lib_common.h"
 #include "webconfig_framework.h"
-
+#include "secure_wrapper.h"
+#include <sys/stat.h>
 //  Existing moca_initialized is removed from ccsp_restart.sh . Created this file to determine if component is coming after crashed to sync values from server.
 #define MOCA_INIT_FILE_BOOTUP "/tmp/moca_initialized_bootup"
 
@@ -377,10 +378,9 @@ int main(int argc, char* argv[])
     }
 
     check_component_crash(MOCA_INIT_FILE_BOOTUP);
-    system("touch /tmp/moca_initialized ; sysevent set moca_init completed");
-    char init_files[128] = {0};
-    snprintf(init_files,sizeof(init_files),"touch %s",MOCA_INIT_FILE_BOOTUP);
-    system(init_files);
+    creat("/tmp/moca_initialized",S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    v_secure_system("sysevent set moca_init completed");
+    creat(MOCA_INIT_FILE_BOOTUP,S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
     //LM_main();
     if ( bRunAsDaemon )
