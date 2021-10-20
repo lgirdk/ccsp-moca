@@ -18,8 +18,8 @@
 */
 
 #include "cosa_moca_webconfig_api.h"
-#include "moca_hal.h"
 #include "cosa_moca_internal.h"
+#include "moca_hal.h"
 #include "ccsp_trace.h"
 #include "syscfg/syscfg.h"
 
