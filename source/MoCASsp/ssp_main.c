@@ -53,7 +53,6 @@
 #define DEBUG_INI_NAME "/etc/debug.ini"
 
 #if defined (INTEL_PUMA7)
-#include "syscfg/syscfg.h"
 #include "cap.h"
 static cap_user appcaps;
 #endif
@@ -228,26 +227,24 @@ void sig_handler(int sig)
 #if defined (INTEL_PUMA7)
 int drop_root(void)
 {
-  char buf[8] = {'\0'};
   int retval = 0;
-  syscfg_init();
-  syscfg_get( NULL, "NonRootSupport", buf, sizeof(buf));
-  if(!syscfg_get( NULL, "NonRootSupport", buf, sizeof(buf)))  {
-      if (strncmp(buf, "true", strlen("true")) == 0) {
-         CcspTraceInfo(("Dropping root privileges for CcspMoCA process\n"));
-         if(init_capability() != NULL) {
-            if(drop_root_caps(&appcaps) != -1) {
-               if(update_process_caps(&appcaps) != -1) {
-                   read_capability(&appcaps);
-                   retval = 1;
-               }
-            }
-         }
-      }
-      else
-      {
-        CcspTraceInfo(("NonRootSupport false, run CcspMoCA process as root\n"));
-      }
+  bool blocklist_ret = false;
+  blocklist_ret = isBlocklisted();
+  if(blocklist_ret)
+  {
+    CcspTraceInfo(("NonRoot feature is disabled\n"));
+  }
+  else
+  {
+    CcspTraceInfo(("NonRoot feature is enabled, dropping root privileges for CcspMoCA process\n"));
+    if(init_capability() != NULL) {
+       if(drop_root_caps(&appcaps) != -1) {
+          if(update_process_caps(&appcaps) != -1) {
+             read_capability(&appcaps);
+             retval = 1;
+          }
+       }
+    }
   }
   return retval;
 }
