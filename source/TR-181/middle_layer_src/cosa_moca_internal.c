@@ -255,12 +255,12 @@ void MoCA_Log()
 		CosaDmlMocaIfGetDinfo(NULL, pMyObject->MoCAIfFullTable[ulIndex].MoCAIfFull.Cfg.InstanceNumber-1, &DynamicInfo);          
 		AnscTraceWarning(("----------------------\n"));
                 AnscTraceWarning(("MOCA_HEALTH : NCMacAddress %s \n",DynamicInfo.X_CISCO_NetworkCoordinatorMACAddress));
-		AnscTraceWarning(("MOCA_HEALTH : Interface %d , Number of Associated Devices %d \n", ulIndex+1 , AssocDeviceCount));
+		AnscTraceWarning(("MOCA_HEALTH : Interface %lu , Number of Associated Devices %lu \n", ulIndex+1 , AssocDeviceCount));
 		rc = memset_s(mac_buff1, sizeof(mac_buff1), 0, sizeof(mac_buff1));
 		ERR_CHK(rc);
 		for ( ulIndex1 = 0; ulIndex1 < AssocDeviceCount; ulIndex1++ )
 		{
-			AnscTraceWarning(("MOCA_HEALTH : Device %d \n", ulIndex1 + 1));
+			AnscTraceWarning(("MOCA_HEALTH : Device %lu \n", ulIndex1 + 1));
 			AnscTraceWarning(("MOCA_HEALTH : PHYTxRate %lu \n", pMoCAAssocDevice[ulIndex1].PHYTxRate));
 			AnscTraceWarning(("MOCA_HEALTH : PHYRxRate %lu \n", pMoCAAssocDevice[ulIndex1].PHYRxRate));
 			AnscTraceWarning(("MOCA_HEALTH : TxPowerControlReduction %lu \n", pMoCAAssocDevice[ulIndex1].TxPowerControlReduction));
@@ -291,8 +291,8 @@ void MoCA_Log()
 		}
 		AnscTraceWarning(("----------------------\n"));
 
-		AnscTraceWarning(("MOCA_MAC_%d_TOTAL_COUNT:%d\n", ulIndex+1 , AssocDeviceCount));
-		AnscTraceWarning(("MOCA_MAC_%d:%s\n", ulIndex+1 , mac_buff1));
+		AnscTraceWarning(("MOCA_MAC_%lu_TOTAL_COUNT:%lu\n", ulIndex+1 , AssocDeviceCount));
+		AnscTraceWarning(("MOCA_MAC_%lu:%s\n", ulIndex+1 , mac_buff1));
 		if (pMoCAAssocDevice)
 		{
 			AnscFreeMemory(pMoCAAssocDevice);

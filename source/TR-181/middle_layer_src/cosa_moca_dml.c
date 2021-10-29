@@ -866,7 +866,7 @@ MoCAReset_GetParamBoolValue
     errno_t                         rc       = -1;
     int                             ind      = -1;
     
-    CcspTraceWarning(("ParamName: %s pBool: %d\n", ParamName, pBool));
+    CcspTraceWarning(("ParamName: %s pBool: %p\n", ParamName, pBool));
     rc = strcmp_s("Reset", strlen("Reset"), ParamName, &ind );
     ERR_CHK(rc);
     if((!ind) && (rc == EOK))
@@ -1420,7 +1420,7 @@ Interface1_GetParamUlongValue
     if((!ind) && (rc == EOK))
     {
         /* collect value */
-        AnscTraceWarning(("pMoCAIfFull->Cfg.BeaconPowerLimit: %d\n", pMoCAIfFull->Cfg.BeaconPowerLimit));
+        AnscTraceWarning(("pMoCAIfFull->Cfg.BeaconPowerLimit: %lu\n", pMoCAIfFull->Cfg.BeaconPowerLimit));
 
         *puLong = pMoCAIfFull->Cfg.BeaconPowerLimit;
         return TRUE;
@@ -1459,7 +1459,7 @@ Interface1_GetParamUlongValue
     {
         /* collect value */
 
-        AnscTraceWarning(("ParamName: %s: pMoCAIfFull->Cfg.AutoPowerControlPhyRate: %d\n", ParamName, 
+        AnscTraceWarning(("ParamName: %s: pMoCAIfFull->Cfg.AutoPowerControlPhyRate: %lu\n", ParamName, 
                           pMoCAIfFull->Cfg.AutoPowerControlPhyRate));
         *puLong = pMoCAIfFull->Cfg.AutoPowerControlPhyRate;
         return TRUE;
@@ -2069,7 +2069,7 @@ Interface1_SetParamUlongValue
     errno_t                         rc       = -1;
     int                             ind      = -1;
     
-    AnscTraceWarning(("ParamName: %s uValue: %d\n", ParamName, uValue));
+    AnscTraceWarning(("ParamName: %s uValue: %lu\n", ParamName, uValue));
     #define LIMIT 15
     #define MIN 3
 
@@ -4584,7 +4584,7 @@ X_CISCO_COM_ExtCounterTable_GetEntry
         return NULL;
     }
     
-    AnscTraceWarning(("InterfaceIndex: %lu nIndex: %lu pExtCounte: p\n",  InterfaceIndex, nIndex, pExtCounter));
+    AnscTraceWarning(("InterfaceIndex: %lu nIndex: %lu pExtCounte: %p\n",  InterfaceIndex, nIndex, pExtCounter));
     ret = CosaDmlMocaIfExtCounterGetEntry((ANSC_HANDLE)NULL, InterfaceIndex, nIndex, pExtCounter);
     if ( ret == ANSC_STATUS_FAILURE )
     {
@@ -4747,7 +4747,7 @@ X_CISCO_COM_ExtCounterTable_GetParamUlongValue
     errno_t                         rc       = -1;
     int                             ind      = -1;
 
-    AnscTraceWarning(("InterfaceIndex: %lu Index: %lu pConf: p\n",  pMocaLink->InterfaceIndex, pMocaLink->Index, pConf));
+    AnscTraceWarning(("InterfaceIndex: %lu Index: %lu pConf: %p\n",  pMocaLink->InterfaceIndex, pMocaLink->Index, pConf));
     /*this is counter object. the information will be changed from time to time.*/
     CosaDmlMocaIfExtCounterGetEntry((ANSC_HANDLE)NULL, pMocaLink->InterfaceIndex, pMocaLink->Index, pConf);
 

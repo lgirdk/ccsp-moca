@@ -111,7 +111,7 @@ ssp_Mbi_MessageBusEngage
         return returnStatus;
     }
 
-    CcspTraceInfo(("INFO: bus_handle: 0x%8x \n", bus_handle));
+    CcspTraceInfo(("INFO: bus_handle: 0x%8p \n", bus_handle));
     g_MessageBusHandle_Irep = bus_handle;
     char *pSubsystem = g_Subsystem;
     rc = strcpy_s(g_SubSysPrefix_Irep,sizeof(g_SubSysPrefix_Irep),pSubsystem);
@@ -154,7 +154,7 @@ ssp_Mbi_MessageBusEngage
 
     if ( returnStatus != CCSP_Message_Bus_OK )
     {
-        CcspTraceError((" !!! CCSP_Message_Bus_Register_Path ERROR returnStatus: %d\n!!!\n", returnStatus));
+        CcspTraceError((" !!! CCSP_Message_Bus_Register_Path ERROR returnStatus: %lu\n!!!\n", returnStatus));
 
         return returnStatus;
     }
@@ -171,7 +171,7 @@ ssp_Mbi_MessageBusEngage
 
     if ( returnStatus != CCSP_Message_Bus_OK )
     {
-         CcspTraceError((" !!! CCSP_Message_Bus_Register_Event: CurrentSessionIDSignal ERROR returnStatus: %d!!!\n", returnStatus));
+         CcspTraceError((" !!! CCSP_Message_Bus_Register_Event: CurrentSessionIDSignal ERROR returnStatus: %lu!!!\n", returnStatus));
 
         return returnStatus;
     }

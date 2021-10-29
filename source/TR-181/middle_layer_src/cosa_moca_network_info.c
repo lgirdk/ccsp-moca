@@ -315,7 +315,7 @@ MocaIf_GetAssocDevices
 
             if(( iReturnStatus == STATUS_SUCCESS ) && ( 0 < *pulCount ))
             {
-                AnscTraceWarning(("MocaIf_GetAssocDevices -- ulInterfaceIndex:%lu, pulCount:%lu\n", ulInterfaceIndex, *pulCount));
+                AnscTraceWarning(("MocaIf_GetAssocDevices -- ulInterfaceIndex:%u, pulCount:%lu\n", ulInterfaceIndex, *pulCount));
                 moca_associated_device_t*       pdevice_array  = NULL;
                 unsigned int                    i;
 
@@ -492,7 +492,7 @@ MocaIf_GetAssocDevices
                 else
                 {
                     AnscTraceWarning(("MocaIf_GetAssocDevices -- Memory Allocation Failure "
-                                        "ulInterfaceIndex:%lu, pulCount:%lu\n", ulInterfaceIndex, *pulCount));
+                                        "ulInterfaceIndex:%u, pulCount:%lu\n", ulInterfaceIndex, *pulCount));
 
                     if ( pdevice_array )
                     {

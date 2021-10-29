@@ -970,7 +970,7 @@ CosaDmlMocaIfSetCfg
 
          }     
 
-         AnscTraceWarning(("pCfg->BeaconPowerLimit: %d\n", pCfg->BeaconPowerLimit));
+         AnscTraceWarning(("pCfg->BeaconPowerLimit: %lu\n", pCfg->BeaconPowerLimit));
          status = snprintf(str_value, kMax_beaconPwrLen, "%lu", pCfg->BeaconPowerLimit);
 
          if(status > 0) {
@@ -1008,7 +1008,7 @@ CosaDmlMocaIfSetCfg
              AnscTraceWarning(("snprintf failed\n"));
          }
 
-         AnscTraceWarning(("pCfg->AutoPowerControlPhyRate: %d\n", pCfg->AutoPowerControlPhyRate));
+         AnscTraceWarning(("pCfg->AutoPowerControlPhyRate: %lu\n", pCfg->AutoPowerControlPhyRate));
          status = snprintf(str_value, kMax_AutoPowerControlPhyRate, "%lu", pCfg->AutoPowerControlPhyRate);
          
          if(status > 0) {
