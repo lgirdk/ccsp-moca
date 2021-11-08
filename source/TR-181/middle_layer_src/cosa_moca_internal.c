@@ -374,7 +374,9 @@ static char *get_formatted_time(char *time)
 
     strftime(tmp, 128, "%y%m%d-%T", tm_info);
 
-    snprintf(time, 128, "%s.%06lu", tmp, tv_now.tv_usec);
+    if( snprintf(time, 128, "%s.%06lu", tmp, tv_now.tv_usec) >= 128) {
+        CcspTraceWarning(( "%s Truncation while formatting time, expected_time:%s.%06d current_time:%s\n", __FUNCTION__ , tmp, (int)tv_now.tv_usec, time));
+    }
     return time;
 }
 
@@ -431,7 +433,7 @@ static void MocaTelemetryPush()
     ULONG Interface_count, ulIndex,  ulIndex1, AssocDeviceCount;
     PCOSA_DML_MOCA_ASSOC_DEVICE             pMoCAAssocDevice = NULL;
     char                                    mac_buff[32] , mac_buff1[2048];
-    char tmp[128] = {0}, buff[2048] = {0};
+    char tmp[128] = {0}, buff[2256] = {0};
     errno_t rc = -1;    
 
     Interface_count = CosaDmlMocaGetNumberOfIfs((ANSC_HANDLE)NULL);
@@ -486,7 +488,7 @@ static void MocaTelemetryPush()
 	rc = memset_s(tmp, sizeof(tmp), 0, sizeof(tmp));
 	ERR_CHK(rc);
 	get_formatted_time(tmp);
-	snprintf(buff, 2048, "%s MOCA_MAC_%lu:%s\n", tmp, ulIndex+1 , mac_buff1);
+	snprintf(buff, 2256, "%s MOCA_MAC_%lu:%s\n", tmp, ulIndex+1 , mac_buff1);
 	write_to_file(moca_telemetry_log, buff);
 	if (pMoCAAssocDevice)
 	{

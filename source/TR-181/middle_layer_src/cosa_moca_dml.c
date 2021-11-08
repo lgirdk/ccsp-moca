@@ -3686,6 +3686,8 @@ MeshTable_Synchronize
     PCOSA_DML_MOCA_IF_FULL          pIf                  = (PCOSA_DML_MOCA_IF_FULL)hInsContext;
     ULONG                           InterfaceIndex       = pIf->Cfg.InstanceNumber - 1;
     ANSC_STATUS                     ret                  = ANSC_STATUS_SUCCESS;
+    void*                           ppMoCAMeshTable      = NULL;
+    void*                           pulMoCAMeshTableCount = NULL;
 
     if ( pMoCAIfFullTable->pMoCAMeshTable)
     {
@@ -3694,13 +3696,15 @@ MeshTable_Synchronize
         pMoCAIfFullTable->pMoCAMeshTable= NULL;
     }
 
+    ppMoCAMeshTable = &pMoCAIfFullTable->pMoCAMeshTable;
+    pulMoCAMeshTableCount = &pMoCAIfFullTable->ulMoCAMeshTableCount;
     //fetch data
     ret = CosaDmlMocaIfMeshTableGetTable
 	  (
 		(ANSC_HANDLE)NULL,
 		InterfaceIndex,
-		&pMoCAIfFullTable->pMoCAMeshTable,
-		&pMoCAIfFullTable->ulMoCAMeshTableCount
+		(PCOSA_DML_MOCA_MESH *)ppMoCAMeshTable,
+		(PULONG)pulMoCAMeshTableCount
 	  );
 
     return ret;
@@ -4569,6 +4573,7 @@ X_CISCO_COM_ExtCounterTable_GetEntry
     PCOSA_CONTEXT_MOCA_LINK_OBJECT  pMocaLink       = NULL;
     ANSC_STATUS                     ret             = ANSC_STATUS_FAILURE;
     PCOSA_DATAMODEL_MOCA            pMyObject   = (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
+    void*                           pMoCAExtCounterTable = NULL;
 
     InterfaceIndex  = pIf->Cfg.InstanceNumber - 1;
 
@@ -4602,7 +4607,8 @@ X_CISCO_COM_ExtCounterTable_GetEntry
     
     /* Put into our list */
 
-    CosaSListPushEntryByInsNum(&pMyObject->MoCAIfFullTable[InterfaceIndex].pMoCAExtCounterTable, (PCOSA_CONTEXT_LINK_OBJECT)pMocaLink);
+    pMoCAExtCounterTable = &pMyObject->MoCAIfFullTable[InterfaceIndex].pMoCAExtCounterTable;
+    CosaSListPushEntryByInsNum((PSLIST_HEADER)pMoCAExtCounterTable, (PCOSA_CONTEXT_LINK_OBJECT)pMocaLink);
 
     return (ANSC_HANDLE)pMocaLink;
 }
@@ -4962,6 +4968,7 @@ X_CISCO_COM_ExtAggrCounterTable_GetEntry
     PCOSA_CONTEXT_MOCA_LINK_OBJECT  pMocaLink       = NULL;
     ANSC_STATUS                     ret             = ANSC_STATUS_FAILURE;
     PCOSA_DATAMODEL_MOCA            pMyObject   = (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
+    void*                           pMoCAExtAggrCounterTable = NULL;
 
     InterfaceIndex  = pIf->Cfg.InstanceNumber - 1;
 
@@ -4993,8 +5000,9 @@ X_CISCO_COM_ExtAggrCounterTable_GetEntry
     *pInsNumber               = nIndex+1;
 
     /* Put into our list */
+    pMoCAExtAggrCounterTable = &pMyObject->MoCAIfFullTable[InterfaceIndex].pMoCAExtAggrCounterTable;
 
-    CosaSListPushEntryByInsNum(&pMyObject->MoCAIfFullTable[InterfaceIndex].pMoCAExtAggrCounterTable, (PCOSA_CONTEXT_LINK_OBJECT)pMocaLink);
+    CosaSListPushEntryByInsNum((PSLIST_HEADER)pMoCAExtAggrCounterTable, (PCOSA_CONTEXT_LINK_OBJECT)pMocaLink);
 
     return (ANSC_HANDLE)pMocaLink;
 }
@@ -6370,6 +6378,8 @@ AssociatedDevice_Synchronize
 {    
     /*PPOAM_COSAMOCADM_OBJECT         pPoamMoCADm         = (PPOAM_COSAMOCADM_OBJECT )pMyObject->pPoamMoCADm;*/
     PCOSA_DML_MOCA_IF_FULL_TABLE    pMoCAIfFullTable    = (PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext;
+    void* pulMoCAAssocDeviceCount = NULL;
+    void* pMoCAAssocDevice = NULL;
 
     if ( pMoCAIfFullTable->pMoCAAssocDevice)
     {
@@ -6377,13 +6387,15 @@ AssociatedDevice_Synchronize
         
         pMoCAIfFullTable->pMoCAAssocDevice= NULL;
     }    
-   
+
+    pulMoCAAssocDeviceCount = &pMoCAIfFullTable->ulMoCAAssocDeviceCount;
+    pMoCAAssocDevice = &pMoCAIfFullTable->pMoCAAssocDevice,
     CosaDmlMocaIfGetAssocDevices
         (
             (ANSC_HANDLE)NULL/*pPoamMoCADm*/, 
             pMoCAIfFullTable->MoCAIfFull.Cfg.InstanceNumber-1, 
-            &pMoCAIfFullTable->ulMoCAAssocDeviceCount,
-            &pMoCAIfFullTable->pMoCAAssocDevice,
+            (PULONG)pulMoCAAssocDeviceCount,
+            (PCOSA_DML_MOCA_ASSOC_DEVICE *)pMoCAAssocDevice,
             NULL
         );
     

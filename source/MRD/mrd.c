@@ -239,7 +239,7 @@ static void  mrd_updateMcastlistlifetime()
 {
    int i;
    errno_t rc = -1;
-   char cmd[200]={0};
+   char cmd[600]={0};
 
    // Go through wantable and reduce life time of table entries 
    // Delete stale entries
@@ -551,7 +551,7 @@ int main()
     mrd_wlist_ss_t stat; 
     unsigned int mrd_flag=1, wan_stat=0;
     int wlist_stat=-1;
-    char logbuf[MRD_LOG_BUFSIZE] = {0};
+    char logbuf[MRD_LOG_BUFSIZE+120] = {0};
     struct in_addr x_r;
     int ret;
     int cnt = 0;
@@ -610,7 +610,7 @@ int main()
                 v_secure_system("ip route add %s dev brlan0", buf);
              }
 	     v_secure_system("arp -i brlan10 -Ds %s brlan0 pub", buf);
-             snprintf(logbuf, MRD_LOG_BUFSIZE, "route and arp added for ip address %s \n", buf);
+             snprintf(logbuf, sizeof(logbuf), "route and arp added for ip address %s \n", buf);
              mrd_log(logbuf);
 	  }
           rc = memset_s(buf,sizeof(buf), 0, sizeof(buf));
@@ -692,7 +692,7 @@ int main()
 	           v_secure_system("ip route add %s dev brlan10 table moca", buf);
                 }
 	        v_secure_system("arp -i brlan0 -Ds %s brlan10 pub", buf);
-                snprintf(logbuf, MRD_LOG_BUFSIZE, "ip address %s added to mcast list \n", buf);
+                snprintf(logbuf, sizeof(logbuf), "ip address %s added to mcast list \n", buf);
                 mrd_log(logbuf);
              }
              else  
@@ -702,7 +702,7 @@ int main()
 	           v_secure_system("ip route delete %s table moca", buf);
                 }
 	        v_secure_system("arp -d %s", buf);
-                snprintf(logbuf, MRD_LOG_BUFSIZE, "ip address %s deleted from mcast list \n", buf);
+                snprintf(logbuf, sizeof(logbuf), "ip address %s deleted from mcast list \n", buf);
                 mrd_log(logbuf);
 	        for(i = 0;i<WanMCcount;i++)
 	        {
