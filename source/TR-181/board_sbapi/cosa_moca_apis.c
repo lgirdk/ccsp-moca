@@ -1673,7 +1673,7 @@ CosaDmlMocaIfPeerTableGetTable
     UNREFERENCED_PARAMETER(hContext);
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
 
-    AnscTraceWarning(("CosaDmlMocaIfPeerTableGetTable -- ulInterfaceIndex:%lu, ppConf:%x\n", ulInterfaceIndex, (UINT)ppConf));
+    AnscTraceWarning(("CosaDmlMocaIfPeerTableGetTable -- ulInterfaceIndex:%lu, ppConf:%x\n", ulInterfaceIndex, (intptr_t)ppConf));
 
     if ( !ppConf || !pCount )
     {
@@ -1751,7 +1751,7 @@ CosaDmlMocaIfMeshTableGetTable
     UNREFERENCED_PARAMETER(hContext);
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
 
-    AnscTraceWarning(("CosaDmlMocaIfMeshTableGetTable -- ulInterfaceIndex:%lu, ppMeshTable:%x\n", ulInterfaceIndex, (UINT)ppMeshTable));
+    AnscTraceWarning(("CosaDmlMocaIfMeshTableGetTable -- ulInterfaceIndex:%lu, ppMeshTable:%x\n", ulInterfaceIndex, (intptr_t)ppMeshTable));
 
     if ( !pCount || !ppMeshTable || ulInterfaceIndex != 0)
     {
@@ -1825,7 +1825,7 @@ CosaDmlMocaIfFlowTableGetTable
     UNREFERENCED_PARAMETER(hContext);
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
 
-    AnscTraceWarning(("CosaDmlMocaIfFlowTableGetTable -- ulInterfaceIndex:%lu, ppConf:%x\n", ulInterfaceIndex, (UINT)ppConf));
+    AnscTraceWarning(("CosaDmlMocaIfFlowTableGetTable -- ulInterfaceIndex:%lu, ppConf:%x\n", ulInterfaceIndex, (intptr_t)ppConf));
 
     if ( !pCount || !ppConf || ulInterfaceIndex != 0)
     {
