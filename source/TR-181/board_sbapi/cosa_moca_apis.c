@@ -420,7 +420,6 @@ CosaDmlMocaInit
     UNREFERENCED_PARAMETER(hDml);
     UNREFERENCED_PARAMETER(phContext);
 
-    syscfg_init();
 
     if (CosaDmlGetMocaHardwareStatus(NULL) != 1 ) { 
         CcspTraceWarning(("-- Moca hardware is not available.\n")); 
