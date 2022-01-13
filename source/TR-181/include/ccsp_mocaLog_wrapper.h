@@ -19,8 +19,6 @@
 #ifndef  _CCSP_MOCALOG_WRPPER_H_ 
 #define  _CCSP_MOCALOG_WRPPER_H_
 
-#include "ccsp_custom_logs.h"
-
 extern int consoleDebugEnable;
 extern FILE* debugLogFile;
 
