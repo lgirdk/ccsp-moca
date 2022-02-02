@@ -35,7 +35,6 @@
 #include <unistd.h>
 #include "ansc_platform.h"
 
-
 #define PNAME "/tmp/icebergwedge_t"
 #define PID 21699
 #define MAX_MCAST_ENTRIES 20
@@ -413,7 +412,7 @@ static short mrdnode_lookup(long ipaddr, char MAC[], mrd_wlist_ss_t *stat)
     if (mrd_wlist == (void *) -1) return -1;
     index = mrd_hashindex(ipaddr); 
 #ifdef MRD_DEBUG
-    snprintf(buf, sizeof(buf), "mrdnode_lookup ip %d : index %d\n", ipaddr, index);
+    snprintf(buf, sizeof(buf), "mrdnode_lookup ip %ld : index %d\n", ipaddr, index);
     mrd_log(buf);
 #endif
     //check if the ip address is already existing in the white list
@@ -456,20 +455,16 @@ void send_pings()
 {
     FILE *fp0 = NULL;
     char Tbuf[256]={0};
-    char Tcmd[256] = {0};
     int i = 0;
     errno_t rc = -1;
     int ind = -1;
     rc = memset_s(Tbuf,sizeof(Tbuf), 0, sizeof(Tbuf));
     ERR_CHK(rc);
-    rc = memset_s(Tcmd,sizeof(Tcmd), 0, sizeof(Tcmd));
-    ERR_CHK(rc);
-    snprintf(Tcmd, sizeof(Tcmd), "ip -s mroute |grep 'Iif: brlan0' |grep 169| cut -d '(' -f 2 | cut -d ',' -f 1|awk '{print $1}'");
-    if(!(fp0 = popen(Tcmd, "r")))
-      {
+    if(!(fp0 = v_secure_popen("r","ip -s mroute |grep 'Iif: brlan0' |grep 169| cut -d '(' -f 2 | cut -d ',' -f 1|awk '{print $1}'")))
+    {
         printf("error\n");
         return;
-      }
+    }
     while ( fgets(Tbuf, sizeof(Tbuf), fp0)!= NULL )
       {
         char *pos;
@@ -489,27 +484,18 @@ void send_pings()
             }
             if(i)
             {
-              //rc = memset_s(Tcmd,sizeof(Tcmd), 0, sizeof(Tcmd));
-              //ERR_CHK(rc);
-              //snprintf(Tcmd, sizeof(Tcmd), "ping -c1 -I brlan0 %s",Tbuf);
-              //v_secure_system("%s\n",Tcmd);
               v_secure_system("ping -c1 -I brlan0 %s",Tbuf);
-
             }
       }
-      pclose(fp0);
-
+      v_secure_pclose(fp0);                   
     i = 0;
     rc = memset_s(Tbuf,sizeof(Tbuf), 0, sizeof(Tbuf));
     ERR_CHK(rc);
-    rc = memset_s(Tcmd,sizeof(Tcmd), 0, sizeof(Tcmd));
-    ERR_CHK(rc);
-    snprintf(Tcmd, sizeof(Tcmd), "ip -s mroute |grep 'Iif: brlan10' |grep 169|grep -v '169.254.30.1' | cut -d '(' -f 2 | cut -d ',' -f 1|awk '{print $1}'");
-    if(!(fp0 = popen(Tcmd, "r")))
-      {
+    if(!(fp0 = v_secure_popen("r","ip -s mroute |grep 'Iif: brlan10' |grep 169|grep -v '169.254.30.1' | cut -d '(' -f 2 | cut -d ',' -f 1|awk '{print $1}'")))
+    {
         printf("error\n");
         return;
-      }
+    }
     while ( fgets(Tbuf, sizeof(Tbuf), fp0)!= NULL )
       {
         char *pos;
@@ -529,21 +515,15 @@ void send_pings()
             }
             if(i)
             {
-              //rc = memset_s(Tcmd,sizeof(Tcmd), 0, sizeof(Tcmd));
-              //ERR_CHK(rc);
-              //snprintf(Tcmd, sizeof(Tcmd), "ping -c1 -I brlan10 %s",Tbuf);
-              //v_secure_system("%s\n",Tcmd);
               v_secure_system("ping -c1 -I brlan10 %s",Tbuf);
-
             }
       }
-      pclose(fp0);
+      v_secure_pclose(fp0);
 }
 int main()
 {
     FILE *fp = NULL;
     char buf[256]={0};
-    char cmd[256] = {0};
     char mac[MAC_ADDRESS_SIZE] = {0};
     int i = 0;
     unsigned long ipaddr;
@@ -558,7 +538,6 @@ int main()
     errno_t rc = -1;
     int ind = -1;
     int shmrefreshCount=MAX_SHMRCOUNT;
-
     mrd_initTables();
     // whilte list is populated by xupnp device protection service
     // mrd service access the white list
@@ -571,10 +550,7 @@ int main()
     {
        rc = memset_s(buf,sizeof(buf), 0, sizeof(buf));
        ERR_CHK(rc);
-       rc = memset_s(cmd,sizeof(cmd), 0, sizeof(cmd));
-       ERR_CHK(rc);
-       snprintf(cmd, sizeof(cmd), "filter=`ip -s mroute |grep 'Iif: brlan0' | cut -d '(' -f 2 | cut -d ',' -f 1` ; for val in $filter; do ip -4 nei show |grep brlan0 |grep -v FAILED |cut -d '(' -f 2 | cut -d ',' -f 1|awk '{print $1}' | grep $val ; done");
-       if (!(fp = popen(cmd, "r")))
+       if (!(fp = v_secure_popen("r","/usr/ccsp/moca/moca_mroute.sh")))
        {
 	  return -1;
        }
@@ -616,20 +592,17 @@ int main()
           rc = memset_s(buf,sizeof(buf), 0, sizeof(buf));
           ERR_CHK(rc);
        }
-       pclose(fp);
-	
+       v_secure_pclose(fp);      
        rc = memset_s(buf,sizeof(buf), 0, sizeof(buf));
        ERR_CHK(rc);
-       rc = memset_s(cmd,sizeof(cmd), 0, sizeof(cmd));
-       ERR_CHK(rc);
-       snprintf(cmd, sizeof(cmd), "filter=`ip -s mroute |grep 'Iif: brlan10' |grep 169 | cut -d '(' -f 2 | cut -d ',' -f 1` ; for val in $filter; do ip -4 nei show |grep brlan10 |grep -v FAILED |cut -d '(' -f 2 | cut -d ',' -f 1|awk '{print $1}' | grep $val ; done");
-       if(!(fp = popen(cmd, "r")))
+       if(!(fp = v_secure_popen("r","/usr/ccsp/moca/moca_mroute_ip.sh")))
        {
           printf("error\n");
           return -1;
        }
        while ( fgets(buf, sizeof(buf), fp)!= NULL )
        {
+
           char *pos;
           if ((pos=strchr(buf, '\n')) != NULL)
              *pos = '\0';
@@ -718,7 +691,7 @@ int main()
          rc = memset_s(buf,sizeof(buf), 0, sizeof(buf));
          ERR_CHK(rc);
      }
-     pclose(fp);
+     v_secure_pclose(fp);
      mrd_updateMcastlistlifetime();
      sleep(10);
      if((cnt == 0)||(cnt ==3))
