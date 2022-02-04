@@ -48,20 +48,11 @@ int setBlobVersion(char* subdoc,uint32_t version)
 
 	char buf[72] = {0};
   	snprintf(buf,sizeof(buf),"%s_version",subdoc);
- 	if(syscfg_set_u(NULL,buf,version) != 0)
+ 	if(syscfg_set_u_commit(NULL,buf,version) != 0)
  	{
         	CcspTraceError(("syscfg_set failed\n"));
         	return -1;
  	}
-	else
-     	{
-        	if (syscfg_commit() != 0)
-        	{
-           		CcspTraceError(("syscfg_commit failed\n"));
-                return -1;
-
-        	}
-    	}
      	
 	return 0;
      	 
@@ -103,34 +94,18 @@ int UpdateToDB( bool bEnable)
 {
     if(bEnable)
     {
-        if (syscfg_set(NULL, "moca_enabled", "1") != 0)
+        if (syscfg_set_commit(NULL, "moca_enabled", "1") != 0)
         {
             CcspTraceWarning(("UpdateToDB syscfg_set failed\n"));
             return SYSCFG_FAILURE;
         } 
-        else
-        {
-            if (syscfg_commit() != 0)
-            {
-                CcspTraceWarning(("UpdateToDB syscfg_commit failed\n"));
-                return SYSCFG_FAILURE;
-            }
-        }
     }
     else
     {
-        if (syscfg_set(NULL, "moca_enabled", "0") != 0)
+        if (syscfg_set_commit(NULL, "moca_enabled", "0") != 0)
         {
             CcspTraceWarning(("UpdateToDB syscfg_set failed\n"));
             return SYSCFG_FAILURE;
-        } 
-        else
-        {
-            if (syscfg_commit() != 0)
-            {
-                CcspTraceWarning(("UpdateToDB syscfg_commit failed\n"));
-                return SYSCFG_FAILURE;
-            }
         }
     }
     return 0;
