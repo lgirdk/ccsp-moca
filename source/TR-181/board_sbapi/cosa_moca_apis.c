@@ -592,16 +592,9 @@ CosaDmlMocaIfReset
 
 		if(return_status == STATUS_SUCCESS)
 		{
-			if (syscfg_set(NULL, "moca_enabled", "0") != 0)
+			if (syscfg_set_commit(NULL, "moca_enabled", "0") != 0)
 			{
 				AnscTraceWarning(("syscfg_set failed\n"));
-			}
-			else
-			{
-				if (syscfg_commit() != 0)
-				{
-					AnscTraceWarning(("syscfg_commit failed\n"));
-				}
 			}
 		}
 		else
@@ -623,16 +616,9 @@ CosaDmlMocaIfReset
 
 		if(return_status == STATUS_SUCCESS)
 		{
-			if (syscfg_set(NULL, "moca_enabled", "1") != 0)
+			if (syscfg_set_commit(NULL, "moca_enabled", "1") != 0)
 			{
 				AnscTraceWarning(("syscfg_set failed\n"));
-			}
-			else
-			{
-				if (syscfg_commit() != 0)
-				{
-					AnscTraceWarning(("syscfg_commit failed\n"));
-				}
 			}
 		}
 		else
@@ -804,24 +790,14 @@ CosaDmlMocaIfSetCfg
 
          if(pCfg->bEnabled == TRUE) {
 
-             if (syscfg_set(NULL, "moca_enabled", "1") != 0) {
-                     AnscTraceWarning(("syscfg_set failed\n"));
-             } else {
-
-                    if (syscfg_commit() != 0) {
-                            AnscTraceWarning(("syscfg_commit failed\n"));
-                    }
+             if (syscfg_set_commit(NULL, "moca_enabled", "1") != 0) {
+                 AnscTraceWarning(("syscfg_set failed\n"));
              }
 
          } else {
 
-             if (syscfg_set(NULL, "moca_enabled", "0") != 0) {
-                     AnscTraceWarning(("syscfg_set failed\n"));
-             }  else {
-
-                 if (syscfg_commit() != 0) {
-                     AnscTraceWarning(("syscfg_commit failed\n"));
-                 }
+             if (syscfg_set_commit(NULL, "moca_enabled", "0") != 0) {
+                 AnscTraceWarning(("syscfg_set failed\n"));
              }
          }
 
@@ -845,145 +821,75 @@ CosaDmlMocaIfSetCfg
 
          } else {
 
-             if (syscfg_set(NULL, "moca_node_taboo_enabled", "0") != 0) {
-                     AnscTraceWarning(("syscfg_set failed\n"));
-             }  else {
-
-                 if (syscfg_commit() != 0) {
-                     AnscTraceWarning(("syscfg_commit failed\n"));
-                 }
+             if (syscfg_set_commit(NULL, "moca_node_taboo_enabled", "0") != 0) {
+                 AnscTraceWarning(("syscfg_set failed\n"));
              }
          }
 
          AnscTraceWarning(("pCfg->X_CISCO_COM_ChannelScanning: %d\n", pCfg->X_CISCO_COM_ChannelScanning));
 
          if(pCfg->X_CISCO_COM_ChannelScanning == TRUE) {
-
-             if (syscfg_set(NULL, "moca_scan_enabled", "1") != 0) {
-                     AnscTraceWarning(("syscfg_set failed\n"));
-             } else {
-
-                    if (syscfg_commit() != 0) {
-                            AnscTraceWarning(("syscfg_commit failed\n"));
-                    }
+             if (syscfg_set_commit(NULL, "moca_scan_enabled", "1") != 0) {
+                 AnscTraceWarning(("syscfg_set failed\n"));
              }
-
          } else {
-
-             if (syscfg_set(NULL, "moca_scan_enabled", "0") != 0) {
-                     AnscTraceWarning(("syscfg_set failed\n"));
-             }  else {
-
-                 if (syscfg_commit() != 0) {
-                     AnscTraceWarning(("syscfg_commit failed\n"));
-                 }
+             if (syscfg_set_commit(NULL, "moca_scan_enabled", "0") != 0) {
+                 AnscTraceWarning(("syscfg_set failed\n"));
              }
          }
 
          AnscTraceWarning(("pCfg->bPreferredNC: %d\n", pCfg->bPreferredNC));
 
          if(pCfg->bPreferredNC == TRUE) {
-
-             if (syscfg_set(NULL, "moca_preferred_nc", "1") != 0) {
-                     AnscTraceWarning(("syscfg_set failed\n"));
-             } else {
-
-                    if (syscfg_commit() != 0) {
-                            AnscTraceWarning(("syscfg_commit failed\n"));
-                    }
+             if (syscfg_set_commit(NULL, "moca_preferred_nc", "1") != 0) {
+                 AnscTraceWarning(("syscfg_set failed\n"));
              }
-
          } else {
-
-             if (syscfg_set(NULL, "moca_preferred_nc", "0") != 0) {
-                     AnscTraceWarning(("syscfg_set failed\n"));
-             }  else {
-
-                 if (syscfg_commit() != 0) {
-                     AnscTraceWarning(("syscfg_commit failed\n"));
-                 }
+             if (syscfg_set_commit(NULL, "moca_preferred_nc", "0") != 0) {
+                 AnscTraceWarning(("syscfg_set failed\n"));
              }
          }
 
          AnscTraceWarning(("pCfg->X_CISCO_COM_MixedMode: %d\n", pCfg->X_CISCO_COM_MixedMode));
 
          if(pCfg->X_CISCO_COM_MixedMode == TRUE) {
-
-             if (syscfg_set(NULL, "moca_mixed_mode", "1") != 0) {
-                     AnscTraceWarning(("syscfg_set failed\n"));
-             } else {
-
-                    if (syscfg_commit() != 0) {
-                            AnscTraceWarning(("syscfg_commit failed\n"));
-                    }
+             if (syscfg_set_commit(NULL, "moca_mixed_mode", "1") != 0) {
+                 AnscTraceWarning(("syscfg_set failed\n"));
              }
-
          } else {
-
-             if (syscfg_set(NULL, "moca_mixed_mode", "0") != 0) {
-                     AnscTraceWarning(("syscfg_set failed\n"));
-             }  else {
-
-                 if (syscfg_commit() != 0) {
-                     AnscTraceWarning(("syscfg_commit failed\n"));
-                 }
+             if (syscfg_set_commit(NULL, "moca_mixed_mode", "0") != 0) {
+                 AnscTraceWarning(("syscfg_set failed\n"));
              }
          }
 
          AnscTraceWarning(("pCfg->PrivacyEnabledSetting: %d\n", pCfg->PrivacyEnabledSetting));
 
          if(pCfg->PrivacyEnabledSetting == TRUE) {
-
-             if (syscfg_set(NULL, "moca_enable_privacy", "1") != 0) {
-                     AnscTraceWarning(("syscfg_set failed\n"));
-             } else {
-
-                    if (syscfg_commit() != 0) {
-                            AnscTraceWarning(("syscfg_commit failed\n"));
-                    }
+             if (syscfg_set_commit(NULL, "moca_enable_privacy", "1") != 0) {
+                 AnscTraceWarning(("syscfg_set failed\n"));
              }
 
          } else {
-
-             if (syscfg_set(NULL, "moca_enable_privacy", "0") != 0) {
-                     AnscTraceWarning(("syscfg_set failed\n"));
-             }  else {
-
-                 if (syscfg_commit() != 0) {
-                     AnscTraceWarning(("syscfg_commit failed\n"));
-                 }
+             if (syscfg_set_commit(NULL, "moca_enable_privacy", "0") != 0) {
+                 AnscTraceWarning(("syscfg_set failed\n"));
              }
          }
 
          AnscTraceWarning(("pCfg->KeyPassphrase\n"));
 
          if(pCfg->KeyPassphrase) {
-
-             if (syscfg_set(NULL, "moca_password_seed", pCfg->KeyPassphrase) != 0) {
-                     AnscTraceWarning(("syscfg_set failed\n"));
-             } else {
-
-                    if (syscfg_commit() != 0) {
-                            AnscTraceWarning(("syscfg_commit failed\n"));
-                    }
+             if (syscfg_set_commit(NULL, "moca_password_seed", pCfg->KeyPassphrase) != 0) {
+                 AnscTraceWarning(("syscfg_set failed\n"));
              }
-
          }     
 
          AnscTraceWarning(("pCfg->BeaconPowerLimit: %lu\n", pCfg->BeaconPowerLimit));
          status = snprintf(str_value, kMax_beaconPwrLen, "%lu", pCfg->BeaconPowerLimit);
 
          if(status > 0) {
-    
-             if (syscfg_set(NULL, "moca_beacon_pwr_level", str_value) != 0) {
-                     AnscTraceWarning(("syscfg_set failed\n"));
-             } else {
-    
-                    if (syscfg_commit() != 0) {
-                            AnscTraceWarning(("syscfg_commit failed\n"));
-                    }
+             if (syscfg_set_commit(NULL, "moca_beacon_pwr_level", str_value) != 0) {
+                 AnscTraceWarning(("syscfg_set failed\n"));
              }
-
          } else {
 
              AnscTraceWarning(("snprintf failed\n"));
@@ -993,16 +899,9 @@ CosaDmlMocaIfSetCfg
          status = snprintf(str_value, kMax_TxPowerLimit, "%d", pCfg->TxPowerLimit);
 
          if(status > 0) {
-    
-             if (syscfg_set(NULL, "moca_maximum_tx_power", str_value) != 0) {
-                     AnscTraceWarning(("syscfg_set failed\n"));
-             } else {
-    
-                    if (syscfg_commit() != 0) {
-                            AnscTraceWarning(("syscfg_commit failed\n"));
-                    }
+             if (syscfg_set_commit(NULL, "moca_maximum_tx_power", str_value) != 0) {
+                 AnscTraceWarning(("syscfg_set failed\n"));
              }
-
          } else {
 
              AnscTraceWarning(("snprintf failed\n"));
@@ -1013,13 +912,8 @@ CosaDmlMocaIfSetCfg
          
          if(status > 0) {
     
-             if (syscfg_set(NULL, "moca_phy_rate", str_value) != 0) {
-                     AnscTraceWarning(("syscfg_set failed\n"));
-             } else {
-    
-                    if (syscfg_commit() != 0) {
-                            AnscTraceWarning(("syscfg_commit failed\n"));
-                    }
+             if (syscfg_set_commit(NULL, "moca_phy_rate", str_value) != 0) {
+                 AnscTraceWarning(("syscfg_set failed\n"));
              }
 
          } else {
@@ -1032,24 +926,14 @@ CosaDmlMocaIfSetCfg
 
          if(pCfg->X_CISCO_COM_AutoPowerControlEnable == TRUE) {
 
-             if (syscfg_set(NULL, "moca_pwr_apc_enable", "1") != 0) {
-                     AnscTraceWarning(("syscfg_set failed\n"));
-             } else {
-
-                    if (syscfg_commit() != 0) {
-                            AnscTraceWarning(("syscfg_commit failed\n"));
-                    }
+             if (syscfg_set_commit(NULL, "moca_pwr_apc_enable", "1") != 0) {
+                 AnscTraceWarning(("syscfg_set failed\n"));
              }
 
          } else {
 
-             if (syscfg_set(NULL, "moca_pwr_apc_enable", "0") != 0) {
-                     AnscTraceWarning(("syscfg_set failed\n"));
-             }  else {
-
-                 if (syscfg_commit() != 0) {
-                     AnscTraceWarning(("syscfg_commit failed\n"));
-                 }
+             if (syscfg_set_commit(NULL, "moca_pwr_apc_enable", "0") != 0) {
+                 AnscTraceWarning(("syscfg_set failed\n"));
              }
          }
 
@@ -1088,13 +972,8 @@ CosaDmlMocaIfSetCfg
                  }    
 #endif
 
-                 if (syscfg_set(NULL, "moca_freq_plan", str_value) != 0) {
-                         AnscTraceWarning(("syscfg_set failed\n"));
-                 } else {
-        
-                        if (syscfg_commit() != 0) {
-                                AnscTraceWarning(("syscfg_commit failed\n"));
-                        }
+                 if (syscfg_set_commit(NULL, "moca_freq_plan", str_value) != 0) {
+                     AnscTraceWarning(("syscfg_set failed\n"));
                  }
     
              } else {
@@ -1171,24 +1050,14 @@ CosaDmlMocaIfGetCfg
 			AnscTraceWarning(("SNMP set for MoCA is received, setting new MoCA enable status to db\n"));
 			 if(pCfg->bEnabled == TRUE) {
 
-			     if (syscfg_set(NULL, "moca_enabled", "1") != 0) {
+			     if (syscfg_set_commit(NULL, "moca_enabled", "1") != 0) {
 				     AnscTraceWarning(("syscfg_set failed\n"));
-			     } else {
-
-				    if (syscfg_commit() != 0) {
-				            AnscTraceWarning(("syscfg_commit failed\n"));
-				    }
 			     }
 
 			 } else {
 
-			     if (syscfg_set(NULL, "moca_enabled", "0") != 0) {
+			     if (syscfg_set_commit(NULL, "moca_enabled", "0") != 0) {
 				     AnscTraceWarning(("syscfg_set failed\n"));
-			     }  else {
-
-				 if (syscfg_commit() != 0) {
-				     AnscTraceWarning(("syscfg_commit failed\n"));
-				 }
 			     }
 			 }
 			 pCfg->bSnmpUpdate = 0;
@@ -2175,23 +2044,15 @@ BOOL MoCA_SetForceEnable(PCOSA_DML_MOCA_IF_CFG pCfg, PCOSA_DML_MOCA_CFG  pFCfg, 
 	{
                  /*Coverity  Fix CID:58757 DC.STRING_BUFFER */
 		snprintf(buff,sizeof(buff),"%s",( bValue ) ? "true" :"false" );
-		if(syscfg_set(NULL, "X_RDKCENTRAL-COM_ForceEnable", buff) != 0)
+		if(syscfg_set_commit(NULL, "X_RDKCENTRAL-COM_ForceEnable", buff) != 0)
 		{
 			AnscTraceWarning(("syscfg_set failed\n"));
 			return FALSE;
 		}
 		else
 		{
-			if (syscfg_commit() != 0)
-			{
-				AnscTraceWarning(("syscfg_commit failed\n"));
-				return FALSE;
-			}
-			else
-			{
-				pFCfg->bForceEnabled = bValue;
-				AnscTraceInfo(("X_RDKCENTRAL-COM_ForceEnable = %d\n",bValue));
-			}
+			pFCfg->bForceEnabled = bValue;
+			AnscTraceInfo(("X_RDKCENTRAL-COM_ForceEnable = %d\n",bValue));
 
 			if (bValue)
 			{
