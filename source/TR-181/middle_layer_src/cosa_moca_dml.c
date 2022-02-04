@@ -6987,21 +6987,14 @@ Logging_SetParamBoolValue
                     return FALSE;
                 }
 	}
-	if (syscfg_set(NULL, "moca_log_enabled", buf) != 0) 
+	if (syscfg_set_commit(NULL, "moca_log_enabled", buf) != 0) 
 	{
 		AnscTraceWarning(("syscfg_set failed\n"));
 	} 
 	else 
 	{
-		if (syscfg_commit() != 0) 
-		{
-			AnscTraceWarning(("syscfg_commit failed\n"));
-		}
-		else
-		{
-			pMyObject->LogStatus.Log_Enable = bValue;
-			CosaMocaTelemetryxOpsLogSettingsSync();
-		}
+		pMyObject->LogStatus.Log_Enable = bValue;
+		CosaMocaTelemetryxOpsLogSettingsSync();
 	}
         return TRUE;
     }
@@ -7063,21 +7056,14 @@ Logging_SetParamUlongValue
     {
         /* collect value */
 		
-	if (syscfg_set_u(NULL, "moca_log_period", uValue) != 0) 
+	if (syscfg_set_u_commit(NULL, "moca_log_period", uValue) != 0) 
 	{
 		AnscTraceWarning(("syscfg_set failed\n"));
 	} 
 	else 
 	{
-		if (syscfg_commit() != 0) 
-		{
-			AnscTraceWarning(("syscfg_commit failed\n"));
-		}
-		else
-		{
-			pMyObject->LogStatus.Log_Period = uValue;
-			CosaMocaTelemetryxOpsLogSettingsSync();
-		}
+		pMyObject->LogStatus.Log_Period = uValue;
+		CosaMocaTelemetryxOpsLogSettingsSync();
 	}
         return TRUE;
     }
