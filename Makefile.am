@@ -17,5 +17,3 @@
 # limitations under the License.
 ##########################################################################
 SUBDIRS = source
-
-AM_CFLAGS = -D_ANSC_LITTLE_ENDIAN_

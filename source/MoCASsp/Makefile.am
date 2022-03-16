@@ -16,8 +16,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ##########################################################################
-AM_CFLAGS = -D_ANSC_LINUX
-AM_CFLAGS += -D_ANSC_USER
+AM_CFLAGS =
 
 ACLOCAL_AMFLAGS = -I m4
 
@@ -33,4 +32,4 @@ CcspMoCA_DEPENDENCIES= \
 CcspMoCA_CFLAGS = $(SYSTEMD_CFLAGS)
 CcspMoCA_SOURCES = ssp_messagebus_interface.c ssp_main.c ssp_action.c dm_pack_datamodel.c
 CcspMoCA_LDFLAGS = -rdynamic $(SYSTEMD_LDFLAGS) -pthread -lsecure_wrapper
-CcspMoCA_LDADD =  $(CcspMoCA_DEPENDENCIES) -lsyscfg -lsysevent -lccsp_common -ldl -lmsgpackc -lwebconfig_framework
+CcspMoCA_LDADD = $(CcspMoCA_DEPENDENCIES) -lsyscfg -lsysevent -lccsp_common -ldl -lmsgpackc -lwebconfig_framework
