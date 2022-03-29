@@ -46,9 +46,10 @@ uint32_t getBlobVersion(char* subdoc)
 int setBlobVersion(char* subdoc,uint32_t version)
 {
 
-	char buf[72] = {0};
+	char subdoc_ver[64] = {0}, buf[72] = {0};
+  	snprintf(subdoc_ver,sizeof(subdoc_ver),"%u",version);
   	snprintf(buf,sizeof(buf),"%s_version",subdoc);
- 	if(syscfg_set_u(NULL,buf,version) != 0)
+ 	if(syscfg_set(NULL,buf,subdoc_ver) != 0)
  	{
         	CcspTraceError(("syscfg_set failed\n"));
         	return -1;

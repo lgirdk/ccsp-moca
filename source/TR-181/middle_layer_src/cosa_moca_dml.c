@@ -7053,6 +7053,7 @@ Logging_SetParamUlongValue
 {    
     /* check the parameter name and return the corresponding value */    
     UNREFERENCED_PARAMETER(hInsContext);
+    char buf[16]={0};
 	PCOSA_DATAMODEL_MOCA			pMyObject			= (PCOSA_DATAMODEL_MOCA)g_MoCAObject;
         errno_t                         rc       = -1;
         int                             ind      = -1;
@@ -7062,8 +7063,10 @@ Logging_SetParamUlongValue
     if((!ind) && (rc == EOK))
     {
         /* collect value */
+
+	sprintf(buf,"%lu",uValue);
 		
-	if (syscfg_set_u(NULL, "moca_log_period", uValue) != 0) 
+	if (syscfg_set(NULL, "moca_log_period", buf) != 0) 
 	{
 		AnscTraceWarning(("syscfg_set failed\n"));
 	} 
