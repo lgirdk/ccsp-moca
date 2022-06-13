@@ -35,7 +35,7 @@
 #include <unistd.h>
 #include "ansc_platform.h"
 
-#define PNAME "/tmp/icebergwedge_t"
+#define PNAME "/tmp/xpki_cert"
 #define PID 21699
 #define MAX_MCAST_ENTRIES 20
 #define MAX_BUF_SIZE 2048
