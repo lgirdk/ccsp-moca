@@ -674,7 +674,7 @@ CosaMoCAInitialize
     }
     
     ulNextInsNum = 1;
-
+    pMyObject->MoCAIfFullTable[0].MoCAIfFull.Cfg.InstanceNumber = 1;
     for ( ulIndex = 0; ulIndex < ulCount; ulIndex++ )
     {
         CosaDmlMocaIfGetEntry((ANSC_HANDLE)pPoamMoCADm, ulIndex, &pMyObject->MoCAIfFullTable[ulIndex].MoCAIfFull);

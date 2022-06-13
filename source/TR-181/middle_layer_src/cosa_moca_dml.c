@@ -3950,7 +3950,7 @@ Stats2_GetParamUlongValue
     /*PPOAM_COSAMOCADM_OBJECT         pPoamMoCADm = (PPOAM_COSAMOCADM_OBJECT )pMyObject->pPoamMoCADm;*/
     COSA_DML_MOCA_STATS             Stats;
 
-    CosaDmlMocaIfGetStats((ANSC_HANDLE)NULL/*pPoamMoCADm*/, pMoCAIfFull->Cfg.InstanceNumber, &Stats);
+    CosaDmlMocaIfGetStats((ANSC_HANDLE)NULL/*pPoamMoCADm*/, pMoCAIfFull->Cfg.InstanceNumber - 1, &Stats);
     errno_t                         rc       = -1;
     int                             ind      = -1;
 

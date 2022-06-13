@@ -1364,6 +1364,29 @@ CosaDmlMocaIfGetStats
 		pStats->X_CISCO_COM_ExtAggrAverageTx 	= mocaStats.ExtAggrAverageTx;
 		pStats->X_CISCO_COM_ExtAggrAverageRx 	= mocaStats.ExtAggrAverageRx;
     }
+    else if ( ulInterfaceIndex == 0 )
+    {
+               moca_IfGetStats(ulInterfaceIndex, &mocaStats);
+
+                /* Translate the Data Structures */
+                pStats->BytesSent                                               = mocaStats.BytesSent;
+                pStats->BytesReceived                                   = mocaStats.BytesReceived;
+                pStats->PacketsSent                                             = mocaStats.PacketsSent;
+                pStats->PacketsReceived                                 = mocaStats.PacketsReceived;
+                pStats->ErrorsSent                                              = mocaStats.ErrorsSent;
+                pStats->ErrorsReceived                                  = mocaStats.ErrorsReceived;
+                pStats->UnicastPacketsSent                              = mocaStats.UnicastPacketsSent;
+                pStats->UnicastPacketsReceived                  = mocaStats.UnicastPacketsReceived;
+                pStats->DiscardPacketsSent                              = mocaStats.DiscardPacketsSent;
+                pStats->DiscardPacketsReceived                  = mocaStats.DiscardPacketsReceived;
+                pStats->MulticastPacketsSent                    = mocaStats.MulticastPacketsSent;
+                pStats->MulticastPacketsReceived                = mocaStats.MulticastPacketsReceived;
+                pStats->BroadcastPacketsSent                    = mocaStats.BroadcastPacketsSent;
+                pStats->BroadcastPacketsReceived        = mocaStats.BroadcastPacketsReceived;
+                pStats->UnknownProtoPacketsReceived             = mocaStats.UnknownProtoPacketsReceived;
+                pStats->X_CISCO_COM_ExtAggrAverageTx    = mocaStats.ExtAggrAverageTx;
+                pStats->X_CISCO_COM_ExtAggrAverageRx    = mocaStats.ExtAggrAverageRx;
+    }
     else
     {
         return ANSC_STATUS_FAILURE;
