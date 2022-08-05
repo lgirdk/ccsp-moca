@@ -88,6 +88,10 @@
 
 #include "moca_hal.h"
 
+//upstreamed ccsp_moca_diag.patch as part of RDKB-41505
+#if defined (_XB6_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_)
+PCOSA_DML_MOCA_IF_SINFO       gpSInfo;
+#endif
 #if 0
 #ifdef AnscTraceWarning
 #undef AnscTraceWarning
@@ -717,6 +721,13 @@ CosaDmlMocaIfSetCfg
 			mocaCfg.BeaconPowerLimit 				= 9;
 			mocaCfg.AutoPowerControlPhyRate 		= 235;
             mocaCfg.Reset 							= FALSE;
+			//upstreamed 1007_moca_reset_count_arrisxb6-11165.patch as part of RDKB-41505
+			/*ARRISXB6-11165: MOCA reset count is not incrementing. Setting the following to TRUE so in MOCA HAL
+			 layer reset counter gets incremented during MOCA reset scenario */
+			#if defined(INTEL_PUMA7)
+	    		mocaCfg.Reset                                           = TRUE;
+			#endif
+	
          } else {
 			/* Translate the data structures */
 			mocaCfg.InstanceNumber 					= pCfg->InstanceNumber;
@@ -980,7 +991,10 @@ CosaDmlMocaIfSetCfg
                  AnscTraceWarning(("snprintf failed\n"));
              }
          }
-         
+         //upstreamed ccsp_moca_diag.patch as part of RDKB-41505
+	 #if defined (_XB6_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_)
+	 CosaDmlMocaIfGetStaticInfo(hContext,ulInterfaceIndex,gpSInfo);
+	 #endif
     }
     else
     {
@@ -1105,7 +1119,11 @@ CosaDmlMocaIfGetCfg
     {
         return ANSC_STATUS_FAILURE;
     }
-
+    
+    //upstreamed ccsp_moca_taboo_2870.patch as part of RDKB-41505
+    #if defined (_XB6_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_)
+    CosaDmlMocaIfGetStaticInfo(hContext,uIndex,gpSInfo);
+    #endif
     return ANSC_STATUS_SUCCESS;
     
 }
@@ -1205,6 +1223,11 @@ CosaDmlMocaIfGetStaticInfo
     {
         return ANSC_STATUS_FAILURE;
     }
+
+    //upstreamed ccsp_moca_diag.patch as part of RDKB-41505
+    #if defined (_XB6_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_)
+    gpSInfo = pSInfo;
+    #endif
 
     if ( uIndex == 0 )
     {
@@ -2318,8 +2341,6 @@ CosaDmlMocaIfGetCfg
     {
         return ANSC_STATUS_FAILURE;
     }
-
-
 
     return ANSC_STATUS_SUCCESS;
 }
