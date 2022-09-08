@@ -400,17 +400,22 @@ CosaDmlGetMocaHardwareStatus
 {
     UNREFERENCED_PARAMETER(hContext);
     static int ret = 0;
+    int retries = 0;
 
     if (ret) {
         return ret;
     }
 
-    if (moca_HardwareEquipped()){
-        ret = 1;
-    }else{
-        ret = 2;
-    }
-    
+    do
+    {
+       ret = moca_HardwareEquipped();
+       CcspTraceInfo(("-- Moca hardware status check#%d.\n", retries));
+       if(ret)
+          break;
+       else
+          sleep(1);
+    }while(retries++ < 5);
+ 
     return ret;
 }
 
@@ -1034,7 +1039,11 @@ CosaDmlMocaIfGetCfg
     {
         rc = memset_s(&mocaCfg, sizeof(moca_cfg_t), 0, sizeof(moca_cfg_t));
         ERR_CHK(rc);
-        moca_GetIfConfig(uIndex, &mocaCfg);
+        if(STATUS_SUCCESS != moca_GetIfConfig(uIndex, &mocaCfg))
+        {
+           CcspTraceError(("-- moca_GetIfConfig failure\n"));
+           return ANSC_STATUS_FAILURE;
+        }
 		
 
         /* XF3-5279 - PCOSA_DML_MOCA_IF_CFG instancenumber starts from 1.

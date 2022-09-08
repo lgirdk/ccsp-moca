@@ -292,7 +292,7 @@ int rollback_moca_conf()
     int ret = 0;
     PCOSA_DATAMODEL_MOCA	pMyObject = (PCOSA_DATAMODEL_MOCA )g_MoCAObject;
     PCOSA_DML_MOCA_IF_CFG	pCfg	  =	&pMyObject->MoCAIfFullTable[0].MoCAIfFull.Cfg;
-    pCfg->bEnabled = g_bMocaEnable_bkup;
+    //pCfg->bEnabled = g_bMocaEnable_bkup;
     moca_cfg_t mocaCfg;
     memset(&mocaCfg, 0, sizeof(moca_cfg_t));
     if( STATUS_SUCCESS == moca_GetIfConfig(0, &mocaCfg))
@@ -306,9 +306,11 @@ int rollback_moca_conf()
                 CcspTraceWarning(("%s: rollback_moca_conf hal call failed \n", __FUNCTION__));
                 return MOCA_HAL_FAILURE;
             }
+            pCfg->bEnabled = g_bMocaEnable_bkup;
+            ret = UpdateToDB( pCfg->bEnabled );
         }
     }
-    ret = UpdateToDB( pCfg->bEnabled );   
+    //ret = UpdateToDB( pCfg->bEnabled );   
     return ret ;
 }
 
