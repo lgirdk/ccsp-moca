@@ -77,7 +77,7 @@
 #include "cosa_moca_helpers.h"
 #include "cosa_moca_webconfig_api.h"
 #include "ccsp_trace.h"
-#include "base64.h"
+#include <trower-base64/base64.h>
 
 #ifndef CONFIG_SYSTEM_MOCA
 #define _COSA_SIM_ 1 
