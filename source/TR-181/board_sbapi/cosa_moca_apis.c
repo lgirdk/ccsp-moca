@@ -2045,7 +2045,7 @@ ANSC_STATUS CosaMoCAGetForceEnable(PCOSA_DML_MOCA_CFG pCfg)
         int ind = -1;
 
 	if(syscfg_get( NULL, "X_RDKCENTRAL-COM_ForceEnable", buf, sizeof(buf)) == 0){
-		if( buf != NULL )
+		if( strlen(buf) != 0)
 		{
                         rc = strcmp_s(buf, sizeof(buf), "true", &ind);
                         ERR_CHK(rc);
