@@ -1030,7 +1030,7 @@ CosaDmlMocaIfGetCfg
         return ANSC_STATUS_FAILURE;
     }
 
-    if( (syscfg_get( NULL, "moca_enabled", buf, sizeof(buf)) == 0) && ( buf != NULL ) )
+    if( (syscfg_get( NULL, "moca_enabled", buf, sizeof(buf)) == 0) && (strlen(buf) != 0) )
    {
 	moca_enable_db=atoi(buf);
 	
