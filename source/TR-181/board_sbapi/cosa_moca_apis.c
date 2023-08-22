@@ -1064,7 +1064,11 @@ CosaDmlMocaIfGetCfg
 		{
 			AnscTraceWarning(("syscfg db and moca driver value are not in sync, setting db value to driver\n"));
 			mocaCfg.bEnabled=moca_enable_db;
-	              moca_SetIfConfig(uIndex, &mocaCfg);
+	              if ( moca_SetIfConfig(uIndex, &mocaCfg) != STATUS_SUCCESS)
+                        {
+                         AnscTraceWarning(("moca_SetIfConfig returns error\n"));
+                         return ANSC_STATUS_FAILURE;
+                        }
 			pCfg->bEnabled 								= mocaCfg.bEnabled;
 		}
 		else if ( ( 1 == pCfg->bSnmpUpdate ) && ( moca_enable_db != pCfg->bEnabled ) )
