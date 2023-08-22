@@ -187,9 +187,8 @@ ssp_Mbi_Initialize
     )
 {
     UNREFERENCED_PARAMETER(user_data);
-    ANSC_STATUS             returnStatus    = ANSC_STATUS_SUCCESS;
 
-    return ( returnStatus == ANSC_STATUS_SUCCESS ) ? 0 : 1;
+    return  0;
 }
 
 
