@@ -409,7 +409,7 @@ static void read_updated_log_interval()
         CcspTraceError(("%s  %s file open error!!!\n", __func__, MOCA_LOG_FILE));
 	return;
     }
-    if (fscanf(fp, "%d,%s", &gMoCALogInterval, gMoCALogEnable) == EOF) {
+    if (fscanf(fp, "%d,%6s", &gMoCALogInterval, gMoCALogEnable) == EOF) {
         CcspTraceError(("%s Failed to read from file %s!!!\n", __func__, MOCA_LOG_FILE));
         fclose(fp);
         return;
