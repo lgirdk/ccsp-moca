@@ -893,7 +893,7 @@ CosaDmlMocaIfSetCfg
 
          AnscTraceWarning(("pCfg->KeyPassphrase\n"));
 
-         if(pCfg->KeyPassphrase) {
+         if(strlen(pCfg->KeyPassphrase) != 0) {
              if (syscfg_set_commit(NULL, "moca_password_seed", pCfg->KeyPassphrase) != 0) {
                  AnscTraceWarning(("syscfg_set failed\n"));
              }
