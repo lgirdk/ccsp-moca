@@ -365,9 +365,18 @@ int main(int argc, char* argv[])
     }
 
     check_component_crash(MOCA_INIT_FILE_BOOTUP);
-    creat("/tmp/moca_initialized",S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+  //CID 276408 : UNCHECKED RETURN VALUE
+    int check_var = creat("/tmp/moca_initialized",S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    if ( check_var == -1 ){
+        fprintf(stderr, "Error in creating /tmp/moca_initialized : %s\n", strerror(errno));
+        exit(1);
+    }
     v_secure_system("sysevent set moca_init completed");
-    creat(MOCA_INIT_FILE_BOOTUP,S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    check_var = creat(MOCA_INIT_FILE_BOOTUP,S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    if ( check_var == -1 ){
+        fprintf(stderr, "Error in creating %s : %s\n", MOCA_INIT_FILE_BOOTUP, strerror(errno));
+        exit(1);
+    }
 
     //LM_main();
     if ( bRunAsDaemon )

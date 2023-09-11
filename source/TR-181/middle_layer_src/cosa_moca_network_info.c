@@ -155,16 +155,14 @@ char* getDeviceMac()
 
         CcspMoCAConsoleTrace(("RDK_LOG_DEBUG, Before WebpaInterface_DiscoverComponent ret: %d\n",ret));
 
-        if(pcomponentPath == NULL || pcomponentName == NULL)
-        {
-            if(-1 == WebpaInterface_DiscoverComponent(&pcomponentName, &pcomponentPath)){
-                CcspTraceError(("%s ComponentPath or pcomponentName is NULL, waiting for compponent to come up\n", __FUNCTION__));
-                sleep(30);
-                continue;
-            }
-            CcspMoCAConsoleTrace(("RDK_LOG_DEBUG, WebpaInterface_DiscoverComponent ret: %d  ComponentPath %s ComponentName %s \n",ret, pcomponentPath, pcomponentName));
-        }
-
+      //CID : 67711 LOGICALLY DEAD CODE
+      if(-1 == WebpaInterface_DiscoverComponent(&pcomponentName, &pcomponentPath)){
+            CcspTraceError(("%s ComponentPath or pcomponentName is NULL, waiting for compponent to come up\n", __FUNCTION__));
+            sleep(30);
+            continue;
+         }
+        CcspMoCAConsoleTrace(("RDK_LOG_DEBUG, WebpaInterface_DiscoverComponent ret: %d  ComponentPath %s ComponentName %s \n",ret, pcomponentPath, pcomponentName));
+        
         ret = CcspBaseIf_getParameterValues(bus_handle,
                     pcomponentName, pcomponentPath,
                     getList,
@@ -181,14 +179,6 @@ char* getDeviceMac()
             }
             rc = strncpy_s(deviceMAC, sizeof(deviceMAC), parameterval[0]->parameterValue, sizeof(deviceMAC) - 1);
 	    ERR_CHK(rc);
-            if(pcomponentName)
-            {
-                AnscFreeMemory(pcomponentName);
-            }
-            if(pcomponentPath)
-            {
-                AnscFreeMemory(pcomponentPath);
-            }
 
         }
         else
@@ -200,6 +190,9 @@ char* getDeviceMac()
         CcspMoCAConsoleTrace(("RDK_LOG_DEBUG, Before free_parameterValStruct_t...\n"));
         free_parameterValStruct_t(bus_handle, val_size, parameterval);
         CcspMoCAConsoleTrace(("RDK_LOG_DEBUG, After free_parameterValStruct_t...\n"));        
+        //CID NO'S : 64205, 67812 : RESOURCE LEAK
+        AnscFreeMemory(pcomponentName);
+        AnscFreeMemory(pcomponentPath);
     }
         
     CcspMoCAConsoleTrace(("RDK_LOG_DEBUG, CcspMoCA %s EXIT\n", __FUNCTION__ ));
@@ -842,12 +835,10 @@ void* SynchronizeMoCADevices(void *arg)
         }
         else
         {
-            if(mocaList)
-            {
-                Set_MoCADevices_Status_Offline();
-                Send_Update_to_LMLite(FALSE);                
-                CleanupMoCAList();
-            }
+           //removing the if condition as it is being checked again inside the following functions
+            Set_MoCADevices_Status_Offline();
+            Send_Update_to_LMLite(FALSE);                
+            CleanupMoCAList();
         }
 
         if(ppDeviceArray)
