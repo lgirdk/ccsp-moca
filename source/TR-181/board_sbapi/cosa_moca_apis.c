@@ -99,6 +99,7 @@ PCOSA_DML_MOCA_IF_SINFO       gpSInfo;
 #endif
 #endif
 
+static unsigned int moca_enable_db=0xFF;
 extern ANSC_HANDLE g_MoCAObject ;
 
 /* MoCA Reset US - RDKB-22615 use this MOCA_RESET_DELAY_IN_SECS macro */
@@ -360,7 +361,7 @@ COSA_DML_MOCA_FLOW  g_MoCAFlow[2] =
 static int is_moca_available = 0;
 
 #define JUDGE_MOCA_HARDWARE_AVAILABLE(RET) \
-    if (!is_moca_available) { \
+    if (!is_moca_available && ((moca_enable_db==0xFF || moca_enable_db==0) ? 1 : ((is_moca_available = moca_HardwareEquipped()) == FALSE))) { \
         CcspTraceWarning((" -- Moca hardware is not available.\n")); \
         return RET; \
     }; 
@@ -1022,7 +1023,7 @@ CosaDmlMocaIfGetCfg
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
 	moca_cfg_t mocaCfg;
 
-    unsigned int moca_enable_db=0;
+//    unsigned int moca_enable_db=0;
     char buf[10]={0};
     errno_t rc = -1;
     if ( !pCfg )
