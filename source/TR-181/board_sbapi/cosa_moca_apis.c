@@ -1971,7 +1971,7 @@ CosaDmlMocaGetLogStatus
 	
 	if(syscfg_get( NULL, "moca_log_enabled", buf, sizeof(buf)) == 0)
 	{
-		if( buf != NULL )
+		if( strlen(buf) != 0)
 		{
                     rc = strcmp_s(buf, sizeof(buf), "true", &ind);
                     ERR_CHK(rc);
@@ -1986,7 +1986,7 @@ CosaDmlMocaGetLogStatus
 	
 	if(syscfg_get( NULL, "moca_log_period", buf, sizeof(buf)) == 0)
 	{
-		if( buf != NULL )
+		if( strlen(buf) != 0)
 		{
 		    pMyObject->Log_Period =  atoi(buf);
 		}
