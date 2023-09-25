@@ -1873,7 +1873,7 @@ Interface1_SetParamBoolValue
 #endif /* * _CM_HIGHSPLIT_SUPPORTED_ */
 
         syscfg_get( NULL, "X_RDKCENTRAL-COM_VIDEOSERVICE", buf, sizeof(buf));
-        if( buf != NULL )
+        if( strlen(buf) != 0)
         {
                 if (strcmp(buf,"1") == 0)
                 {
