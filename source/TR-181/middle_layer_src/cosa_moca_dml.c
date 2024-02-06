@@ -2364,27 +2364,6 @@ Interface1_Validate
        }
        tempKeyPassphrase++;
     }
-/*
-    for ( ulIndex = 0; ulIndex < ulEntryCount; ulIndex++ )
-    {
-        if (
-                ((ULONG)pMoCAIfFullTable != (ULONG)&pMyObject->MoCAIfFullTable[ulIndex]) &&
-                AnscEqualString
-                    (
-                        pMoCAIfFullTable->MoCAIfFull.Cfg.Alias,
-                        pMyObject->MoCAIfFullTable[ulIndex].MoCAIfFull.Cfg.Alias,
-                        TRUE
-                    )
-            )
-        {
-            AnscCopyString(pReturnParamName, "Alias");
-
-            *puLength = AnscSizeOfString("Alias");
-
-            return FALSE;
-        }
-    }
-*/
 
     return TRUE;
 }
