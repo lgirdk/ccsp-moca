@@ -416,7 +416,13 @@ CosaDmlGetMocaHardwareStatus
        else
           sleep(1);
     }while(retries++ < 5);
- 
+
+    char buf[10]={0};
+    if( (syscfg_get( NULL, "moca_enabled", buf, sizeof(buf)) == 0) && (strlen(buf) != 0) )
+    {
+	  moca_enable_db=atoi(buf);
+	  CcspTraceWarning(("-- Moca enable flag %d(%s).\n", moca_enable_db, buf)); 
+    } 
     return ret;
 }
 
@@ -433,7 +439,8 @@ CosaDmlMocaInit
 
     if (CosaDmlGetMocaHardwareStatus(NULL) != 1 ) { 
         CcspTraceWarning(("-- Moca hardware is not available.\n")); 
-        return ANSC_STATUS_FAILURE; 
+        is_moca_available = 0;
+	return ANSC_STATUS_FAILURE; 
     } else {
         is_moca_available = 1;
     }
