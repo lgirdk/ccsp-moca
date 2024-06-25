@@ -53,10 +53,8 @@
 #endif
 #define DEBUG_INI_NAME "/etc/debug.ini"
 
-#if defined (INTEL_PUMA7)
 #include "cap.h"
 static cap_user appcaps;
-#endif
 
 extern char*                                pComponentName;
 char                                        g_Subsystem[32]         = {0};
@@ -221,7 +219,6 @@ void sig_handler(int sig)
 }
 
 
-#if defined (INTEL_PUMA7)
 int drop_root(void)
 {
   int retval = 0;
@@ -245,7 +242,6 @@ int drop_root(void)
   }
   return retval;
 }
-#endif
 
 int main(int argc, char* argv[])
 {
@@ -327,11 +323,10 @@ int main(int argc, char* argv[])
 
     pComponentName          = CCSP_COMPONENT_NAME_MoCA;
 
-  #if defined (INTEL_PUMA7)
     if(!drop_root()) {
           CcspTraceInfo(("drop_root method failed!\n"));
     }
-  #endif
+
     if ( bRunAsDaemon )
         daemonize();
 #ifdef INCLUDE_BREAKPAD
