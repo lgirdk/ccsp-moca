@@ -25,13 +25,13 @@
 #include <gmock/gmock.h>
 
 #define GTEST_REPORT_DIRECTORY "/tmp/Gtest_Report"
-#define GTEST_REPORT_FILEPATH "CcspMoCA_gtest_report.xml"
+#define GTEST_REPORT_FILEPATH "CcspMoCA_gtest_report.json"
 #define GTEST_REPORT_FILEPATH_SIZE 128
 
 GTEST_API_ int main(int argc, char *argv[])
 {
     char filePath[GTEST_REPORT_FILEPATH_SIZE] = {0}; // Test Results Full File Path
-    snprintf(filePath, GTEST_REPORT_FILEPATH_SIZE, "xml:%s/%s",
+    snprintf(filePath, GTEST_REPORT_FILEPATH_SIZE, "json:%s/%s",
             GTEST_REPORT_DIRECTORY,GTEST_REPORT_FILEPATH);
     ::testing::GTEST_FLAG(output) = filePath;
     ::testing::InitGoogleMock(&argc, argv);
