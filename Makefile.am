@@ -17,3 +17,5 @@
 # limitations under the License.
 ##########################################################################
 SUBDIRS = source
+
+AUTOMAKE_OPTIONS = subdir-objects
